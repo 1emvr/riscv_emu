@@ -2,8 +2,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#include "mock.hpp"
 #include "vreg.hpp"
-#include "network.hpp"
 
 #define HEXANE __hexane *ctx = __context;
 __data __hexane __context;
@@ -149,6 +149,7 @@ namespace vm {
 			ctx->win32.NtAllocateVirtualMemory = GetProcAddress(GetModuleHandle("ntdll.dll"), "NtAllocateVirtualMemory");
 			ctx->win32.NtFreeVirtualMemory = GetProcAddress(GetModuleHandle("ntdll.dll"), "NtFreeVirtualMemory");
 			ctx->win32.NtReadFile = GetProcAddress(GetModuleHandle("kernel32.dll"), "ReadFile");
+			ctx->win32.NtOpenFile = GetProcAddress(GetModuleHandle("kernel32.dll"), "OpenFile");
 
 			NTSTATUS status = 0;
 			if (!NT_SUCCESS(status = ctx->win32.NtAllocateVirtualMemory(NtCurrentProcess(), (void**)&m_program, 0,
