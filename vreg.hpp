@@ -2,7 +2,7 @@
 #define RV32_REGISTERS_HPP
 #define __extern   extern "C"
 #define __vmcall   __attribute__((annotate("vm_calling_convention")))
-#define __function __attribute__((section(".text$B")))
+#define __function //__attribute__((section(".text$B")))
 #define __rdata    __attribute__((section(".rdata")))
 #define __data     __attribute__((section(".data")))
 #define __used     __attribute__((used))
@@ -214,3 +214,4 @@ typedef enum tblenum : uintptr_t {
 	} while (0)
 
 #endif // RV32_REGISTERS_HPP
+

