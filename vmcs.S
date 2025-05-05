@@ -117,16 +117,18 @@ init_end:
 	ret
 
 .global vm_entry:	
+	push  rbp
 	mov   rbp, rsp                                           ;; save the original native stack pointer.
 	sub   rsp, VM_NATIVE_STACK_ALLOC                         ;; allocate a large amount of native stack space for the vm.
 	and   rsp, 0xFFFFFFFFFFFFFFF0                            ;; align the native stack pointer to 16-byte boundary.
 
 	call  save_host_context                                  ;; save the hosts register/flags to the native stack.
-	mov   REG_VIP, [m_program]                               ;; prepare the vip with the program pointer to start.
+	mov   REG_VIP, m_program                                 ;; prepare the vip with the program pointer to start.
 	call  vm_routine                                         ;; load and call the main routine for virtual machine
 
 	call  restore_host_context                               ;; restore original register state stored on the stack
 	mov   rsp, rbp                                           ;; when finished with the routine, restore the original stack pointer.
+	pop   rbp
 	ret
 
 .global vm_routine:	
