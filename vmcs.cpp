@@ -79,12 +79,11 @@ namespace vm {
 
 		__function int64_t vm_main(void) {
 			vmcs_t vmcs = { };
-
 			vm_init(&vmcs); 
-			while(!m_halt) { 
-				sleep_obf();  // TODO:
 
-				if (!read_program_from_packet(m_program)) { // TODO:
+			while(!m_halt) { 
+				sleep_obf();  
+				if (!read_program_from_packet(m_program)) { 
 					continue; 
 				}
 				vm_entry(&vmcs); 
@@ -159,7 +158,7 @@ namespace vm {
 
 			NTSTATUS status = 0;
 			if (!NT_SUCCESS(status = ctx->win32.NtAllocateVirtualMemory(NtCurrentProcess(), (void**)&m_program, 0,
-																		&m_program_size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE))) {
+							&m_program_size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE))) {
 				m_halt = 1;
 				m_reason = status;
 				return;
@@ -243,347 +242,347 @@ namespace vm {
 			op &= 0b1111111; 
 
 			switch(decoded) {
-			case typenum::itype: 
-				switch(opcode) {
-				case 0b0010011: 
-					switch(func3) {
-					case 0b000: return vm::operation::__handler[tblenum::_addi];
-					case 0b010: return vm::operation::__handler[tblenum::_slti];
-					case 0b011: return vm::operation::__handler[tblenum::_sltiu];
-					case 0b100: return vm::operation::__handler[tblenum::_xori];
-					case 0b110: return vm::operation::__handler[tblenum::_ori];
-					case 0b111: return vm::operation::__handler[tblenum::_andi];
-					case 0b001: return vm::operation::__handler[tblenum::_slli];
-					case 0b101: 
-						switch(imm_mask) {
-						case 0b0000000: return vm::operation::__handler[tblenum::_srli]; 
-						case 0b0100000: return vm::operation::__handler[tblenum::_srai];
-						default:
-							break;
-						}
+				case typenum::itype: 
+					switch(opcode) {
+						case 0b0010011: 
+							switch(func3) {
+								case 0b000: return vm::operation::__handler[tblenum::_addi];
+								case 0b010: return vm::operation::__handler[tblenum::_slti];
+								case 0b011: return vm::operation::__handler[tblenum::_sltiu];
+								case 0b100: return vm::operation::__handler[tblenum::_xori];
+								case 0b110: return vm::operation::__handler[tblenum::_ori];
+								case 0b111: return vm::operation::__handler[tblenum::_andi];
+								case 0b001: return vm::operation::__handler[tblenum::_slli];
+								case 0b101: 
+									    switch(imm_mask) {
+										    case 0b0000000: return vm::operation::__handler[tblenum::_srli]; 
+										    case 0b0100000: return vm::operation::__handler[tblenum::_srai];
+										    default:
+												    break;
+									    }
 
-					default:
-						break;
-					}
+								default:
+									    break;
+							}
 
-				case 0b0011011:
-					switch(func3) {
-					case 0b000: return vm::operation::__handler[tblenum::_addiw];
-					case 0b001: return vm::operation::__handler[tblenum::_slliw];
-					case 0b101:
-						switch(func7) {
-						case 0b0000000: return vm::operation::__handler[tblenum::_srliw];
-						case 0b0100000: return vm::operation::__handler[tblenum::_sraiw];
-						default:
-							break;
-						}
-					default:
-						break;
-					}
+						case 0b0011011:
+							switch(func3) {
+								case 0b000: return vm::operation::__handler[tblenum::_addiw];
+								case 0b001: return vm::operation::__handler[tblenum::_slliw];
+								case 0b101:
+									    switch(func7) {
+										    case 0b0000000: return vm::operation::__handler[tblenum::_srliw];
+										    case 0b0100000: return vm::operation::__handler[tblenum::_sraiw];
+										    default:
+												    break;
+									    }
+								default:
+									    break;
+							}
 
-				case 0b0000011: 
-					switch(func3) {
-					case 0b000: return vm::operation::__handler[tblenum::_lb]; 
-					case 0b001: return vm::operation::__handler[tblenum::_lh]; 
-					case 0b010: return vm::operation::__handler[tblenum::_lw]; 
-					case 0b100: return vm::operation::__handler[tblenum::_lbu]; 
-					case 0b101: return vm::operation::__handler[tblenum::_lhu]; 
-					case 0b110: return vm::operation::__handler[tblenum::_lwu];
-					case 0b011: return vm::operation::__handler[tblenum::_ld];
-					default:
-						break;
-					}
-			
-				case 0b0000111: return vm::operation::__handler[tblenum::_flq];
-				case 0b0001111:
-					switch(func3) {
-					case 0b000: return vm::operation::__handler[tblenum::_fence];
-					case 0b001: return vm::operation::__handler[tblenum::_fence_i];
-					default:
-						break;
-					}
+						case 0b0000011: 
+							switch(func3) {
+								case 0b000: return vm::operation::__handler[tblenum::_lb]; 
+								case 0b001: return vm::operation::__handler[tblenum::_lh]; 
+								case 0b010: return vm::operation::__handler[tblenum::_lw]; 
+								case 0b100: return vm::operation::__handler[tblenum::_lbu]; 
+								case 0b101: return vm::operation::__handler[tblenum::_lhu]; 
+								case 0b110: return vm::operation::__handler[tblenum::_lwu];
+								case 0b011: return vm::operation::__handler[tblenum::_ld];
+								default:
+									    break;
+							}
 
-				case 0b1100111: return vm::operation::__handler[tblenum::_jalr];
-				case 0b1110011:
-					switch(func3) {
-					case 0b000:
-						switch(imm_11_0) {
-							// TODO: simulate syscalls for ecall (?) case for VM_EXIT
-							// TODO: cpu integer register file for syscalls
-						case 0b0000000: return vm::operation::__handler[tblenum::_ecall];
-						case 0b0000001: return vm::operation::__handler[tblenum::_ebreak];
+						case 0b0000111: return vm::operation::__handler[tblenum::_flq];
+						case 0b0001111:
+								switch(func3) {
+									case 0b000: return vm::operation::__handler[tblenum::_fence];
+									case 0b001: return vm::operation::__handler[tblenum::_fence_i];
+									default:
+										    break;
+								}
+
+						case 0b1100111: return vm::operation::__handler[tblenum::_jalr];
+						case 0b1110011:
+								switch(func3) {
+									case 0b000:
+										switch(imm_11_0) {
+											// TODO: simulate syscalls for ecall (?) case for VM_EXIT
+											// TODO: cpu integer register file for syscalls
+											case 0b0000000: return vm::operation::__handler[tblenum::_ecall];
+											case 0b0000001: return vm::operation::__handler[tblenum::_ebreak];
+											default:
+													break;
+										}
+									case 0b001: return vm::operation::__handler[tblenum::_csrrw];
+									case 0b010: return vm::operation::__handler[tblenum::_csrrs];
+									case 0b011: return vm::operation::__handler[tblenum::_csrrc];
+									case 0b101: return vm::operation::__handler[tblenum::_csrrwi];
+									case 0b110: return vm::operation::__handler[tblenum::_csrrsi];
+									case 0b111: return vm::operation::__handler[tblenum::_csrrci];
+									default:
+										    break;
+								}
 						default:
-							break;
-						}
-					case 0b001: return vm::operation::__handler[tblenum::_csrrw];
-					case 0b010: return vm::operation::__handler[tblenum::_csrrs];
-					case 0b011: return vm::operation::__handler[tblenum::_csrrc];
-					case 0b101: return vm::operation::__handler[tblenum::_csrrwi];
-					case 0b110: return vm::operation::__handler[tblenum::_csrrsi];
-					case 0b111: return vm::operation::__handler[tblenum::_csrrci];
-					default:
-						break;
-					}
-				default:
-					break;
-				}
-		
-			case typenum::rtype: 
-				switch(opcode) {
-				case 0b1010011: 
-					switch(func7) {
-					case 0b0000001: return vm::operation::__handler[tblenum::_fadd_d];
-					case 0b0000101: return vm::operation::__handler[tblenum::_fsub_d];
-					case 0b0001001: return vm::operation::__handler[tblenum::_fmul_d];
-					case 0b0001101: return vm::operation::__handler[tblenum::_fdiv_d];
-					case 0b0101101: return vm::operation::__handler[tblenum::_fsqrt_d];
-					case 0b1111001: return vm::operation::__handler[tblenum::_fmv_d_x];
-					case 0b0100000:
-						switch(rs2) {
-						case 0b00001: return vm::operation::__handler[tblenum::_fcvt_s_d]; 
-						case 0b00011: return vm::operation::__handler[tblenum::_fcvt_s_q];
-						default:
-							break;
-						}
-					case 0b0100001:
-						switch(rs2) {
-						case 0b00000: return vm::operation::__handler[tblenum::_fcvt_d_s]; 
-						case 0b00011: return vm::operation::__handler[tblenum::_fcvt_d_q];
-						default:
-							break;
-						}
-					case 0b1100001:
-						switch(rs2) {
-						case 0b00000: return vm::operation::__handler[tblenum::_fcvt_w_d]; 
-						case 0b00001: return vm::operation::__handler[tblenum::_fcvt_wu_d];
-						case 0b00010: return vm::operation::__handler[tblenum::_fcvt_l_d];
-						case 0b00011: return vm::operation::__handler[tblenum::_fcvt_lu_d];
-						default:
-							break;
-						}
-					case 0b1101001:
-						switch(rs2) {
-						case 0b00000: return vm::operation::__handler[tblenum::_fcvt_d_w]; 
-						case 0b00001: return vm::operation::__handler[tblenum::_fcvt_d_wu];
-						case 0b00010: return vm::operation::__handler[tblenum::_fcvt_d_l];
-						case 0b00011: return vm::operation::__handler[tblenum::_fcvt_d_lu];
-						default:
-							break;
-						}
-					case 0b0010001:
-						switch(func3) {
-						case 0b000: return vm::operation::__handler[tblenum::_fsgnj_d];
-						case 0b001: return vm::operation::__handler[tblenum::_fsgnjn_d];
-						case 0b010: return vm::operation::__handler[tblenum::_fsgnjx_d];
-						default:
-							break;
-						}
-					case 0b0010101:
-						switch(func3) {
-						case 0b000: return vm::operation::__handler[tblenum::_fmin_d];
-						case 0b001: return vm::operation::__handler[tblenum::_fmax_d];
-						default:
-							break;
-						}
-					case 0b1010001:
-						switch(func3) {
-						case 0b010: return vm::operation::__handler[tblenum::_feq_d];
-						case 0b001: return vm::operation::__handler[tblenum::_flt_d];
-						case 0b000: return vm::operation::__handler[tblenum::_fle_d];
-						default:
-							break;
-						}
-					case 0b1110001:
-						switch(func3) {
-						case 0b001: return vm::operation::__handler[tblenum::_fclass_d];
-						case 0b000: return vm::operation::__handler[tblenum::_fmv_x_d];
-						default:
-							break;
-						}
-					default:
-						break;
-					}
-				case 0b0101111:
-					uint8_t func5 = (func7 >> 2) & 0x1F;
-					switch(func3) {
-					case 0b010:
-						switch(func5) {
-						case 0b00010: return vm::operation::__handler[tblenum::_lrw];
-						case 0b00011: return vm::operation::__handler[tblenum::_scw];
-						case 0b00001: return vm::operation::__handler[tblenum::_amoswap_w];
-						case 0b00000: return vm::operation::__handler[tblenum::_amoadd_w];
-						case 0b00100: return vm::operation::__handler[tblenum::_amoxor_w];
-						case 0b01100: return vm::operation::__handler[tblenum::_amoand_w];
-						case 0b01000: return vm::operation::__handler[tblenum::_amoor_w];
-						case 0b10000: return vm::operation::__handler[tblenum::_amomin_w];
-						case 0b10100: return vm::operation::__handler[tblenum::_amomax_w];
-						case 0b11000: return vm::operation::__handler[tblenum::_amominu_w];
-						case 0b11100: return vm::operation::__handler[tblenum::_amomaxu_w];
-						default:
-							break;
-						}
-					case 0b011:
-						switch(func5) {
-						case 0b00010: return vm::operation::__handler[tblenum::_lrd];
-						case 0b00011: return vm::operation::__handler[tblenum::_scd];
-						case 0b00001: return vm::operation::__handler[tblenum::_amoswap_d];
-						case 0b00000: return vm::operation::__handler[tblenum::_amoadd_d];
-						case 0b00100: return vm::operation::__handler[tblenum::_amoxor_d];
-						case 0b01100: return vm::operation::__handler[tblenum::_amoand_d];
-						case 0b01000: return vm::operation::__handler[tblenum::_amoor_d];
-						case 0b10000: return vm::operation::__handler[tblenum::_amomin_d];
-						case 0b10100: return vm::operation::__handler[tblenum::_amomax_d];
-						case 0b11000: return vm::operation::__handler[tblenum::_amominu_d];
-						case 0b11100: return vm::operation::__handler[tblenum::_amomaxu_d];
-						default:
-							break;
-						}
+								break;
 					}
 
-				case 0b0111011:
-					switch(func3) {
-					case 0b000:
-						switch(func7) {
-						case 0b0000000: return vm::operation::__handler[tblenum::_addw]; 
-						case 0b0100000: return vm::operation::__handler[tblenum::_subw];
-						case 0b0000001: return vm::operation::__handler[tblenum::_mulw];
+				case typenum::rtype: 
+					switch(opcode) {
+						case 0b1010011: 
+							switch(func7) {
+								case 0b0000001: return vm::operation::__handler[tblenum::_fadd_d];
+								case 0b0000101: return vm::operation::__handler[tblenum::_fsub_d];
+								case 0b0001001: return vm::operation::__handler[tblenum::_fmul_d];
+								case 0b0001101: return vm::operation::__handler[tblenum::_fdiv_d];
+								case 0b0101101: return vm::operation::__handler[tblenum::_fsqrt_d];
+								case 0b1111001: return vm::operation::__handler[tblenum::_fmv_d_x];
+								case 0b0100000:
+										switch(rs2) {
+											case 0b00001: return vm::operation::__handler[tblenum::_fcvt_s_d]; 
+											case 0b00011: return vm::operation::__handler[tblenum::_fcvt_s_q];
+											default:
+												      break;
+										}
+								case 0b0100001:
+										switch(rs2) {
+											case 0b00000: return vm::operation::__handler[tblenum::_fcvt_d_s]; 
+											case 0b00011: return vm::operation::__handler[tblenum::_fcvt_d_q];
+											default:
+												      break;
+										}
+								case 0b1100001:
+										switch(rs2) {
+											case 0b00000: return vm::operation::__handler[tblenum::_fcvt_w_d]; 
+											case 0b00001: return vm::operation::__handler[tblenum::_fcvt_wu_d];
+											case 0b00010: return vm::operation::__handler[tblenum::_fcvt_l_d];
+											case 0b00011: return vm::operation::__handler[tblenum::_fcvt_lu_d];
+											default:
+												      break;
+										}
+								case 0b1101001:
+										switch(rs2) {
+											case 0b00000: return vm::operation::__handler[tblenum::_fcvt_d_w]; 
+											case 0b00001: return vm::operation::__handler[tblenum::_fcvt_d_wu];
+											case 0b00010: return vm::operation::__handler[tblenum::_fcvt_d_l];
+											case 0b00011: return vm::operation::__handler[tblenum::_fcvt_d_lu];
+											default:
+												      break;
+										}
+								case 0b0010001:
+										switch(func3) {
+											case 0b000: return vm::operation::__handler[tblenum::_fsgnj_d];
+											case 0b001: return vm::operation::__handler[tblenum::_fsgnjn_d];
+											case 0b010: return vm::operation::__handler[tblenum::_fsgnjx_d];
+											default:
+												    break;
+										}
+								case 0b0010101:
+										switch(func3) {
+											case 0b000: return vm::operation::__handler[tblenum::_fmin_d];
+											case 0b001: return vm::operation::__handler[tblenum::_fmax_d];
+											default:
+												    break;
+										}
+								case 0b1010001:
+										switch(func3) {
+											case 0b010: return vm::operation::__handler[tblenum::_feq_d];
+											case 0b001: return vm::operation::__handler[tblenum::_flt_d];
+											case 0b000: return vm::operation::__handler[tblenum::_fle_d];
+											default:
+												    break;
+										}
+								case 0b1110001:
+										switch(func3) {
+											case 0b001: return vm::operation::__handler[tblenum::_fclass_d];
+											case 0b000: return vm::operation::__handler[tblenum::_fmv_x_d];
+											default:
+												    break;
+										}
+								default:
+										break;
+							}
+						case 0b0101111:
+							uint8_t func5 = (func7 >> 2) & 0x1F;
+							switch(func3) {
+								case 0b010:
+									switch(func5) {
+										case 0b00010: return vm::operation::__handler[tblenum::_lrw];
+										case 0b00011: return vm::operation::__handler[tblenum::_scw];
+										case 0b00001: return vm::operation::__handler[tblenum::_amoswap_w];
+										case 0b00000: return vm::operation::__handler[tblenum::_amoadd_w];
+										case 0b00100: return vm::operation::__handler[tblenum::_amoxor_w];
+										case 0b01100: return vm::operation::__handler[tblenum::_amoand_w];
+										case 0b01000: return vm::operation::__handler[tblenum::_amoor_w];
+										case 0b10000: return vm::operation::__handler[tblenum::_amomin_w];
+										case 0b10100: return vm::operation::__handler[tblenum::_amomax_w];
+										case 0b11000: return vm::operation::__handler[tblenum::_amominu_w];
+										case 0b11100: return vm::operation::__handler[tblenum::_amomaxu_w];
+										default:
+											      break;
+									}
+								case 0b011:
+									switch(func5) {
+										case 0b00010: return vm::operation::__handler[tblenum::_lrd];
+										case 0b00011: return vm::operation::__handler[tblenum::_scd];
+										case 0b00001: return vm::operation::__handler[tblenum::_amoswap_d];
+										case 0b00000: return vm::operation::__handler[tblenum::_amoadd_d];
+										case 0b00100: return vm::operation::__handler[tblenum::_amoxor_d];
+										case 0b01100: return vm::operation::__handler[tblenum::_amoand_d];
+										case 0b01000: return vm::operation::__handler[tblenum::_amoor_d];
+										case 0b10000: return vm::operation::__handler[tblenum::_amomin_d];
+										case 0b10100: return vm::operation::__handler[tblenum::_amomax_d];
+										case 0b11000: return vm::operation::__handler[tblenum::_amominu_d];
+										case 0b11100: return vm::operation::__handler[tblenum::_amomaxu_d];
+										default:
+											      break;
+									}
+							}
+
+						case 0b0111011:
+							switch(func3) {
+								case 0b000:
+									switch(func7) {
+										case 0b0000000: return vm::operation::__handler[tblenum::_addw]; 
+										case 0b0100000: return vm::operation::__handler[tblenum::_subw];
+										case 0b0000001: return vm::operation::__handler[tblenum::_mulw];
+										default:
+												break;
+									}
+								case 0b101:
+									switch(func7) {
+										case 0b0000000: return vm::operation::__handler[tblenum::_srlw];
+										case 0b0100000: return vm::operation::__handler[tblenum::_sraw];
+										case 0b0000001: return vm::operation::__handler[tblenum::_divuw];
+										default:
+												break;
+									}
+								case 0b001: return vm::operation::__handler[tblenum::_sllw];
+								case 0b100: return vm::operation::__handler[tblenum::_divw];
+								case 0b110: return vm::operation::__handler[tblenum::_remw];
+								case 0b111: return vm::operation::__handler[tblenum::_remuw];
+								default:
+									    break;
+							}
+
+						case 0b0110011:
+							switch(func3) {
+								case 0b000:
+									switch(func7) {
+										case 0b0000000: return vm::operation::__handler[tblenum::_add];
+										case 0b0100000: return vm::operation::__handler[tblenum::_sub];
+										case 0b0000001: return vm::operation::__handler[tblenum::_mul];
+										default:
+												break;
+									}
+								case 0b001: 
+									switch(func7) {
+										case 0b0000000: return vm::operation::__handler[tblenum::_sll];
+										case 0b0000001: return vm::operation::__handler[tblenum::_mulh];
+										default:
+												break;
+									}
+								case 0b010:
+									switch(func7) {
+										case 0b0000000: return vm::operation::__handler[tblenum::_slt];
+										case 0b0000001: return vm::operation::__handler[tblenum::_mulhsu];
+										default:
+												break;
+									}
+								case 0b011:
+									switch(func7) {
+										case 0b0000000: return vm::operation::__handler[tblenum::_sltu];
+										case 0b0000001: return vm::operation::__handler[tblenum::_mulhu];
+										default:
+												break;
+									}
+								case 0b100:
+									switch(func7) {
+										case 0b0000000: return vm::operation::__handler[tblenum::_xor];
+										case 0b0000001: return vm::operation::__handler[tblenum::_div];
+										default:
+												break;
+									}
+								case 0b101:
+									switch(func7) {
+										case 0b0000000: return vm::operation::__handler[tblenum::_srl];
+										case 0b0100000: return vm::operation::__handler[tblenum::_sra];
+										case 0b0000001: return vm::operation::__handler[tblenum::_divu];
+										default:
+												break;
+									}
+								case 0b110:
+									switch(func7) {
+										case 0b0000000: return vm::operation::__handler[tblenum::_or];
+										case 0b0000001: return vm::operation::__handler[tblenum::_rem];
+										default:
+												break;
+									}
+								case 0b111:
+									switch(func7) {
+										case 0b0000000: return vm::operation::__handler[tblenum::_and];
+										case 0b0000001: return vm::operation::__handler[tblenum::_remu];
+										default:
+												break;
+									}
+								default:
+									break;
+							}
 						default:
 							break;
-						}
-					case 0b101:
-						switch(func7) {
-						case 0b0000000: return vm::operation::__handler[tblenum::_srlw];
-						case 0b0100000: return vm::operation::__handler[tblenum::_sraw];
-						case 0b0000001: return vm::operation::__handler[tblenum::_divuw];
-						default:
-							break;
-						}
-					case 0b001: return vm::operation::__handler[tblenum::_sllw];
-					case 0b100: return vm::operation::__handler[tblenum::_divw];
-					case 0b110: return vm::operation::__handler[tblenum::_remw];
-					case 0b111: return vm::operation::__handler[tblenum::_remuw];
-					default:
-						break;
 					}
 
-				case 0b0110011:
-					switch(func3) {
-					case 0b000:
-						switch(func7) {
-						case 0b0000000: return vm::operation::__handler[tblenum::_add];
-						case 0b0100000: return vm::operation::__handler[tblenum::_sub];
-						case 0b0000001: return vm::operation::__handler[tblenum::_mul];
+				case typenum::stype: 
+					switch(opcode) {
+						case 0b0100011:
+							switch(func3) {
+								case 0b000: return vm::operation::__handler[tblenum::_sb];
+								case 0b001: return vm::operation::__handler[tblenum::_sh]; 
+								case 0b010: return vm::operation::__handler[tblenum::_sw];
+								case 0b011: return vm::operation::__handler[tblenum::_sd];
+								default:
+									    break;
+							}
+						case 0b0100111:
+							switch(func3) {
+								case 0b010: return vm::operation::__handler[tblenum::_fsw];
+								case 0b011: return vm::operation::__handler[tblenum::_fsd];
+								case 0b100: return vm::operation::__handler[tblenum::_fsq];
+								default:
+									    break;
+							}
 						default:
 							break;
-						}
-					case 0b001: 
-						switch(func7) {
-						case 0b0000000: return vm::operation::__handler[tblenum::_sll];
-						case 0b0000001: return vm::operation::__handler[tblenum::_mulh];
-						default:
-							break;
-						}
-					case 0b010:
-						switch(func7) {
-						case 0b0000000: return vm::operation::__handler[tblenum::_slt];
-						case 0b0000001: return vm::operation::__handler[tblenum::_mulhsu];
-						default:
-							break;
-						}
-					case 0b011:
-						switch(func7) {
-						case 0b0000000: return vm::operation::__handler[tblenum::_sltu];
-						case 0b0000001: return vm::operation::__handler[tblenum::_mulhu];
-						default:
-							break;
-						}
-					case 0b100:
-						switch(func7) {
-						case 0b0000000: return vm::operation::__handler[tblenum::_xor];
-						case 0b0000001: return vm::operation::__handler[tblenum::_div];
-						default:
-							break;
-						}
-					case 0b101:
-						switch(func7) {
-						case 0b0000000: return vm::operation::__handler[tblenum::_srl];
-						case 0b0100000: return vm::operation::__handler[tblenum::_sra];
-						case 0b0000001: return vm::operation::__handler[tblenum::_divu];
-						default:
-							break;
-						}
-					case 0b110:
-						switch(func7) {
-						case 0b0000000: return vm::operation::__handler[tblenum::_or];
-						case 0b0000001: return vm::operation::__handler[tblenum::_rem];
-						default:
-							break;
-						}
-					case 0b111:
-						switch(func7) {
-						case 0b0000000: return vm::operation::__handler[tblenum::_and];
-						case 0b0000001: return vm::operation::__handler[tblenum::_remu];
-						default:
-							break;
-						}
-					default:
-						break;
 					}
-				default:
-					break;
-				}
-		
-			case typenum::stype: 
-				switch(opcode) {
-				case 0b0100011:
+
+				case typenum::btype: 
 					switch(func3) {
-					case 0b000: return vm::operation::__handler[tblenum::_sb];
-					case 0b001: return vm::operation::__handler[tblenum::_sh]; 
-					case 0b010: return vm::operation::__handler[tblenum::_sw];
-					case 0b011: return vm::operation::__handler[tblenum::_sd];
-					default:
-						break;
+						case 0b000: return vm::operation::__handler[tblenum::_beq];
+						case 0b001: return vm::operation::__handler[tblenum::_bne];
+						case 0b100: return vm::operation::__handler[tblenum::_blt];
+						case 0b101: return vm::operation::__handler[tblenum::_bge];
+						case 0b110: return vm::operation::__handler[tblenum::_bltu];
+						case 0b111: return vm::operation::__handler[tblenum::_bgeu];
+						default:
+							    break;
 					}
-				case 0b0100111:
-					switch(func3) {
-					case 0b010: return vm::operation::__handler[tblenum::_fsw];
-					case 0b011: return vm::operation::__handler[tblenum::_fsd];
-					case 0b100: return vm::operation::__handler[tblenum::_fsq];
-					default:
-						break;
+
+				case typenum::utype: 
+					switch(opcode) {
+						case 0b0110111: return vm::operation::__handler[tblenum::_lui];
+						case 0b0010111: return vm::operation::__handler[tblenum::_auipc];
+						default:
+								break;
 					}
-				default:
-					break;
-				}
-			
-			case typenum::btype: 
-				switch(func3) {
-				case 0b000: return vm::operation::__handler[tblenum::_beq];
-				case 0b001: return vm::operation::__handler[tblenum::_bne];
-				case 0b100: return vm::operation::__handler[tblenum::_blt];
-				case 0b101: return vm::operation::__handler[tblenum::_bge];
-				case 0b110: return vm::operation::__handler[tblenum::_bltu];
-				case 0b111: return vm::operation::__handler[tblenum::_bgeu];
-				default:
-					break;
-				}
-				
-			case typenum::utype: 
-				switch(opcode) {
-				case 0b0110111: return vm::operation::__handler[tblenum::_lui];
-				case 0b0010111: return vm::operation::__handler[tblenum::_auipc];
-				default:
-					break;
-				}
-					
-			case typenum::jtype: 
-				switch(opcode) { 
-				case 0b1101111: return vm::operation::__handler[tblenum::_jal];
-				default:
-					break;
-				}
-						
-			case typenum::r4type: 
+
+				case typenum::jtype: 
+					switch(opcode) { 
+						case 0b1101111: return vm::operation::__handler[tblenum::_jal];
+						default:
+								break;
+					}
+
+				case typenum::r4type: 
 			}
 
 			m_halt = 1;
@@ -611,12 +610,12 @@ namespace vm {
 		namespace rtype {
 			__function void rv_fadd_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Perform single-precision floating-point addition.
+				   Description
+				   Perform single-precision floating-point addition.
 
-				  Implementation
-				  f[rd] = f[rs1] + f[rs2]
-				*/
+				   Implementation
+				   f[rd] = f[rs1] + f[rs2]
+				   */
 				float v1 = 0, v2 = 0;
 				reg_read(float, rs1, v1);
 				reg_read(float, rs2, v2);
@@ -624,12 +623,12 @@ namespace vm {
 			}
 			__function void rv_fsub_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Perform single-precision floating-point subtraction.
+				   Description
+				   Perform single-precision floating-point subtraction.
 
-				  Implementation
-				  f[rd] = f[rs1] - f[rs2]
-				*/
+				   Implementation
+				   f[rd] = f[rs1] - f[rs2]
+				   */
 				float v1 = 0, v2 = 0;
 				reg_read(float, rs1, v1);
 				reg_read(float, rs2, v2);
@@ -637,12 +636,12 @@ namespace vm {
 			}
 			__function void rv_fmul_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Perform single-precision floating-point multiplication.
+				   Description
+				   Perform single-precision floating-point multiplication.
 
-				  Implementation
-				  f[rd] = f[rs1] * f[rs2]
-				*/
+				   Implementation
+				   f[rd] = f[rs1] * f[rs2]
+				   */
 				float v1 = 0, v2 = 0;
 				reg_read(float, rs1, v1);
 				reg_read(float, rs2, v2);
@@ -650,12 +649,12 @@ namespace vm {
 			}
 			__function void rv_fdiv_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Perform single-precision floating-point division.
+				   Description
+				   Perform single-precision floating-point division.
 
-				  Implementation
-				  f[rd] = f[rs1] / f[rs2]
-				*/
+				   Implementation
+				   f[rd] = f[rs1] / f[rs2]
+				   */
 				float v1 = 0, v2 = 0;
 				reg_read(float, rs1, v1);
 				reg_read(float, rs2, v2);
@@ -663,33 +662,33 @@ namespace vm {
 			}
 			__function void rv_fsqrt_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  [fsqrt_d]
-				  Description
-				  Perform single-precision square root.
+				   [fsqrt_d]
+				   Description
+				   Perform single-precision square root.
 
-				  Implementation
-				  f[rd] = sqrt(f[rs1])
-				*/
+				   Implementation
+				   f[rd] = sqrt(f[rs1])
+				   */
 			}
 			__function void rv_fmv_d_x(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
+				   Description
 
-				  Implementation
-				  f[rd] = x[rs1][63:0]
-				*/
+				   Implementation
+				   f[rd] = x[rs1][63:0]
+				   */
 				int64_t v1 = 0;
 				reg_read(int64_t, rs1, v1);
 				reg_write(int64_t, rd, v1);
 			}
 			__function void rv_fcvt_s_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Converts double floating-point register in rs1 into a floating-point number in floating-point register rd.
+				   Description
+				   Converts double floating-point register in rs1 into a floating-point number in floating-point register rd.
 
-				  Implementation
-				  f[rd] = f32_{f64}(f[rs1])
-				*/
+				   Implementation
+				   f[rd] = f32_{f64}(f[rs1])
+				   */
 				float v1 = 0;
 				reg_read(double, rs1, v1);
 				reg_write(float, rd, v1);
@@ -697,12 +696,12 @@ namespace vm {
 			__function void rv_fcvt_s_q(uint8_t rs2, uint8_t rs1, uint8_t rd) {}
 			__function void rv_fcvt_d_s(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Converts single floating-point register in rs1 into a double floating-point number in floating-point register rd.
+				   Description
+				   Converts single floating-point register in rs1 into a double floating-point number in floating-point register rd.
 
-				  Implementation
-				  f[rd] = f64_{f32}(f[rs1])
-				*/
+				   Implementation
+				   f[rd] = f64_{f32}(f[rs1])
+				   */
 				double v1 = 0;
 				reg_read(float, rs1, v1);
 				reg_write(double, rd, v1);
@@ -710,26 +709,26 @@ namespace vm {
 			__function void rv_fcvt_d_q(uint8_t rs2, uint8_t rs1, uint8_t rd) {}
 			__function void rv_fcvt_w_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Converts a double-precision floating-point number in floating-point register rs1 to a signed 32-bit integer, in integer register rd.
+				   Description
+				   Converts a double-precision floating-point number in floating-point register rs1 to a signed 32-bit integer, in integer register rd.
 
-				  Implementation
-				  x[rd] = sext(s32_{f64}(f[rs1]))
-				*/
+				   Implementation
+				   x[rd] = sext(s32_{f64}(f[rs1]))
+				   */
 				int32_t v1 = 0;
 				reg_read(double, rs1, v1);
 				reg_write(int32_t, rd, v1);
 			}
 			__function void rv_fcvt_wu_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Converts a double-precision floating-point number in floating-point register rs1 to a unsigned 32-bit integer, in integer register rd.
+				   Description
+				   Converts a double-precision floating-point number in floating-point register rs1 to a unsigned 32-bit integer, in integer register rd.
 
-				  Implementation
-				  x[rd] = sext(u32f64(f[rs1]))
+				   Implementation
+				   x[rd] = sext(u32f64(f[rs1]))
 
-				  TODO: sign extension
-				*/
+TODO: sign extension
+*/
 
 				uint32_t v1 = 0;
 				reg_read(double, rs1, v1);
@@ -739,24 +738,24 @@ namespace vm {
 			__function void rv_fcvt_lu_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {}
 			__function void rv_fcvt_d_w(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Converts a 32-bit signed integer, in integer register rs1 into a double-precision floating-point number in floating-point register rd.
+				   Description
+				   Converts a 32-bit signed integer, in integer register rs1 into a double-precision floating-point number in floating-point register rd.
 
-				  Implementation
-				  x[rd] = sext(s32_{f64}(f[rs1]))
-				*/
+				   Implementation
+				   x[rd] = sext(s32_{f64}(f[rs1]))
+				   */
 				int32_t v1 = 0;
 				reg_read(int32_t, rs1, v1);
 				reg_write(double, rd, v1);
 			}
 			__function void rv_fcvt_d_wu(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Converts a 32-bit unsigned integer, in integer register rs1 into a double-precision floating-point number in floating-point register rd.
+				   Description
+				   Converts a 32-bit unsigned integer, in integer register rs1 into a double-precision floating-point number in floating-point register rd.
 
-				  Implementation
-				  f[rd] = f64_{u32}(x[rs1])
-				*/
+				   Implementation
+				   f[rd] = f64_{u32}(x[rs1])
+				   */
 				uint32_t v1 = 0;
 				reg_read(uint32_t, rs1, v1);
 				reg_write(double, rd, v1);
@@ -766,14 +765,14 @@ namespace vm {
 
 			__function void rv_fsgnj_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  [fsgnj_d]
-				  Description
-				  Produce a result that takes all bits except the sign bit from rs1.
-				  The result's sign bit is rs2's sign bit.
+				   [fsgnj_d]
+				   Description
+				   Produce a result that takes all bits except the sign bit from rs1.
+				   The result's sign bit is rs2's sign bit.
 
-				  Implementation
-				  f[rd] = {f[rs2][63], f[rs1][62:0]}
-				*/
+				   Implementation
+				   f[rd] = {f[rs2][63], f[rs1][62:0]}
+				   */
 				int64_t v1 = 0, v2 = 0;
 				reg_read(int64_t, rs1, v1);
 				reg_read(int64_t, rs2, v2);
@@ -786,14 +785,14 @@ namespace vm {
 			}
 			__function void rv_fsgnjn_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  [fsgnjn_d]
-				  Description
-				  Produce a result that takes all bits except the sign bit from rs1.
-				  The result's sign bit is opposite of rs2's sign bit.
+				   [fsgnjn_d]
+				   Description
+				   Produce a result that takes all bits except the sign bit from rs1.
+				   The result's sign bit is opposite of rs2's sign bit.
 
-				  Implementation
-				  f[rd] = {~f[rs2][63], f[rs1][62:0]}
-				*/
+				   Implementation
+				   f[rd] = {~f[rs2][63], f[rs1][62:0]}
+				   */
 				int64_t v1 = 0, v2 = 0;
 				reg_read(int64_t, rs1, v1);
 				reg_read(int64_t, rs2, v2);
@@ -806,14 +805,14 @@ namespace vm {
 			}
 			__function void rv_fsgnjx_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  [fsgnjx_d]
-				  Description
-				  Produce a result that takes all bits except the sign bit from rs1.
-				  The result's sign bit is XOR of sign bit of rs1 and rs2.
+				   [fsgnjx_d]
+				   Description
+				   Produce a result that takes all bits except the sign bit from rs1.
+				   The result's sign bit is XOR of sign bit of rs1 and rs2.
 
-				  Implementation
-				  f[rd] = {f[rs1][63] ^ f[rs2][63], f[rs1][62:0]}
-				*/
+				   Implementation
+				   f[rd] = {f[rs1][63] ^ f[rs2][63], f[rs1][62:0]}
+				   */
 				int64_t v1 = 0, v2 = 0;
 				reg_read(int64_t, rs1, v1);
 				reg_read(int64_t, rs2, v2);
@@ -828,13 +827,13 @@ namespace vm {
 			}
 			__function void rv_fmin_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  [fmin_d]
-				  Description
-				  Write the smaller of single precision data in rs1 and rs2 to rd.
+				   [fmin_d]
+				   Description
+				   Write the smaller of single precision data in rs1 and rs2 to rd.
 
-				  Implementation
-				  f[rd] = min(f[rs1], f[rs2])
-				*/
+				   Implementation
+				   f[rd] = min(f[rs1], f[rs2])
+				   */
 				double v1 = 0, v2 = 0;
 				reg_read(double, rs1, v1);
 				reg_read(double, rs2, v2);
@@ -849,13 +848,13 @@ namespace vm {
 			}
 			__function void rv_fmax_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  [fmax_d]
-				  Description
-				  Write the larger of single precision data in rs1 and rs2 to rd.
+				   [fmax_d]
+				   Description
+				   Write the larger of single precision data in rs1 and rs2 to rd.
 
-				  Implementation
-				  f[rd] = max(f[rs1], f[rs2])
-				*/
+				   Implementation
+				   f[rd] = max(f[rs1], f[rs2])
+				   */
 				double v1 = 0, v2 = 0;
 				reg_read(double, rs1, v1);
 				reg_read(double, rs2, v2);
@@ -870,15 +869,15 @@ namespace vm {
 			}
 			__function void rv_feq_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  [feq_d]
-				  Description
-				  Performs a quiet equal comparison between floating-point registers rs1 and rs2 and record the Boolean result in integer register rd.
-				  Only signaling NaN inputs cause an Invalid Operation exception.
-				  The result is 0 if either operand is NaN.
+				   [feq_d]
+				   Description
+				   Performs a quiet equal comparison between floating-point registers rs1 and rs2 and record the Boolean result in integer register rd.
+				   Only signaling NaN inputs cause an Invalid Operation exception.
+				   The result is 0 if either operand is NaN.
 
-				  Implementation
-				  x[rd] = f[rs1] == f[rs2]
-				*/
+				   Implementation
+				   x[rd] = f[rs1] == f[rs2]
+				   */
 				double v1 = 0, v2 = 0;
 				reg_read(double, rs1, v1);
 				reg_read(double, rs2, v2);
@@ -892,15 +891,15 @@ namespace vm {
 			}
 			__function void rv_flt_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  [flt_d]
-				  Description
-				  Performs a quiet less comparison between floating-point registers rs1 and rs2 and record the Boolean result in integer register rd.
-				  Only signaling NaN inputs cause an Invalid Operation exception.
-				  The result is 0 if either operand is NaN.
+				   [flt_d]
+				   Description
+				   Performs a quiet less comparison between floating-point registers rs1 and rs2 and record the Boolean result in integer register rd.
+				   Only signaling NaN inputs cause an Invalid Operation exception.
+				   The result is 0 if either operand is NaN.
 
-				  Implementation
-				  x[rd] = f[rs1] < f[rs2]
-				*/
+				   Implementation
+				   x[rd] = f[rs1] < f[rs2]
+				   */
 				double v1 = 0, v2 = 0;
 				reg_read(double, rs1, v1);
 				reg_read(double, rs2, v2);
@@ -914,15 +913,15 @@ namespace vm {
 			}
 			__function void rv_fle_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  [fle_d]
-				  Description
-				  Performs a quiet less or equal comparison between floating-point registers rs1 and rs2 and record the Boolean result in integer register rd.
-				  Only signaling NaN inputs cause an Invalid Operation exception.
-				  The result is 0 if either operand is NaN.
+				   [fle_d]
+				   Description
+				   Performs a quiet less or equal comparison between floating-point registers rs1 and rs2 and record the Boolean result in integer register rd.
+				   Only signaling NaN inputs cause an Invalid Operation exception.
+				   The result is 0 if either operand is NaN.
 
-				  Implementation
-				  x[rd] = f[rs1] <= f[rs2]
-				*/
+				   Implementation
+				   x[rd] = f[rs1] <= f[rs2]
+				   */
 				double v1 = 0, v2 = 0;
 				reg_read(double, rs1, v1);
 				reg_read(double, rs2, v2);
@@ -938,15 +937,15 @@ namespace vm {
 			}
 			__function void rv_fclass_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Examines the value in floating-point register rs1 and writes to integer register rd a 10-bit mask that indicates the class of the floating-point number.
-				  The format of the mask is described in table [classify table]_.
-				  The corresponding bit in rd will be set if the property is true and clear otherwise.
-				  All other bits in rd are cleared. Note that exactly one bit in rd will be set.
+				   Description
+				   Examines the value in floating-point register rs1 and writes to integer register rd a 10-bit mask that indicates the class of the floating-point number.
+				   The format of the mask is described in table [classify table]_.
+				   The corresponding bit in rd will be set if the property is true and clear otherwise.
+				   All other bits in rd are cleared. Note that exactly one bit in rd will be set.
 
-				  Implementation
-				  x[rd] = classifys(f[rs1])
-				*/
+				   Implementation
+				   x[rd] = classifys(f[rs1])
+				   */
 				double v1 = 0;
 				reg_read(double, rs1, v1);
 
@@ -1000,12 +999,12 @@ namespace vm {
 			__function void rv_fmv_x_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {}
 			__function void rv_lrw(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  load a word from the address in rs1, places the sign-extended value in rd, and registers a reservation on the memory address.
+				   Description
+				   load a word from the address in rs1, places the sign-extended value in rd, and registers a reservation on the memory address.
 
-				  Implementation
-				  x[rd] = LoadReserved32(M[x[rs1]])
-				*/
+				   Implementation
+				   x[rd] = LoadReserved32(M[x[rs1]])
+				   */
 				uintptr_t address = 0;
 				reg_read(uintptr_t, rs1, address);
 
@@ -1017,13 +1016,13 @@ namespace vm {
 			}
 			__function void rv_scw(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  write a word in rs2 to the address in rs1, provided a valid reservation still exists on that address.
-				  SC writes zero to rd on success or a nonzero code on failure.
+				   Description
+				   write a word in rs2 to the address in rs1, provided a valid reservation still exists on that address.
+				   SC writes zero to rd on success or a nonzero code on failure.
 
-				  Implementation
-				  x[rd] = StoreConditional32(M[x[rs1]], x[rs2])
-				*/
+				   Implementation
+				   x[rd] = StoreConditional32(M[x[rs1]], x[rs2])
+				   */
 				uintptr_t address = 0;
 				mem_read(uintptr_t, rs1, address);
 
@@ -1041,13 +1040,13 @@ namespace vm {
 			}
 			__function void rv_amoswap_w(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  atomically load a 32-bit signed data value from the address in rs1, place the value into register rd,
-				  swap the loaded value and the original 32-bit signed value in rs2, then store the result back to the address in rs1.
+				   Description
+				   atomically load a 32-bit signed data value from the address in rs1, place the value into register rd,
+				   swap the loaded value and the original 32-bit signed value in rs2, then store the result back to the address in rs1.
 
-				  Implementation
-				  x[rd] = AMO32(M[x[rs1]] SWAP x[rs2])
-				*/
+				   Implementation
+				   x[rd] = AMO32(M[x[rs1]] SWAP x[rs2])
+				   */
 				uintptr_t address = 0;
 				mem_read(uintptr_t, rs1, address);
 
@@ -1070,13 +1069,13 @@ namespace vm {
 			}
 			__function void rv_amoadd_w(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  atomically load a 32-bit signed data value from the address in rs1, place the value into register rd,
-				  apply add the loaded value and the original 32-bit signed value in rs2, then store the result back to the address in rs1.
+				   Description
+				   atomically load a 32-bit signed data value from the address in rs1, place the value into register rd,
+				   apply add the loaded value and the original 32-bit signed value in rs2, then store the result back to the address in rs1.
 
-				  Implementation
-				  x[rd] = AMO32(M[x[rs1]] + x[rs2])
-				*/
+				   Implementation
+				   x[rd] = AMO32(M[x[rs1]] + x[rs2])
+				   */
 				uintptr_t address = 0;
 				mem_read(uintptr_t, rs1, address);
 
@@ -1099,13 +1098,13 @@ namespace vm {
 			}
 			__function void rv_amoxor_w(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  atomically load a 32-bit signed data value from the address in rs1, place the value into register rd,
-				  apply exclusive or the loaded value and the original 32-bit signed value in rs2, then store the result back to the address in rs1.
+				   Description
+				   atomically load a 32-bit signed data value from the address in rs1, place the value into register rd,
+				   apply exclusive or the loaded value and the original 32-bit signed value in rs2, then store the result back to the address in rs1.
 
-				  Implementation
-				  x[rd] = AMO32(M[x[rs1]] ^ x[rs2])
-				*/
+				   Implementation
+				   x[rd] = AMO32(M[x[rs1]] ^ x[rs2])
+				   */
 				uintptr_t address = 0;
 				reg_read(uintptr_t, rs1, address);
 
@@ -1128,13 +1127,13 @@ namespace vm {
 			}
 			__function void rv_amoand_w(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  atomically load a 32-bit signed data value from the address in rs1, place the value into register rd,
-				  apply and the loaded value and the original 32-bit signed value in rs2, then store the result back to the address in rs1.
+				   Description
+				   atomically load a 32-bit signed data value from the address in rs1, place the value into register rd,
+				   apply and the loaded value and the original 32-bit signed value in rs2, then store the result back to the address in rs1.
 
-				  Implementation
-				  x[rd] = AMO32(M[x[rs1]] & x[rs2])
-				*/
+				   Implementation
+				   x[rd] = AMO32(M[x[rs1]] & x[rs2])
+				   */
 				uintptr_t address = 0;
 				reg_read(uintptr_t, rs1, address);
 
@@ -1157,13 +1156,13 @@ namespace vm {
 			}
 			__function void rv_amoor_w(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  atomically load a 32-bit signed data value from the address in rs1, place the value into register rd,
-				  apply or the loaded value and the original 32-bit signed value in rs2, then store the result back to the address in rs1.
+				   Description
+				   atomically load a 32-bit signed data value from the address in rs1, place the value into register rd,
+				   apply or the loaded value and the original 32-bit signed value in rs2, then store the result back to the address in rs1.
 
-				  Implementation
-				  x[rd] = AMO32(M[x[rs1]] | x[rs2])
-				*/
+				   Implementation
+				   x[rd] = AMO32(M[x[rs1]] | x[rs2])
+				   */
 				uintptr_t address = 0;
 				reg_read(uintptr_t, rs1, address);
 
@@ -1172,7 +1171,7 @@ namespace vm {
 						continue;
 					}
 					vm::atoms::vm_set_load_rsv(address);
-				  
+
 					int32_t v1 = 0, v2 = 0;
 					reg_read(int32_t, rs2, v2);
 					mem_read(int32_t, address, v1);
@@ -1186,13 +1185,13 @@ namespace vm {
 			}
 			__function void rv_amomin_w(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  atomically load a 32-bit signed data value from the address in rs1, place the value into register rd,
-				  apply min operator the loaded value and the original 32-bit signed value in rs2, then store the result back to the address in rs1.
+				   Description
+				   atomically load a 32-bit signed data value from the address in rs1, place the value into register rd,
+				   apply min operator the loaded value and the original 32-bit signed value in rs2, then store the result back to the address in rs1.
 
-				  Implementation
-				  x[rd] = AMO32(M[x[rs1]] MIN x[rs2])
-				*/
+				   Implementation
+				   x[rd] = AMO32(M[x[rs1]] MIN x[rs2])
+				   */
 				uintptr_t address = 0;
 				reg_read(uintptr_t, rs1, address);
 
@@ -1215,13 +1214,13 @@ namespace vm {
 			}
 			__function void rv_amomax_w(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  atomically load a 32-bit signed data value from the address in rs1, place the value into register rd,
-				  apply max operator the loaded value and the original 32-bit signed value in rs2, then store the result back to the address in rs1.
+				   Description
+				   atomically load a 32-bit signed data value from the address in rs1, place the value into register rd,
+				   apply max operator the loaded value and the original 32-bit signed value in rs2, then store the result back to the address in rs1.
 
-				  Implementation
-				  x[rd] = AMO32(M[x[rs1]] MAX x[rs2])
-				*/
+				   Implementation
+				   x[rd] = AMO32(M[x[rs1]] MAX x[rs2])
+				   */
 				uintptr_t address = 0;
 				reg_read(uintptr_t, rs1, address);
 
@@ -1244,13 +1243,13 @@ namespace vm {
 			}
 			__function void rv_amominu_w(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  atomically load a 32-bit unsigned data value from the address in rs1, place the value into register rd,
-				  apply unsigned min the loaded value and the original 32-bit unsigned value in rs2, then store the result back to the address in rs1.
+				   Description
+				   atomically load a 32-bit unsigned data value from the address in rs1, place the value into register rd,
+				   apply unsigned min the loaded value and the original 32-bit unsigned value in rs2, then store the result back to the address in rs1.
 
-				  Implementation
-				  x[rd] = AMO32(M[x[rs1]] MINU x[rs2])
-				*/
+				   Implementation
+				   x[rd] = AMO32(M[x[rs1]] MINU x[rs2])
+				   */
 				uintptr_t address = 0;
 				reg_read(uintptr_t, rs1, address);
 
@@ -1273,13 +1272,13 @@ namespace vm {
 			}
 			__function void rv_amomaxu_w(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  atomically load a 32-bit unsigned data value from the address in rs1, place the value into register rd,
-				  apply unsigned max the loaded value and the original 32-bit unsigned value in rs2, then store the result back to the address in rs1.
+				   Description
+				   atomically load a 32-bit unsigned data value from the address in rs1, place the value into register rd,
+				   apply unsigned max the loaded value and the original 32-bit unsigned value in rs2, then store the result back to the address in rs1.
 
-				  Implementation
-				  x[rd] = AMO32(M[x[rs1]] MAXU x[rs2])
-				*/
+				   Implementation
+				   x[rd] = AMO32(M[x[rs1]] MAXU x[rs2])
+				   */
 				uintptr_t address = 0;
 				reg_read(uintptr_t, rs1, address);
 
@@ -1302,12 +1301,12 @@ namespace vm {
 			}
 			__function void rv_lrd(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  load a 64-bit data from the address in rs1, places value in rd, and registers a reservation on the memory address.
+				   Description
+				   load a 64-bit data from the address in rs1, places value in rd, and registers a reservation on the memory address.
 
-				  Implementation
-				  x[rd] = LoadReserved64(M[x[rs1]])
-				*/
+				   Implementation
+				   x[rd] = LoadReserved64(M[x[rs1]])
+				   */
 				uintptr_t address = 0;
 				reg_read(uintptr_t, rs1, address);
 
@@ -1319,13 +1318,13 @@ namespace vm {
 			}
 			__function void rv_scd(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  write a 64-bit data in rs2 to the address in rs1, provided a valid reservation still exists on that address.
-				  SC writes zero to rd on success or a nonzero code on failure.
+				   Description
+				   write a 64-bit data in rs2 to the address in rs1, provided a valid reservation still exists on that address.
+				   SC writes zero to rd on success or a nonzero code on failure.
 
-				  Implementation
-				  x[rd] = StoreConditional64(M[x[rs1]], x[rs2])
-				*/
+				   Implementation
+				   x[rd] = StoreConditional64(M[x[rs1]], x[rs2])
+				   */
 				int64_t value = 0;
 				uintptr_t address = 0;
 
@@ -1342,13 +1341,13 @@ namespace vm {
 			}
 			__function void rv_amoswap_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  atomically load a 64-bit data value from the address in rs1, place the value into register rd,
-				  swap the loaded value and the original 64-bit value in rs2, then store the result back to the address in rs1.
+				   Description
+				   atomically load a 64-bit data value from the address in rs1, place the value into register rd,
+				   swap the loaded value and the original 64-bit value in rs2, then store the result back to the address in rs1.
 
-				  Implementation
-				  x[rd] = AMO64(M[x[rs1]] SWAP x[rs2])
-				*/
+				   Implementation
+				   x[rd] = AMO64(M[x[rs1]] SWAP x[rs2])
+				   */
 				uintptr_t address = 0;
 				mem_read(uintptr_t, rs1, address);
 
@@ -1370,13 +1369,13 @@ namespace vm {
 			}
 			__function void rv_amoadd_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  atomically load a 64-bit data value from the address in rs1, place the value into register rd,
-				  apply add the loaded value and the original 64-bit value in rs2, then store the result back to the address in rs1.
+				   Description
+				   atomically load a 64-bit data value from the address in rs1, place the value into register rd,
+				   apply add the loaded value and the original 64-bit value in rs2, then store the result back to the address in rs1.
 
-				  Implementation
-				  x[rd] = AMO64(M[x[rs1]] + x[rs2])
-				*/
+				   Implementation
+				   x[rd] = AMO64(M[x[rs1]] + x[rs2])
+				   */
 				uintptr_t address = 0;
 				mem_read(uintptr_t, rs1, address);
 
@@ -1399,13 +1398,13 @@ namespace vm {
 			}
 			__function void rv_amoxor_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  atomically load a 64-bit data value from the address in rs1, place the value into register rd,
-				  apply xor the loaded value and the original 64-bit value in rs2, then store the result back to the address in rs1.
+				   Description
+				   atomically load a 64-bit data value from the address in rs1, place the value into register rd,
+				   apply xor the loaded value and the original 64-bit value in rs2, then store the result back to the address in rs1.
 
-				  Implementation
-				  x[rd] = AMO64(M[x[rs1]] ^ x[rs2])
-				*/
+				   Implementation
+				   x[rd] = AMO64(M[x[rs1]] ^ x[rs2])
+				   */
 
 				uintptr_t address = 0;
 				reg_read(uintptr_t, rs1, address);
@@ -1429,13 +1428,13 @@ namespace vm {
 			}
 			__function void rv_amoand_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  atomically load a 64-bit data value from the address in rs1, place the value into register rd,
-				  apply and the loaded value and the original 64-bit value in rs2, then store the result back to the address in rs1.
+				   Description
+				   atomically load a 64-bit data value from the address in rs1, place the value into register rd,
+				   apply and the loaded value and the original 64-bit value in rs2, then store the result back to the address in rs1.
 
-				  Implementation
-				  x[rd] = AMO64(M[x[rs1]] & x[rs2])
-				*/
+				   Implementation
+				   x[rd] = AMO64(M[x[rs1]] & x[rs2])
+				   */
 				uintptr_t address = 0;
 				reg_read(uintptr_t, rs1, address);
 
@@ -1458,13 +1457,13 @@ namespace vm {
 			}
 			__function void rv_amoor_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  atomically load a 64-bit data value from the address in rs1, place the value into register rd,
-				  apply or the loaded value and the original 64-bit value in rs2, then store the result back to the address in rs1.
+				   Description
+				   atomically load a 64-bit data value from the address in rs1, place the value into register rd,
+				   apply or the loaded value and the original 64-bit value in rs2, then store the result back to the address in rs1.
 
-				  Implementation
-				  x[rd] = AMO64(M[x[rs1]] | x[rs2])
-				*/
+				   Implementation
+				   x[rd] = AMO64(M[x[rs1]] | x[rs2])
+				   */
 				uintptr_t address = 0;
 				reg_read(uintptr_t, rs1, address);
 
@@ -1487,13 +1486,13 @@ namespace vm {
 			}
 			__function void rv_amomin_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  atomically load a 64-bit data value from the address in rs1, place the value into register rd,
-				  apply min the loaded value and the original 64-bit value in rs2, then store the result back to the address in rs1.
+				   Description
+				   atomically load a 64-bit data value from the address in rs1, place the value into register rd,
+				   apply min the loaded value and the original 64-bit value in rs2, then store the result back to the address in rs1.
 
-				  Implementation
-				  x[rd] = AMO64(M[x[rs1]] MIN x[rs2])
-				*/
+				   Implementation
+				   x[rd] = AMO64(M[x[rs1]] MIN x[rs2])
+				   */
 				uintptr_t address = 0;
 				reg_read(uintptr_t, rs1, address);
 
@@ -1517,13 +1516,13 @@ namespace vm {
 			}
 			__function void rv_amomax_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  atomically load a 64-bit data value from the address in rs1, place the value into register rd,
-				  apply max the loaded value and the original 64-bit value in rs2, then store the result back to the address in rs1.
+				   Description
+				   atomically load a 64-bit data value from the address in rs1, place the value into register rd,
+				   apply max the loaded value and the original 64-bit value in rs2, then store the result back to the address in rs1.
 
-				  Implementation
-				  x[rd] = AMO64(M[x[rs1]] MAX x[rs2])
-				*/
+				   Implementation
+				   x[rd] = AMO64(M[x[rs1]] MAX x[rs2])
+				   */
 				uintptr_t address = 0;
 				reg_read(uintptr_t, rs1, address);
 
@@ -1546,13 +1545,13 @@ namespace vm {
 			}
 			__function void rv_amominu_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  atomically load a 64-bit data value from the address in rs1, place the value into register rd,
-				  apply unsigned min the loaded value and the original 64-bit value in rs2, then store the result back to the address in rs1.
+				   Description
+				   atomically load a 64-bit data value from the address in rs1, place the value into register rd,
+				   apply unsigned min the loaded value and the original 64-bit value in rs2, then store the result back to the address in rs1.
 
-				  Implementation
-				  x[rd] = AMO64(M[x[rs1]] MINU x[rs2])
-				*/
+				   Implementation
+				   x[rd] = AMO64(M[x[rs1]] MINU x[rs2])
+				   */
 				uintptr_t address = 0;
 				reg_read(uintptr_t, rs1, address);
 
@@ -1561,7 +1560,7 @@ namespace vm {
 						continue;
 					}
 					vm::atoms::vm_set_load_rsv(address);
-				
+
 					uint64_t v1 = 0, v2 = 0;
 					reg_read(uint64_t, rs2, v2);
 					mem_read(uint64_t, address, v1);
@@ -1575,13 +1574,13 @@ namespace vm {
 			}
 			__function void rv_amomaxu_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  atomically load a 64-bit data value from the address in rs1, place the value into register rd,
-				  apply unsigned max the loaded value and the original 64-bit value in rs2, then store the result back to the address in rs1.
+				   Description
+				   atomically load a 64-bit data value from the address in rs1, place the value into register rd,
+				   apply unsigned max the loaded value and the original 64-bit value in rs2, then store the result back to the address in rs1.
 
-				  Implementation
-				  x[rd] = AMO64(M[x[rs1]] MAXU x[rs2])
-				*/
+				   Implementation
+				   x[rd] = AMO64(M[x[rs1]] MAXU x[rs2])
+				   */
 				uintptr_t address = 0;
 				reg_read(uintptr_t, rs1, address);
 
@@ -1604,13 +1603,13 @@ namespace vm {
 			}
 			__function void rv_addw(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Adds the 32-bit of registers rs1 and 32-bit of register rs2 and stores the result in rd.
-				  Arithmetic overflow is ignored and the low 32-bits of the result is sign-extended to 64-bits and written to the destination register.
+				   Description
+				   Adds the 32-bit of registers rs1 and 32-bit of register rs2 and stores the result in rd.
+				   Arithmetic overflow is ignored and the low 32-bits of the result is sign-extended to 64-bits and written to the destination register.
 
-				  Implementation
-				  x[rd] = sext((x[rs1] + x[rs2])[31:0])
-				*/
+				   Implementation
+				   x[rd] = sext((x[rs1] + x[rs2])[31:0])
+				   */
 				int32_t v1 = 0, v2 = 0;
 				reg_read(int32_t, rs1, v1);
 				reg_read(int32_t, rs2, v2);
@@ -1618,13 +1617,13 @@ namespace vm {
 			}
 			__function void rv_subw(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Subtract the 32-bit of registers rs1 and 32-bit of register rs2 and stores the result in rd.
-				  Arithmetic overflow is ignored and the low 32-bits of the result is sign-extended to 64-bits and written to the destination register.
+				   Description
+				   Subtract the 32-bit of registers rs1 and 32-bit of register rs2 and stores the result in rd.
+				   Arithmetic overflow is ignored and the low 32-bits of the result is sign-extended to 64-bits and written to the destination register.
 
-				  Implementation
-				  x[rd] = sext((x[rs1] - x[rs2])[31:0])
-				*/
+				   Implementation
+				   x[rd] = sext((x[rs1] - x[rs2])[31:0])
+				   */
 				int32_t v1 = 0, v2 = 0;
 				reg_read(int32_t, rs1, v1);
 				reg_read(int32_t, rs2, v2);
@@ -1632,11 +1631,11 @@ namespace vm {
 			}
 			__function void rv_mulw(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
+				   Description
 
-				  Implementation
-				  x[rd] = sext((x[rs1] * x[rs2])[31:0])
-				*/
+				   Implementation
+				   x[rd] = sext((x[rs1] * x[rs2])[31:0])
+				   */
 				int32_t v1 = 0, v2 = 0;
 				reg_read(int32_t, rs1, v1);
 				reg_read(int32_t, rs2, v2);
@@ -1644,13 +1643,13 @@ namespace vm {
 			}
 			__function void rv_srlw(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Performs logical right shift on the low 32-bits value in register rs1 by the shift amount held in the lower 5 bits of register rs2
-				  and produce 32-bit results and written to the destination register rd.
+				   Description
+				   Performs logical right shift on the low 32-bits value in register rs1 by the shift amount held in the lower 5 bits of register rs2
+				   and produce 32-bit results and written to the destination register rd.
 
-				  Implementation
-				  x[rd] = sext(x[rs1][31:0] >>u x[rs2][4:0])
-				*/
+				   Implementation
+				   x[rd] = sext(x[rs1][31:0] >>u x[rs2][4:0])
+				   */
 				int32_t v1 = 0, v2 = 0;
 				reg_read(int32_t, rs1, v1);
 				reg_read(int32_t, rs2, v2)
@@ -1660,13 +1659,13 @@ namespace vm {
 			}
 			__function void rv_sraw(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Performs arithmetic right shift on the low 32-bits value in register rs1 by the shift amount held in the lower 5 bits of register rs2
-				  and produce 32-bit results and written to the destination register rd.
+				   Description
+				   Performs arithmetic right shift on the low 32-bits value in register rs1 by the shift amount held in the lower 5 bits of register rs2
+				   and produce 32-bit results and written to the destination register rd.
 
-				  Implementation
-				  x[rd] = sext(x[rs1][31:0] >>s x[rs2][4:0])
-				*/
+				   Implementation
+				   x[rd] = sext(x[rs1][31:0] >>s x[rs2][4:0])
+				   */
 				int32_t v1 = 0, v2 = 0;
 				reg_read(int32_t, rs1, v1);
 				reg_read(int32_t, rs2, v2);
@@ -1676,12 +1675,12 @@ namespace vm {
 			}
 			__function void rv_divuw(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  perform an 32 bits by 32 bits unsigned integer division of rs1 by rs2.
+				   Description
+				   perform an 32 bits by 32 bits unsigned integer division of rs1 by rs2.
 
-				  Implementation
-				  x[rd] = sext(x[rs1][31:0] /u x[rs2][31:0])
-				*/
+				   Implementation
+				   x[rd] = sext(x[rs1][31:0] /u x[rs2][31:0])
+				   */
 				uint32_t v1 = 0, v2 = 0;
 				reg_read(uint32_t, rs1, v1);
 				reg_read(uint32_t, rs2, v2);
@@ -1689,13 +1688,13 @@ namespace vm {
 			}
 			__function void rv_sllw(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Performs logical left shift on the low 32-bits value in register rs1 by the shift amount held in the lower 5 bits of register rs2
-				  and produce 32-bit results and written to the destination register rd.
+				   Description
+				   Performs logical left shift on the low 32-bits value in register rs1 by the shift amount held in the lower 5 bits of register rs2
+				   and produce 32-bit results and written to the destination register rd.
 
-				  Implementation
-				  x[rd] = sext((x[rs1] << x[rs2][4:0])[31:0])
-				*/
+				   Implementation
+				   x[rd] = sext((x[rs1] << x[rs2][4:0])[31:0])
+				   */
 				int32_t v1 = 0, v2 = 0;
 				reg_read(int32_t, rs1, v1);
 				reg_read(int32_t, rs2, v2);
@@ -1705,12 +1704,12 @@ namespace vm {
 			}
 			__function void rv_divw(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  perform an 32 bits by 32 bits signed integer division of rs1 by rs2.
+				   Description
+				   perform an 32 bits by 32 bits signed integer division of rs1 by rs2.
 
-				  Implementation
-				  x[rd] = sext(x[rs1][31:0] /s x[rs2][31:0]
-				*/
+				   Implementation
+				   x[rd] = sext(x[rs1][31:0] /s x[rs2][31:0]
+				   */
 				int32_t v1 = 0, v2 = 0;
 				reg_read(int32_t, rs1, v1);
 				reg_read(int32_t, rs2, v2);
@@ -1718,12 +1717,12 @@ namespace vm {
 			}
 			__function void rv_remw(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  perform an 32 bits by 32 bits signed integer reminder of rs1 by rs2.
+				   Description
+				   perform an 32 bits by 32 bits signed integer reminder of rs1 by rs2.
 
-				  Implementation
-				  x[rd] = sext(x[rs1][31:0] %s x[rs2][31:0])
-				*/
+				   Implementation
+				   x[rd] = sext(x[rs1][31:0] %s x[rs2][31:0])
+				   */
 				int32_t v1 = 0, v2 = 0;
 				reg_read(int32_t, rs1, v1);
 				reg_read(int32_t, rs2, v2);
@@ -1731,12 +1730,12 @@ namespace vm {
 			}
 			__function void rv_remuw(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  perform an 32 bits by 32 bits unsigned integer reminder of rs1 by rs2.
+				   Description
+				   perform an 32 bits by 32 bits unsigned integer reminder of rs1 by rs2.
 
-				  Implementation
-				  x[rd] = sext(x[rs1][31:0] %u x[rs2][31:0])
-				*/
+				   Implementation
+				   x[rd] = sext(x[rs1][31:0] %u x[rs2][31:0])
+				   */
 				uint32_t v1 = 0, v2 = 0;
 				reg_read(uint32_t, rs1, v1);
 				reg_read(uint32_t, rs2, v2);
@@ -1745,13 +1744,13 @@ namespace vm {
 
 			__function void rv_add(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Adds the registers rs1 and rs2 and stores the result in rd.
-				  Arithmetic overflow is ignored and the result is simply the low XLEN bits of the result.
+				   Description
+				   Adds the registers rs1 and rs2 and stores the result in rd.
+				   Arithmetic overflow is ignored and the result is simply the low XLEN bits of the result.
 
-				  Implementation
-				  x[rd] = x[rs1] + x[rs2]
-				*/
+				   Implementation
+				   x[rd] = x[rs1] + x[rs2]
+				   */
 				int32_t v1 = 0, v2 = 0;
 				reg_read(int32_t, rs1, v1);
 				reg_read(int32_t, rs2, v2);
@@ -1759,13 +1758,13 @@ namespace vm {
 			}
 			__function void rv_sub(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Subs the register rs2 from rs1 and stores the result in rd.
-				  Arithmetic overflow is ignored and the result is simply the low XLEN bits of the result.
+				   Description
+				   Subs the register rs2 from rs1 and stores the result in rd.
+				   Arithmetic overflow is ignored and the result is simply the low XLEN bits of the result.
 
-				  Implementation
-				  x[rd] = x[rs1] - x[rs2]
-				*/
+				   Implementation
+				   x[rd] = x[rs1] - x[rs2]
+				   */
 				int32_t v1 = 0, v2 = 0;
 				reg_read(int32_t, rs1, v1);
 				reg_read(int32_t, rs2, v2);
@@ -1773,13 +1772,13 @@ namespace vm {
 			}
 			__function void rv_mul(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  performs an XLEN-bit 
-				  XLEN-bit multiplication of signed rs1 by signed rs2 and places the lower XLEN bits in the destination register.
+				   Description
+				   performs an XLEN-bit 
+				   XLEN-bit multiplication of signed rs1 by signed rs2 and places the lower XLEN bits in the destination register.
 
-				  Implementation
-				  x[rd] = x[rs1] * x[rs2]
-				*/
+				   Implementation
+				   x[rd] = x[rs1] * x[rs2]
+				   */
 				int32_t v1 = 0, v2 = 0;
 				reg_read(int32_t, rs1, v1);
 				reg_read(int32_t, rs2, v2);
@@ -1787,12 +1786,12 @@ namespace vm {
 			}
 			__function void rv_sll(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Performs logical left shift on the value in register rs1 by the shift amount held in the lower 5 bits of register rs2.
+				   Description
+				   Performs logical left shift on the value in register rs1 by the shift amount held in the lower 5 bits of register rs2.
 
-				  Implementation
-				  x[rd] = x[rs1] << x[rs2
-				*/
+				   Implementation
+				   x[rd] = x[rs1] << x[rs2
+				   */
 
 				int32_t v1 = 0, v2 = 0;
 				reg_read(int32_t, rs1, v1);
@@ -1803,13 +1802,13 @@ namespace vm {
 			}
 			__function void rv_mulh(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  performs an XLEN-bit 
-				  XLEN-bit multiplication of signed rs1 by signed rs2 and places the upper XLEN bits in the destination register.
+				   Description
+				   performs an XLEN-bit 
+				   XLEN-bit multiplication of signed rs1 by signed rs2 and places the upper XLEN bits in the destination register.
 
-				  Implementation
-				  x[rd] = (x[rs1] s*s x[rs2]) >>s XLEN
-				*/
+				   Implementation
+				   x[rd] = (x[rs1] s*s x[rs2]) >>s XLEN
+				   */
 				intptr_t v1 = 0, v2 = 0;
 				reg_read(intptr_t, rs1, v1);
 				reg_read(intptr_t, rs2, v2);
@@ -1825,12 +1824,12 @@ namespace vm {
 			}
 			__function void rv_slt(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Place the value 1 in register rd if register rs1 is less than register rs2 when both are treated as signed numbers, else 0 is written to rd.
+				   Description
+				   Place the value 1 in register rd if register rs1 is less than register rs2 when both are treated as signed numbers, else 0 is written to rd.
 
-				  Implementation
-				  x[rd] = x[rs1] <s x[rs2]
-				*/
+				   Implementation
+				   x[rd] = x[rs1] <s x[rs2]
+				   */
 				intptr_t v1 = 0, v2 = 0;
 				reg_read(intptr_t, rs1, v1);
 				reg_read(intptr_t, rs2, v2);
@@ -1838,13 +1837,13 @@ namespace vm {
 			}
 			__function void rv_mulhsu(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  performs an XLEN-bit 
-				  XLEN-bit multiplication of signed rs1 by unsigned rs2 and places the upper XLEN bits in the destination register.
+				   Description
+				   performs an XLEN-bit 
+				   XLEN-bit multiplication of signed rs1 by unsigned rs2 and places the upper XLEN bits in the destination register.
 
-				  Implementation
-				  x[rd] = (x[rs1] s * x[rs2]) >>s XLEN
-				*/
+				   Implementation
+				   x[rd] = (x[rs1] s * x[rs2]) >>s XLEN
+				   */
 				intptr_t v1 = 0;
 				uintptr_t v2 = 0;
 
@@ -1862,12 +1861,12 @@ namespace vm {
 			}
 			__function void rv_sltu(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Place the value 1 in register rd if register rs1 is less than register rs2 when both are treated as unsigned numbers, else 0 is written to rd.
+				   Description
+				   Place the value 1 in register rd if register rs1 is less than register rs2 when both are treated as unsigned numbers, else 0 is written to rd.
 
-				  Implementation
-				  x[rd] = x[rs1] <u x[rs2]
-				*/
+				   Implementation
+				   x[rd] = x[rs1] <u x[rs2]
+				   */
 				uintptr_t v1 = 0, v2 = 0;
 				reg_read(uintptr_t, rs1, v1);
 				reg_read(uintptr_t, rs2, v2);
@@ -1875,13 +1874,13 @@ namespace vm {
 			}
 			__function void rv_mulhu(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  performs an XLEN-bit 
-				  XLEN-bit multiplication of unsigned rs1 by unsigned rs2 and places the upper XLEN bits in the destination register.
+				   Description
+				   performs an XLEN-bit 
+				   XLEN-bit multiplication of unsigned rs1 by unsigned rs2 and places the upper XLEN bits in the destination register.
 
-				  Implementation
-				  x[rd] = (x[rs1] u * x[rs2]) >>u XLEN
-				*/
+				   Implementation
+				   x[rd] = (x[rs1] u * x[rs2]) >>u XLEN
+				   */
 				uintptr_t v1 = 0, v2 = 0;
 				reg_read(uintptr_t, rs1, v1);
 				reg_read(uintptr_t, rs2, v2);
@@ -1896,12 +1895,12 @@ namespace vm {
 			}
 			__function void rv_xor(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Performs bitwise XOR on registers rs1 and rs2 and place the result in rd
+				   Description
+				   Performs bitwise XOR on registers rs1 and rs2 and place the result in rd
 
-				  Implementation
-				  x[rd] = x[rs1] ^ x[rs2]
-				*/
+				   Implementation
+				   x[rd] = x[rs1] ^ x[rs2]
+				   */
 				uintptr_t v1 = 0, v2 = 0;
 				reg_read(uintptr_t, rs1, v1);
 				reg_read(uintptr_t, rs2, v2);
@@ -1909,12 +1908,12 @@ namespace vm {
 			}
 			__function void rv_div(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  perform an XLEN bits by XLEN bits signed integer division of rs1 by rs2, rounding towards zero.
+				   Description
+				   perform an XLEN bits by XLEN bits signed integer division of rs1 by rs2, rounding towards zero.
 
-				  Implementation
-				  x[rd] = x[rs1] /s x[rs2]
-				*/
+				   Implementation
+				   x[rd] = x[rs1] /s x[rs2]
+				   */
 				uintptr_t v1 = 0, v2 = 0;
 				reg_read(uintptr_t, rs1, v1);
 				reg_read(uintptr_t, rs2, v2);
@@ -1922,12 +1921,12 @@ namespace vm {
 			}
 			__function void rv_srl(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Logical right shift on the value in register rs1 by the shift amount held in the lower 5 bits of register rs2
+				   Description
+				   Logical right shift on the value in register rs1 by the shift amount held in the lower 5 bits of register rs2
 
-				  Implementation
-				  x[rd] = x[rs1] >>u x[rs2]
-				*/
+				   Implementation
+				   x[rd] = x[rs1] >>u x[rs2]
+				   */
 				uintptr_t v1 = 0, v2 = 0;
 				reg_read(uintptr_t, rs1, v1);
 				reg_read(uintptr_t, rs2, v2);
@@ -1937,12 +1936,12 @@ namespace vm {
 			}
 			__function void rv_sra(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Performs arithmetic right shift on the value in register rs1 by the shift amount held in the lower 5 bits of register rs2
+				   Description
+				   Performs arithmetic right shift on the value in register rs1 by the shift amount held in the lower 5 bits of register rs2
 
-				  Implementation
-				  x[rd] = x[rs1] >>s x[rs2]
-				*/
+				   Implementation
+				   x[rd] = x[rs1] >>s x[rs2]
+				   */
 				intptr_t v1 = 0;
 				uint8_t v2 = 0;
 				reg_read(intptr_t, rs1, v1);
@@ -1953,12 +1952,12 @@ namespace vm {
 			}
 			__function void rv_divu(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  perform an XLEN bits by XLEN bits unsigned integer division of rs1 by rs2, rounding towards zero.
+				   Description
+				   perform an XLEN bits by XLEN bits unsigned integer division of rs1 by rs2, rounding towards zero.
 
-				  Implementation
-				  x[rd] = x[rs1] /u x[rs2]
-				*/
+				   Implementation
+				   x[rd] = x[rs1] /u x[rs2]
+				   */
 				uintptr_t v1 = 0, v2 = 0;
 				reg_read(uintptr_t rs1, v1);
 				reg_read(uintptr_t rs2, v2);
@@ -1970,12 +1969,12 @@ namespace vm {
 			}
 			__function void rv_or(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Performs bitwise OR on registers rs1 and rs2 and place the result in rd
+				   Description
+				   Performs bitwise OR on registers rs1 and rs2 and place the result in rd
 
-				  Implementation
-				  x[rd] = x[rs1] | x[rs2]
-				*/
+				   Implementation
+				   x[rd] = x[rs1] | x[rs2]
+				   */
 				intptr_t v1 = 0, v2 = 0;
 				reg_read(intptr_t, rs1, v1);
 				reg_read(intptr_t, rs2, v2);
@@ -1983,12 +1982,12 @@ namespace vm {
 			}
 			__function void rv_rem(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  perform an XLEN bits by XLEN bits signed integer reminder of rs1 by rs2.
+				   Description
+				   perform an XLEN bits by XLEN bits signed integer reminder of rs1 by rs2.
 
-				  Implementation
-				  x[rd] = x[rs1] %s x[rs2]
-				*/
+				   Implementation
+				   x[rd] = x[rs1] %s x[rs2]
+				   */
 				intptr_t v1 = 0, v2 = 0;
 				reg_read(intptr_t, rs1, v1);
 				reg_read(intptr_t, rs2, v2);
@@ -2001,12 +2000,12 @@ namespace vm {
 			}
 			__function void rv_and(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Performs bitwise AND on registers rs1 and rs2 and place the result in rd
+				   Description
+				   Performs bitwise AND on registers rs1 and rs2 and place the result in rd
 
-				  Implementation
-				  x[rd] = x[rs1] & x[rs2]
-				*/
+				   Implementation
+				   x[rd] = x[rs1] & x[rs2]
+				   */
 				uintptr_t v1 = 0, v2 = 0;
 				reg_read(uintptr_t, rs1, v1);
 				reg_read(uintptr_t, rs2, v2);
@@ -2014,12 +2013,12 @@ namespace vm {
 			}
 			__function void rv_remu(uint8_t rs2, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  perform an XLEN bits by XLEN bits unsigned integer reminder of rs1 by rs2.
+				   Description
+				   perform an XLEN bits by XLEN bits unsigned integer reminder of rs1 by rs2.
 
-				  Implementation
-				  x[rd] = x[rs1] %u x[rs2]
-				*/
+				   Implementation
+				   x[rd] = x[rs1] %u x[rs2]
+				   */
 				uintptr_t v1 = 0, v2 = 0;
 				reg_read(uintptr_t, rs1, v1);
 				reg_read(uintptr_t, rs2, v2);
@@ -2034,13 +2033,13 @@ namespace vm {
 		namespace itype {
 			__function void rv_addi(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Adds the sign-extended 12-bit immediate to register rs1. Arithmetic overflow is ignored and the result is simply the low XLEN bits of the result.
-				  ADDI rd, rs1, 0 is used to implement the MV rd, rs1 assembler pseudo-instruction.
+				   Description
+				   Adds the sign-extended 12-bit immediate to register rs1. Arithmetic overflow is ignored and the result is simply the low XLEN bits of the result.
+				   ADDI rd, rs1, 0 is used to implement the MV rd, rs1 assembler pseudo-instruction.
 
-				  Implementation
-				  x[rd] = x[rs1] + sext(immediate)
-				*/
+				   Implementation
+				   x[rd] = x[rs1] + sext(immediate)
+				   */
 				intptr_t v1 = 0;
 				reg_read(intptr_t, rs1, v1);
 
@@ -2049,12 +2048,12 @@ namespace vm {
 			}
 			__function void rv_slti(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Place the value 1 in register rd if register rs1 is less than the signextended immediate when both are treated as signed numbers, else 0 is written to rd.
+				   Description
+				   Place the value 1 in register rd if register rs1 is less than the signextended immediate when both are treated as signed numbers, else 0 is written to rd.
 
-				  Implementation
-				  x[rd] = x[rs1] <s sext(immediate)
-				*/
+				   Implementation
+				   x[rd] = x[rs1] <s sext(immediate)
+				   */
 				intptr_t v1 = 0;
 				reg_read(intptr_t, rs1, v1);
 
@@ -2063,12 +2062,12 @@ namespace vm {
 			}
 			__function void rv_sltiu(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Place the value 1 in register rd if register rs1 is less than the immediate when both are treated as unsigned numbers, else 0 is written to rd.
+				   Description
+				   Place the value 1 in register rd if register rs1 is less than the immediate when both are treated as unsigned numbers, else 0 is written to rd.
 
-				  Implementation
-				  x[rd] = x[rs1] <u sext(immediate)
-				*/
+				   Implementation
+				   x[rd] = x[rs1] <u sext(immediate)
+				   */
 				uintptr_t v1 = 0;
 				reg_read(uintptr_t, rs1, v1);
 
@@ -2077,13 +2076,13 @@ namespace vm {
 			}
 			__function void rv_xori(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Performs bitwise XOR on register rs1 and the sign-extended 12-bit immediate and place the result in rd
-				  Note, "XORI rd, rs1, -1" performs a bitwise logical inversion of register rs1(assembler pseudo-instruction NOT rd, rs)
+				   Description
+				   Performs bitwise XOR on register rs1 and the sign-extended 12-bit immediate and place the result in rd
+				   Note, "XORI rd, rs1, -1" performs a bitwise logical inversion of register rs1(assembler pseudo-instruction NOT rd, rs)
 
-				  Implementation
-				  x[rd] = x[rs1] ^ sext(immediate)
-				*/
+				   Implementation
+				   x[rd] = x[rs1] ^ sext(immediate)
+				   */
 				intptr_t v1 = 0;
 				reg_read(intptr_t, rs1, v1);
 
@@ -2092,12 +2091,12 @@ namespace vm {
 			}
 			__function void rv_ori(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Performs bitwise OR on register rs1 and the sign-extended 12-bit immediate and place the result in rd
+				   Description
+				   Performs bitwise OR on register rs1 and the sign-extended 12-bit immediate and place the result in rd
 
-				  Implementation
-				  x[rd] = x[rs1] | sext(immediate)
-				*/
+				   Implementation
+				   x[rd] = x[rs1] | sext(immediate)
+				   */
 				intptr_t v1 = 0;
 				reg_read(intptr_t, rs1, v1);
 
@@ -2106,12 +2105,12 @@ namespace vm {
 			}
 			__function void rv_andi(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Performs bitwise AND on register rs1 and the sign-extended 12-bit immediate and place the result in rd
+				   Description
+				   Performs bitwise AND on register rs1 and the sign-extended 12-bit immediate and place the result in rd
 
-				  Implementation
-				  x[rd] = x[rs1] & sext(immediate)
-				*/
+				   Implementation
+				   x[rd] = x[rs1] & sext(immediate)
+				   */
 				intptr_t v1 = 0;
 				reg_read(intptr_t, rs1, v1);
 
@@ -2120,13 +2119,13 @@ namespace vm {
 			}
 			__function void rv_slli(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Performs logical left shift on the value in register rs1 by the shift amount held in the lower 5 bits of the immediate
-				  In RV64, bit-25 is used to shamt[5].
+				   Description
+				   Performs logical left shift on the value in register rs1 by the shift amount held in the lower 5 bits of the immediate
+				   In RV64, bit-25 is used to shamt[5].
 
-				  Implementation
-				  x[rd] = x[rs1] << shamt
-				*/
+				   Implementation
+				   x[rd] = x[rs1] << shamt
+				   */
 				intptr_t v1 = 0;
 				reg_read(intptr_t, rs1, v1);
 
@@ -2135,13 +2134,13 @@ namespace vm {
 			}
 			__function void rv_srli(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Performs logical right shift on the value in register rs1 by the shift amount held in the lower 5 bits of the immediate
-				  In RV64, bit-25 is used to shamt[5].
+				   Description
+				   Performs logical right shift on the value in register rs1 by the shift amount held in the lower 5 bits of the immediate
+				   In RV64, bit-25 is used to shamt[5].
 
-				  Implementation
-				  x[rd] = x[rs1] >>u shamt
-				*/
+				   Implementation
+				   x[rd] = x[rs1] >>u shamt
+				   */
 				intptr_t v1 = 0;
 				reg_read(intptr_t, rs1, v1);
 
@@ -2150,13 +2149,13 @@ namespace vm {
 			}
 			__function void rv_srai(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Performs arithmetic right shift on the value in register rs1 by the shift amount held in the lower 5 bits of the immediate
-				  In RV64, bit-25 is used to shamt[5].
+				   Description
+				   Performs arithmetic right shift on the value in register rs1 by the shift amount held in the lower 5 bits of the immediate
+				   In RV64, bit-25 is used to shamt[5].
 
-				  Implementation
-				  x[rd] = x[rs1] >>s shamt
-				*/
+				   Implementation
+				   x[rd] = x[rs1] >>s shamt
+				   */
 				intptr_t v1 = 0;
 				reg_read(intptr_t, rs1, v1);
 
@@ -2165,14 +2164,14 @@ namespace vm {
 			}
 			__function void rv_addiw(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Adds the sign-extended 12-bit immediate to register rs1 and produces the proper sign-extension of a 32-bit result in rd.
-				  Overflows are ignored and the result is the low 32 bits of the result sign-extended to 64 bits.
-				  Note, ADDIW rd, rs1, 0 writes the sign-extension of the lower 32 bits of register rs1 into register rd (assembler pseudoinstruction SEXT.W).
+				   Description
+				   Adds the sign-extended 12-bit immediate to register rs1 and produces the proper sign-extension of a 32-bit result in rd.
+				   Overflows are ignored and the result is the low 32 bits of the result sign-extended to 64 bits.
+				   Note, ADDIW rd, rs1, 0 writes the sign-extension of the lower 32 bits of register rs1 into register rd (assembler pseudoinstruction SEXT.W).
 
-				  Implementation
-				  x[rd] = sext((x[rs1] + sext(immediate))[31:0])
-				*/
+				   Implementation
+				   x[rd] = sext((x[rs1] + sext(immediate))[31:0])
+				   */
 				int32_t v1 = 0;
 				reg_read(int32_t, rs1, v1);
 
@@ -2181,13 +2180,13 @@ namespace vm {
 			}
 			__function void rv_slliw(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Performs logical left shift on the 32-bit of value in register rs1 by the shift amount held in the lower 5 bits of the immediate.
-				  Encodings with $imm[5] neq 0$ are reserved.
+				   Description
+				   Performs logical left shift on the 32-bit of value in register rs1 by the shift amount held in the lower 5 bits of the immediate.
+				   Encodings with $imm[5] neq 0$ are reserved.
 
-				  Implementation
-				  x[rd] = sext((x[rs1] << shamt)[31:0])
-				*/
+				   Implementation
+				   x[rd] = sext((x[rs1] << shamt)[31:0])
+				   */
 				int32_t v1 = 0;
 				reg_read(int32_t, rs1, v1);
 
@@ -2202,13 +2201,13 @@ namespace vm {
 			}
 			__function void rv_srliw(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Performs logical right shift on the 32-bit of value in register rs1 by the shift amount held in the lower 5 bits of the immediate.
-				  Encodings with $imm[5] neq 0$ are reserved.
+				   Description
+				   Performs logical right shift on the 32-bit of value in register rs1 by the shift amount held in the lower 5 bits of the immediate.
+				   Encodings with $imm[5] neq 0$ are reserved.
 
-				  Implementation
-				  x[rd] = sext(x[rs1][31:0] >>u shamt)
-				*/
+				   Implementation
+				   x[rd] = sext(x[rs1][31:0] >>u shamt)
+				   */
 
 				int32_t v1 = 0;
 				reg_read(int32_t, rs1, v1);
@@ -2224,13 +2223,13 @@ namespace vm {
 			}
 			__function void rv_sraiw(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Performs arithmetic right shift on the 32-bit of value in register rs1 by the shift amount held in the lower 5 bits of the immediate.
-				  Encodings with $imm[5] neq 0$ are reserved.
+				   Description
+				   Performs arithmetic right shift on the 32-bit of value in register rs1 by the shift amount held in the lower 5 bits of the immediate.
+				   Encodings with $imm[5] neq 0$ are reserved.
 
-				  Implementation
-				  x[rd] = sext(x[rs1][31:0] >>s shamt)
-				*/
+				   Implementation
+				   x[rd] = sext(x[rs1][31:0] >>s shamt)
+				   */
 
 				int32_t v1 = 0;
 				reg_read(int32_t, rs1, v1);
@@ -2246,12 +2245,12 @@ namespace vm {
 			}
 			__function void rv_lb(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Loads a 8-bit value from memory and sign-extends this to XLEN bits before storing it in register rd.
+				   Description
+				   Loads a 8-bit value from memory and sign-extends this to XLEN bits before storing it in register rd.
 
-				  Implementation
-				  x[rd] = sext(M[x[rs1] + sext(offset)][7:0])
-				*/
+				   Implementation
+				   x[rd] = sext(M[x[rs1] + sext(offset)][7:0])
+				   */
 				int8_t v1 = 0;
 				uintptr_t address = 0;
 
@@ -2263,12 +2262,12 @@ namespace vm {
 			}
 			__function void rv_lh(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Loads a 16-bit value from memory and sign-extends this to XLEN bits before storing it in register rd.
+				   Description
+				   Loads a 16-bit value from memory and sign-extends this to XLEN bits before storing it in register rd.
 
-				  Implementation
-				  x[rd] = sext(M[x[rs1] + sext(offset)][15:0])
-				*/
+				   Implementation
+				   x[rd] = sext(M[x[rs1] + sext(offset)][15:0])
+				   */
 				int16_t v1 = 0;
 				uintptr_t address = 0;
 
@@ -2280,12 +2279,12 @@ namespace vm {
 			}
 			__function void rv_lw(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Loads a 32-bit value from memory and sign-extends this to XLEN bits before storing it in register rd.
+				   Description
+				   Loads a 32-bit value from memory and sign-extends this to XLEN bits before storing it in register rd.
 
-				  Implementation
-				  x[rd] = sext(M[x[rs1] + sext(offset)][31:0])
-				*/
+				   Implementation
+				   x[rd] = sext(M[x[rs1] + sext(offset)][31:0])
+				   */
 				int32_t v1 = 0;
 				uintptr_t address = 0;
 
@@ -2297,12 +2296,12 @@ namespace vm {
 			}
 			__function void rv_lbu(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Loads a 8-bit value from memory and zero-extends this to XLEN bits before storing it in register rd.
+				   Description
+				   Loads a 8-bit value from memory and zero-extends this to XLEN bits before storing it in register rd.
 
-				  Implementation
-				  x[rd] = M[x[rs1] + sext(offset)][7:0]
-				*/
+				   Implementation
+				   x[rd] = M[x[rs1] + sext(offset)][7:0]
+				   */
 				uint8_t v1 = 0;
 				uintptr_t address = 0;
 
@@ -2314,12 +2313,12 @@ namespace vm {
 			}
 			__function void rv_lhu(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Loads a 16-bit value from memory and zero-extends this to XLEN bits before storing it in register rd.
+				   Description
+				   Loads a 16-bit value from memory and zero-extends this to XLEN bits before storing it in register rd.
 
-				  Implementation
-				  x[rd] = M[x[rs1] + sext(offset)][15:0]
-				*/
+				   Implementation
+				   x[rd] = M[x[rs1] + sext(offset)][15:0]
+				   */
 				uint16_t v1 = 0;
 				uintptr_t address = 0;
 
@@ -2331,12 +2330,12 @@ namespace vm {
 			}
 			__function void rv_lwu(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Loads a 32-bit value from memory and zero-extends this to 64 bits before storing it in register rd.
+				   Description
+				   Loads a 32-bit value from memory and zero-extends this to 64 bits before storing it in register rd.
 
-				  Implementation
-				  x[rd] = M[x[rs1] + sext(offset)][31:0]
-				*/
+				   Implementation
+				   x[rd] = M[x[rs1] + sext(offset)][31:0]
+				   */
 				uint64_t v1 = 0;
 				uintptr_t address = 0;
 
@@ -2348,12 +2347,12 @@ namespace vm {
 			}
 			__function void rv_ld(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Loads a 64-bit value from memory into register rd for RV64I.
+				   Description
+				   Loads a 64-bit value from memory into register rd for RV64I.
 
-				  Implementation
-				  x[rd] = M[x[rs1] + sext(offset)][63:0]
-				*/
+				   Implementation
+				   x[rd] = M[x[rs1] + sext(offset)][63:0]
+				   */
 				int64_t v1 = 0;
 				uintptr_t address = 0;
 
@@ -2370,35 +2369,35 @@ namespace vm {
 			}
 			__function void rv_fence(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
 				/*
-				  TODO:
-				  Description
-				  Used to order device I/O and memory accesses as viewed by other RISC-V harts and external devices or coprocessors.
-				  Any combination of device input (I), device output (O), memory reads (R), and memory writes (W) may be ordered with respect to any combination of the same.
-				  Informally, no other RISC-V hart or external device can observe any operation in the successor set following a FENCE before any operation in the predecessor
-				  set preceding the FENCE.
+TODO:
+Description
+Used to order device I/O and memory accesses as viewed by other RISC-V harts and external devices or coprocessors.
+Any combination of device input (I), device output (O), memory reads (R), and memory writes (W) may be ordered with respect to any combination of the same.
+Informally, no other RISC-V hart or external device can observe any operation in the successor set following a FENCE before any operation in the predecessor
+set preceding the FENCE.
 
-				  Implementation
-				  Fence(pred, succ)
-				*/
+Implementation
+Fence(pred, succ)
+*/
 			}
 			__function void rv_fence_i(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
 				/*
-				  TODO:
-				  Description
-				  Provides explicit synchronization between writes to instruction memory and instruction fetches on the same hart.
+TODO:
+Description
+Provides explicit synchronization between writes to instruction memory and instruction fetches on the same hart.
 
-				  Implementation
-				  Fence(Store, Fetch)
-				*/
+Implementation
+Fence(Store, Fetch)
+*/
 			}
 			__function void rv_jalr(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Jump to address and place return address in rd.
+				   Description
+				   Jump to address and place return address in rd.
 
-				  Implementation
-				  t =pc+4; pc=(x[rs1]+sext(offset))&~1; x[rd]=t
-				*/
+				   Implementation
+				   t =pc+4; pc=(x[rs1]+sext(offset))&~1; x[rd]=t
+				   */
 				uintptr_t address = 0;
 				reg_read(uintptr_t, rs1, address);
 				address += (intptr_t)(int16_t)imm_11_0;
@@ -2412,33 +2411,33 @@ namespace vm {
 			}
 			__function void rv_ecall(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Make a request to the supporting execution environment.
-				  When executed in U-mode, S-mode, or M-mode, it generates an environment-call-from-U-mode exception,
-				  environment-call-from-S-mode exception, or environment-call-from-M-mode exception, respectively, and performs no other operation.
+				   Description
+				   Make a request to the supporting execution environment.
+				   When executed in U-mode, S-mode, or M-mode, it generates an environment-call-from-U-mode exception,
+				   environment-call-from-S-mode exception, or environment-call-from-M-mode exception, respectively, and performs no other operation.
 
-				  Implementation
-				  RaiseException(EnvironmentCall)
+				   Implementation
+				   RaiseException(EnvironmentCall)
 
-				  - CHECK SEDELEG
-				  - SAVE PC IN SEPC/MEPC
-				  - RAISE PRIVILEGE TO S/M
-				  - JUMP TO STVEC/MTVEC
-				  - KERNEL/SBI HANDLER
-				  - RETURN TO SEPC/MEPC
+				   - CHECK SEDELEG
+				   - SAVE PC IN SEPC/MEPC
+				   - RAISE PRIVILEGE TO S/M
+				   - JUMP TO STVEC/MTVEC
+				   - KERNEL/SBI HANDLER
+				   - RETURN TO SEPC/MEPC
 
-				  Save register and program state
-				*/
+				   Save register and program state
+				   */
 			}
 			__function void rv_ebreak(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Used by debuggers to cause control to be transferred back to a debugging environment.
-				  It generates a breakpoint exception and performs no other operation.
+				   Description
+				   Used by debuggers to cause control to be transferred back to a debugging environment.
+				   It generates a breakpoint exception and performs no other operation.
 
-				  Implementation
-				  RaiseException(Breakpoint)
-				*/
+				   Implementation
+				   RaiseException(Breakpoint)
+				   */
 				UNUSED_PARAMETER(imm_11_0);
 				UNUSED_PARAMETER(rs1);
 				UNUSED_PARAMETER(rd);
@@ -2446,123 +2445,123 @@ namespace vm {
 			}
 			__function void rv_csrrw(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Atomically swaps values in the CSRs and integer registers.
-				  CSRRW reads the old value of the CSR, zero-extends the value to XLEN bits, then writes it to integer register rd.
-				  The initial value in rs1 is written to the CSR.
-				  If rd=x0, then the instruction shall not read the CSR and shall not cause any of the side effects that might occur on a CSR read.
+				   Description
+				   Atomically swaps values in the CSRs and integer registers.
+				   CSRRW reads the old value of the CSR, zero-extends the value to XLEN bits, then writes it to integer register rd.
+				   The initial value in rs1 is written to the CSR.
+				   If rd=x0, then the instruction shall not read the CSR and shall not cause any of the side effects that might occur on a CSR read.
 
-				  Implementation
-				  t = CSRs[csr]; CSRs[csr] = x[rs1]; x[rd] = t
-				*/
+				   Implementation
+				   t = CSRs[csr]; CSRs[csr] = x[rs1]; x[rd] = t
+				   */
 			}
 			__function void rv_csrrs(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Reads the value of the CSR, zero-extends the value to XLEN bits, and writes it to integer register rd.
-				  The initial value in integer register rs1 is treated as a bit mask that specifies bit positions to be set in the CSR.
-				  Any bit that is high in rs1 will cause the corresponding bit to be set in the CSR, if that CSR bit is writable.
-				  Other bits in the CSR are unaffected (though CSRs might have side effects when written).
+				   Description
+				   Reads the value of the CSR, zero-extends the value to XLEN bits, and writes it to integer register rd.
+				   The initial value in integer register rs1 is treated as a bit mask that specifies bit positions to be set in the CSR.
+				   Any bit that is high in rs1 will cause the corresponding bit to be set in the CSR, if that CSR bit is writable.
+				   Other bits in the CSR are unaffected (though CSRs might have side effects when written).
 
-				  Implementation
-				  t = CSRs[csr]; CSRs[csr] = t | x[rs1]; x[rd] = t
-				*/
+				   Implementation
+				   t = CSRs[csr]; CSRs[csr] = t | x[rs1]; x[rd] = t
+				   */
 			}
 			__function void rv_csrrc(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Reads the value of the CSR, zero-extends the value to XLEN bits, and writes it to integer register rd.
-				  The initial value in integer register rs1 is treated as a bit mask that specifies bit positions to be cleared in the CSR.
-				  Any bit that is high in rs1 will cause the corresponding bit to be cleared in the CSR, if that CSR bit is writable.
-				  Other bits in the CSR are unaffected.
+				   Description
+				   Reads the value of the CSR, zero-extends the value to XLEN bits, and writes it to integer register rd.
+				   The initial value in integer register rs1 is treated as a bit mask that specifies bit positions to be cleared in the CSR.
+				   Any bit that is high in rs1 will cause the corresponding bit to be cleared in the CSR, if that CSR bit is writable.
+				   Other bits in the CSR are unaffected.
 
-				  Implementation
-				  t = CSRs[csr]; CSRs[csr] = t &~x[rs1]; x[rd] = t
-				*/
+				   Implementation
+				   t = CSRs[csr]; CSRs[csr] = t &~x[rs1]; x[rd] = t
+				   */
 			}
 			__function void rv_csrrwi(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Update the CSR using an XLEN-bit value obtained by zero-extending a 5-bit unsigned immediate (uimm[4:0]) field encoded in the rs1 field.
+				   Description
+				   Update the CSR using an XLEN-bit value obtained by zero-extending a 5-bit unsigned immediate (uimm[4:0]) field encoded in the rs1 field.
 
-				  Implementation
-				  x[rd] = CSRs[csr]; CSRs[csr] = zimm
-				*/
+				   Implementation
+				   x[rd] = CSRs[csr]; CSRs[csr] = zimm
+				   */
 			}
 			__function void rv_csrrsi(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Set CSR bit using an XLEN-bit value obtained by zero-extending a 5-bit unsigned immediate (uimm[4:0]) field encoded in the rs1 field.
+				   Description
+				   Set CSR bit using an XLEN-bit value obtained by zero-extending a 5-bit unsigned immediate (uimm[4:0]) field encoded in the rs1 field.
 
-				  Implementation
-				  t = CSRs[csr]; CSRs[csr] = t | zimm; x[rd] = t
-				*/
+				   Implementation
+				   t = CSRs[csr]; CSRs[csr] = t | zimm; x[rd] = t
+				   */
 			}
 			__function void rv_csrrci(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
 				/*
-				  Description
-				  Clear CSR bit using an XLEN-bit value obtained by zero-extending a 5-bit unsigned immediate (uimm[4:0]) field encoded in the rs1 field.
+				   Description
+				   Clear CSR bit using an XLEN-bit value obtained by zero-extending a 5-bit unsigned immediate (uimm[4:0]) field encoded in the rs1 field.
 
-				  Implementation
-				  t = CSRs[csr]; CSRs[csr] = t &~zimm; x[rd] = t
-				*/
+				   Implementation
+				   t = CSRs[csr]; CSRs[csr] = t &~zimm; x[rd] = t
+				   */
 			}
 		}
 		namespace stype {
 			__function void rv_sb(uint8_t imm_11_5, uint8_t rs2, uint8_t rs1, uint8_t imm_4_0) {
 				/*
-				  Description
-				  Store 8-bit, values from the low bits of register rs2 to memory.
+				   Description
+				   Store 8-bit, values from the low bits of register rs2 to memory.
 
-				  Implementation
-				  M[x[rs1] + sext(offset)] = x[rs2][7:0]
-				*/
+				   Implementation
+				   M[x[rs1] + sext(offset)] = x[rs2][7:0]
+				   */
 			}
 			__function void rv_sh(uint8_t imm_11_5, uint8_t rs2, uint8_t rs1, uint8_t imm_4_0) {
 				/*
-				  Description
-				  Store 16-bit, values from the low bits of register rs2 to memory.
+				   Description
+				   Store 16-bit, values from the low bits of register rs2 to memory.
 
-				  Implementation
-				  M[x[rs1] + sext(offset)] = x[rs2][15:0]
-				*/
+				   Implementation
+				   M[x[rs1] + sext(offset)] = x[rs2][15:0]
+				   */
 			}
 			__function void rv_sw(uint8_t imm_11_5, uint8_t rs2, uint8_t rs1, uint8_t imm_4_0) {
 				/*
-				  Description
-				  Store 32-bit, values from the low bits of register rs2 to memory.
+				   Description
+				   Store 32-bit, values from the low bits of register rs2 to memory.
 
-				  Implementation
-				  M[x[rs1] + sext(offset)] = x[rs2][31:0]
-				*/
+				   Implementation
+				   M[x[rs1] + sext(offset)] = x[rs2][31:0]
+				   */
 			}
 			__function void rv_sd(uint8_t imm_11_5, uint8_t rs2, uint8_t rs1, uint8_t imm_4_0) {
 				/*
-				  Description
-				  Store 64-bit, values from register rs2 to memory.
+				   Description
+				   Store 64-bit, values from register rs2 to memory.
 
-				  Implementation
-				  M[x[rs1] + sext(offset)] = x[rs2][63:0]
-				*/
+				   Implementation
+				   M[x[rs1] + sext(offset)] = x[rs2][63:0]
+				   */
 			}
 			__function void rv_fsw(uint8_t imm_11_5, uint8_t rs2, uint8_t rs1, uint8_t imm_4_0) {
 				/*
-				  [fsw]
-				  Description
-				  Store a single-precision value from floating-point register rs2 to memory.
+				   [fsw]
+				   Description
+				   Store a single-precision value from floating-point register rs2 to memory.
 
-				  Implementation
-				  M[x[rs1] + sext(offset)] = f[rs2][31:0]
-				*/
+				   Implementation
+				   M[x[rs1] + sext(offset)] = f[rs2][31:0]
+				   */
 			}
 			__function void rv_fsd(uint8_t imm_11_5, uint8_t rs2, uint8_t rs1, uint8_t imm_4_0) {
 				/*
-				  Description
-				  Store a double-precision value from the floating-point registers to memory.
+				   Description
+				   Store a double-precision value from the floating-point registers to memory.
 
-				  Implementation
-				  M[x[rs1] + sext(offset)] = f[rs2][63:0]
-				*/
+				   Implementation
+				   M[x[rs1] + sext(offset)] = f[rs2][63:0]
+				   */
 			}
 			__function void rv_fsq(uint8_t imm_11_5, uint8_t rs2, uint8_t rs1, uint8_t imm_4_0) {
 				// NOTE: cannot find this specified anywhere...
@@ -2571,90 +2570,90 @@ namespace vm {
 		namespace btype {
 			__function void rv_beq(uint8_t imm_12_10_5, uint8_t rs2, uint8_t rs1, uint8_t imm_4_1_11) {
 				/*
-				  Description
-				  Take the branch if registers rs1 and rs2 are equal.
+				   Description
+				   Take the branch if registers rs1 and rs2 are equal.
 
-				  Implementation
-				  if (x[rs1] == x[rs2]) pc += sext(offset)
-				*/
+				   Implementation
+				   if (x[rs1] == x[rs2]) pc += sext(offset)
+				   */
 			}
 			__function void rv_bne(uint8_t imm_12_10_5, uint8_t rs2, uint8_t rs1, uint8_t imm_4_1_11) {
 				/*
-				  Description
-				  Take the branch if registers rs1 and rs2 are not equal.
+				   Description
+				   Take the branch if registers rs1 and rs2 are not equal.
 
-				  Implementation
-				  if (x[rs1] != x[rs2]) pc += sext(offset)
-				*/
+				   Implementation
+				   if (x[rs1] != x[rs2]) pc += sext(offset)
+				   */
 			}
 			__function void rv_blt(uint8_t imm_12_10_5, uint8_t rs2, uint8_t rs1, uint8_t imm_4_1_11) {
 				/*
-				  Description
-				  Take the branch if registers rs1 is less than rs2, using signed comparison.
+				   Description
+				   Take the branch if registers rs1 is less than rs2, using signed comparison.
 
-				  Implementation
-				  if (x[rs1] <s x[rs2]) pc += sext(offset)
-				*/
+				   Implementation
+				   if (x[rs1] <s x[rs2]) pc += sext(offset)
+				   */
 			}
 			__function void rv_bge(uint8_t imm_12_10_5, uint8_t rs2, uint8_t rs1, uint8_t imm_4_1_11) {
 				/*
-				  Description
-				  Take the branch if registers rs1 is greater than or equal to rs2, using signed comparison.
+				   Description
+				   Take the branch if registers rs1 is greater than or equal to rs2, using signed comparison.
 
-				  Implementation
-				  if (x[rs1] >=s x[rs2]) pc += sext(offset)
-				*/
+				   Implementation
+				   if (x[rs1] >=s x[rs2]) pc += sext(offset)
+				   */
 			}
 			__function void rv_bltu(uint8_t imm_12_10_5, uint8_t rs2, uint8_t rs1, uint8_t imm_4_1_11) {
 				/*
-				  Description
-				  Take the branch if registers rs1 is less than rs2, using unsigned comparison.
+				   Description
+				   Take the branch if registers rs1 is less than rs2, using unsigned comparison.
 
-				  Implementation
-				  if (x[rs1] <u x[rs2]) pc += sext(offset)
-				*/
+				   Implementation
+				   if (x[rs1] <u x[rs2]) pc += sext(offset)
+				   */
 			}
 			__function void rv_bgeu(uint8_t imm_12_10_5, uint8_t rs2, uint8_t rs1, uint8_t imm_4_1_11) {
 				/*
-				  Description
-				  Take the branch if registers rs1 is greater than or equal to rs2, using unsigned comparison.
+				   Description
+				   Take the branch if registers rs1 is greater than or equal to rs2, using unsigned comparison.
 
-				  Implementation
-				  if (x[rs1] >=u x[rs2]) pc += sext(offset)
-				*/
+				   Implementation
+				   if (x[rs1] >=u x[rs2]) pc += sext(offset)
+				   */
 			}
 		}
 		namespace utype {
 			__function void rv_lui(uint32_t imm_31_12, uint8_t rd) {
 				/*
-				  Description
-				  Build 32-bit constants and uses the U-type format. LUI places the U-immediate value in the top 20 bits of the destination register rd,
-				  filling in the lowest 12 bits with zeros.
+				   Description
+				   Build 32-bit constants and uses the U-type format. LUI places the U-immediate value in the top 20 bits of the destination register rd,
+				   filling in the lowest 12 bits with zeros.
 
-				  Implementation
-				  x[rd] = sext(immediate[31:12] << 12)
-				*/
+				   Implementation
+				   x[rd] = sext(immediate[31:12] << 12)
+				   */
 			}
 			__function void rv_auipc(uint32_t imm_31_12, uint8_t rd) {
 				/*
-				  Description
-				  Build pc-relative addresses and uses the U-type format. AUIPC forms a 32-bit offset from the 20-bit U-immediate,
-				  filling in the lowest 12 bits with zeros, adds this offset to the pc, then places the result in register rd.
+				   Description
+				   Build pc-relative addresses and uses the U-type format. AUIPC forms a 32-bit offset from the 20-bit U-immediate,
+				   filling in the lowest 12 bits with zeros, adds this offset to the pc, then places the result in register rd.
 
-				  Implementation
-				  x[rd] = pc + sext(immediate[31:12] << 12)
-				*/
+				   Implementation
+				   x[rd] = pc + sext(immediate[31:12] << 12)
+				   */
 			}
 		}
 		namespace jtype {
 			__function void rv_jal(uint32_t imm_20_10_1_11_19_12, uint8_t rd) {
 				/*
-				  Description
-				  Jump to address and place return address in rd.
+				   Description
+				   Jump to address and place return address in rd.
 
-				  Implementation
-				  x[rd] = pc+4; pc += sext(offset)
-				*/
+				   Implementation
+				   x[rd] = pc+4; pc += sext(offset)
+				   */
 			}
 		}
 		namespace r4type {
