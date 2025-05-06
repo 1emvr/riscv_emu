@@ -86,7 +86,7 @@ namespace vm {
 					continue;
 				}
 				if (!ctx->checkin && !ctx->queue) {
-					continue ? !env_check() : return (int64_t) vm_reason::bad_environment;
+					continue ? env_check() : return (int64_t) vm_reason::bad_environment;
 				}
 				if (!read_program_from_packet(m_program)) { 
 					continue; 
