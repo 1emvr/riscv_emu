@@ -6,6 +6,7 @@
 #include "vreg.hpp"
 
 #define HEXANE __hexane *ctx = (__hexane*)&__context;
+// TODO: add an address descriptor list+host to vm translation 
 
 __data __hexane __context = { };
 __rdata const uintptr_t __handler[256];
