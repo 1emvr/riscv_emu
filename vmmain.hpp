@@ -101,7 +101,7 @@
 #define EXPONENT_MASK                     0x7FF0000000000000ULL
 #define FRACTION_MASK                     0x000FFFFFFFFFFFFFULL
 
-typedef enum {
+enum vm_reason {
 	ok,
 	illegal_op,
 	unaligned_op,
@@ -114,21 +114,13 @@ typedef enum {
 	visor_ecall,
 	machine_ecall,
 	debug_break,
-} vm_reason;
+};
 
-typedef enum {
-	zr, ra, sp, gp, tp, 
-	t0, t1, t2, s0, s1,
-	a0, a1, a2, a3, a4, a5, a6, a7,     
-	s2, s3, s4, s5, s6, s7, s8, s9, s10, s11,    
-	t3, t4, t5, t6,     
-} regenum;
-
-typedef enum {
+enum typenum {
 	rtype = 1, r4type, itype, stype, btype, utype, jtype, ftype,
-} typenum;
+};
 
-typedef enum tblenum : uintptr_t {
+enum tblenum : uintptr_t {
 	_addi, _slti, _sltiu, _xori, _ori, _andi, _slli, _srli,
 	_srai, _addiw, _slliw, _srliw, _sraiw, _lb, _lh, _lw,
 	_lbu, _lhu, _lwu, _ld, _flq, _fence, _fence_i, _jalr,
@@ -157,35 +149,43 @@ typedef enum tblenum : uintptr_t {
 	_lui, _auipc, _jal
 };
 
-#define mem_read(T, addr, retval)				\
-	if (addr % 4 != 0) {						\
-		vmcs.halt = 1;							\
-		vmcs.reason = unaligned_op;				\
-		return;									\
-	}											\
-	if (addr >= PROCESS_MAX_CAPACITY || addr < vmcs.program) {		\
-		vmcs.halt = 1;							\
-		vmcs.reason = access_violation;			\
-		return;									\
-	}											\
-												\
-	size_t index = addr / sizeof(T);			\
-	retval = ((T*)vmcs.program)[index]
+enum regenum {
+	zr, ra, sp, gp, tp,
+	t0, t1, t2, s0, s1,
+	a0, a1, a2, a3, a4, a5, a6, a7,
+	s2, s3, s4, s5, s6, s7, s8, s9, s10, s11,
+	t3, t4, t5, t6,
+};
 
-#define mem_write(T, addr, value)				\
-	if (addr % 4 != 0) {						\
-		vmcs.halt = 1;							\
-		vmcs.reason = unaligned_op;				\
-		return;									\
-	}											\
-	if (addr >= PROCESS_MAX_CAPACITY) {			\
-		vmcs.halt = 1;							\
-		vmcs.reason = access_violation;			\
-		return;									\
-	}											\
-												\
-	size_t index = addr / sizeof(T);			\
-	vmcs.program[index] = value;
+#define mem_read(T, addr, retval)                                               \
+do {						                                                    \
+    if ((addr) % sizeof(T) != 0) {												\
+        vmcs.halt = 1;															\
+        vmcs.reason = unaligned_op;												\
+        return;																	\
+    }																			\
+    if ((addr) < vmcs.program || (addr) + sizeof(T) > PROCESS_MAX_CAPACITY) {	\
+        vmcs.halt = 1;															\
+        vmcs.reason = access_violation;											\
+        return;																	\
+    }																			\
+    retval = *(T*)((uint8_t*)vmcs.program + ((addr) - vmcs.program));			\
+} while (0)
+
+#define mem_write(T, addr, value)                                               \
+do {											                                \
+    if ((addr) % sizeof(T) != 0) {												\
+        vmcs.halt = 1;															\
+        vmcs.reason = unaligned_op;												\
+        return;																	\
+    }																			\
+    if ((addr) < vmcs.program || (addr) + sizeof(T) > PROCESS_MAX_CAPACITY) {	\
+        vmcs.halt = 1;															\
+        vmcs.reason = access_violation;											\
+        return;																	\
+    }																			\
+    *(T*)((uint8_t*)vmcs.program + ((addr) - vmcs.program)) = (value);			\
+} while (0)
 
 #define reg_read(T, idx, retval)				\
 	do {										\
