@@ -1,205 +1,114 @@
 #include <windows.h>
 #include <stdint.h>
-#include <stddef.h>
 
-#include "mock.hpp"
-#include "vreg.hpp"
+#include "vmcs.h"
+#include "vmctx.h"
+#include "vmmem.h"
 
-__data __hexane __context = { };
-#define HEXANE auto ctx = (__hexane*)&__context;
+__data hexane *ctx = { };
+__data vmcs_t vmcs = { };
+__data uintptr_t __stack_cookie = { };
 
-__inline __function uintptr_t decrypt_ptr(uintptr_t ptr) { 
-    return ptr ^ __key;
+struct opcode {
+    uint8_t op;
+    typenum type;
 };
-
-constexpr uintptr_t encrypt_ptr(uintptr_t ptr) { 
-    return ptr ^ __key; 
-}
-
 __rdata const opcode encoding[] = {
-    { 0b1010011, typenum::rtype  }, { 0b1000011, typenum::rtype  }, { 0b0110011, typenum::rtype  },
-    { 0b1000111, typenum::r4type }, { 0b1001011, typenum::r4type }, { 0b1001111, typenum::r4type },
-    { 0b0000011, typenum::itype  }, { 0b0001111, typenum::itype  }, { 0b1100111, typenum::itype  },
-    { 0b0010011, typenum::itype  }, { 0b1110011, typenum::itype  }, { 0b0100011, typenum::stype  },
-    { 0b0100111, typenum::stype  }, { 0b1100011, typenum::btype  }, { 0b0010111, typenum::utype  },
-    { 0b0110111, typenum::utype  }, { 0b1101111, typenum::jtype  }, 
+    { 0b1010011, rtype  }, { 0b1000011, rtype  }, { 0b0110011, rtype  },
+    { 0b1000111, r4type }, { 0b1001011, r4type }, { 0b1001111, r4type },
+    { 0b0000011, itype  }, { 0b0001111, itype  }, { 0b1100111, itype  },
+    { 0b0010011, itype  }, { 0b1110011, itype  }, { 0b0100011, stype  },
+    { 0b0100111, stype  }, { 0b1100011, btype  }, { 0b0010111, utype  },
+    { 0b0110111, utype  }, { 0b1101111, jtype  },
 };
-
-#pragma region VMCS_STATE
-__used register uintptr_t m_modbase asm(REG_MODBASE);
-__used register uintptr_t m_dkey    asm(REG_DKEY);
-__used register uintptr_t m_program asm(REG_PROGRAM); 
-
-__used register uint8_t   m_vstack[VSTACK_MAX_CAPACITY]     asm(REG_VSTACK);
-__used register uintptr_t m_vscratch[VSCRATCH_MAX_CAPACITY] asm(REG_VSCRATCH);
-__used register uintptr_t m_vregs[VREGS_MAX_CAPACITY]       asm(REG_VREGS);
-
-__data uintptr_t m_program_size;
-__data uintptr_t m_load_rsv_addr;
-__data int       m_load_rsv_valid;
-
-__data int m_halt; 
-__data int m_reason;
-__data int m_icount;
-__data int m_step;
-
-__data CONTEXT m_vm_context;
-__data CONTEXT m_host_context;
-
-typedef struct {
-    uintptr_t mod_base;
-    uintptr_t dkey;
-    uintptr_t program; 
-    uintptr_t program_size;
-
-    uint8_t vstack[VSTACK_MAX_CAPACITY]; 
-    uint8_t vscratch[VSCRATCH_MAX_CAPACITY];
-    uint8_t vregs[VREGS_MAX_CAPACITY];
-} vmcs_t;
-#pragma endregion // VM_STATE
 
 namespace rvm64 {
-namespace routines { };
-namespace operations { };
-namespace decoder { };
+    __function int64_t vm_main(void) {
+        while(!vmcs.halt) {
+            if (!read_program_from_packet(vmcs.program)) {
+                continue;
+            }
+
+            rvm64::memory::vm_init();
+            rvm64::context::vm_entry();
+            rvm64::memory::vm_end();
+
+            break;
+        };
+
+        return vmcs.reason;
+    }
 };
 
-__function int64_t vm_main(void) {
-    while(!m_halt) {
-        vmcs_t vmcs = { };
 
-        if (!read_program_from_packet(m_program)) { 
-            continue; 
+
+namespace rvm64::operation {
+    bool is_nan(double x) {
+        union {
+            double d;
+            uint64_t u;
+        } converter;
+
+        converter.d = x;
+
+        uint64_t exponent = converter.u & EXPONENT_MASK;
+        uint64_t fraction = converter.u & FRACTION_MASK;
+
+        return (exponent == EXPONENT_MASK) && (fraction != 0);
+    }
+
+    // i-type
+    namespace itype {
+        __function void rv_fmv_d_x(uint8_t rs1, uint8_t rd) {
+            int64_t v1 = 0;
+
+            reg_read(int64_t, rs1, v1);
+            reg_write(int64_t, rd, v1);
         }
 
-        vm_init(&vmcs); 
-        vm_entry(&vmcs); 
-        vm_end(&vmcs);
+        __function void rv_fcvt_s_d(uint8_t rs1, uint8_t rd) {
+            float v1 = 0;
 
-        push_peers();
+            reg_read(double, rs1, v1);
+            reg_write(float, rd, v1);
+        }
+
+        __function void rv_fcvt_d_s(uint8_t rs1, uint8_t rd) {
+            double v1 = 0;
+
+            reg_read(float, rs1, v1);
+            reg_write(double, rd, v1);
+        }
+
+        __function void rv_fcvt_w_d(uint8_t rs1, uint8_t rd) {
+            int32_t v1 = 0;
+
+            reg_read(double, rs1, v1);
+            reg_write(int32_t, rd, v1);
+        }
+
+        __function void rv_fcvt_wu_d(uint8_t rs1, uint8_t rd) {
+            uint32_t v1 = 0;
+
+            reg_read(double, rs1, v1);
+            reg_write(uint32_t, rd, v1);
+        }
+
+        __function void rv_fcvt_d_w(uint8_t rs1, uint8_t rd) {
+            int32_t v1 = 0;
+
+            reg_read(int32_t, rs1, v1);
+            reg_write(double, rd, v1);
+        }
+
+        __function void rv_fcvt_d_wu(uint8_t rs1, uint8_t rd) {
+            uint32_t v1 = 0;
+
+            reg_read(uint32_t, rs1, v1);
+            reg_write(double, rd, v1);
+        }
     };
-
-    return (int64_t) m_reason;
-}
-
-__function void save_host_context(void) {
-    HEXANE;
-    NTSTATUS status = 0;
-
-    if (!NT_SUCCESS(status = ctx->win32.NtGetContextThread(NtCurrentThread(), &m_host_context))) {
-        m_halt = 1;
-        m_reason = status;
-    }
-}
-
-__function void restore_host_context(void) {
-    HEXANE;
-    NTSTATUS status = 0;
-
-    if (!NT_SUCCESS(status = ctx->win32.NtSetContextThread(NtCurrentThread(), &m_host_context))) {
-        m_halt = 1;
-        m_reason = vm_reason::access_violation;
-    }
-}
-
-__function void save_vm_context(void) {
-    HEXANE;
-    NTSTATUS status = 0;
-
-    if (!NT_SUCCESS(status = ctx->win32.NtGetContextThread(NtCurrentThread(), &m_vm_context))) {
-        m_halt = 1;
-        m_reason = status;
-    }
-}
-
-__function void restore_vm_context(void) {
-    HEXANE;
-    NTSTATUS status = 0;
-
-    if (!NT_SUCCESS(status = ctx->win32.NtSetContextThread(NtCurrentThread(), &m_vm_context))) {
-        m_halt = 1;
-        m_reason = status;
-    }
-}
-
-__function void vm_init_memory(void) {
-    HEXANE;
-    NTSTATUS status = 0;
-
-    m_program_size = PROCESS_MAX_CAPACITY;
-    m_load_rsv_valid = false;
-    m_load_rsv_addr = 0LL;
-
-    ctx->win32.NtGetContextThread = GetProcAddress(GetModuleHandle("ntdll.dll"), "NtGetContextThread");
-    ctx->win32.NtSetContextThread = GetProcAddress(GetModuleHandle("ntdll.dll"), "NtSetContextThread");
-    ctx->win32.NtAllocateVirtualMemory = GetProcAddress(GetModuleHandle("ntdll.dll"), "NtAllocateVirtualMemory");
-    ctx->win32.NtFreeVirtualMemory = GetProcAddress(GetModuleHandle("ntdll.dll"), "NtFreeVirtualMemory");
-    ctx->win32.NtGetFileSize = GetProcAddress(GetModuleHandle("kernel32.dll"), "GetFileSize");
-    ctx->win32.NtReadFile = GetProcAddress(GetModuleHandle("kernel32.dll"), "ReadFile");
-    ctx->win32.NtOpenFile = GetProcAddress(GetModuleHandle("kernel32.dll"), "OpenFile");
-
-    if (!NT_SUCCESS(status = ctx->win32.NtAllocateVirtualMemory(NtCurrentProcess(), (void**)&m_program, 0,
-                                                                &m_program_size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE))) {
-        m_halt = 1;
-        m_reason = status;
-        return;
-    }
-}
-
-__function void vm_end() {
-    HEXANE;
-    NTSTATUS status = 0;
-
-    if (!NT_SUCCESS(status = ctx->win32.NtFreeVirtualMemory(NtCurrentProcess(), (void**)&m_program, (size_t*)&m_program_size, MEM_RELEASE))) {
-        m_halt = 1;
-        m_reason = status;
-        return;
-    }
-}
-
-__function void vm_set_load_rsv(uintptr_t address) {
-    m_load_rsv_addr = address;
-    m_load_rsv_valid = true;
-}
-
-__function void vm_clear_load_rsv() {
-    m_load_rsv_addr = 0LL;
-    m_load_rsv_valid = false;
-}
-
-__function bool vm_check_load_rsv(uintptr_t address) const {
-    return m_load_rsv_valid && m_load_rsv_addr == address;
-}
-
-__function void vm_stkchk(uintptr_t sp) {
-    if (sp < *(uintptr_t*)m_vregs || sp >= *(uintptr_t*)m_vregs + VSTACK_SIZE) {
-        m_halt = 1;
-        m_reason = vm_reason::access_violation;
-        return;
-    }
-
-    if (((*sp ^ __stack_cookie) | (*(sp + sizeof(uintptr_t)) ^ __stack_cookie)) != 0) {
-        m_halt = 1;
-        m_reason = vm_reason::stack_overflow;
-        return;
-    }
-}
-
-
-bool is_nan(double x) {
-    union {
-        double d;
-        uint64_t u;
-    } converter;
-
-    converter.d = x;
-
-    uint64_t exponent = converter.u & EXPONENT_MASK;
-    uint64_t fraction = converter.u & FRACTION_MASK;
-
-    return (exponent == EXPONENT_MASK) && (fraction != 0);
-}
-
+};
 __function void rv_fadd_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
     float v1 = 0, v2 = 0;
 
@@ -232,54 +141,6 @@ __function void rv_fdiv_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
     reg_write(float, rd, (v1 / v2));
 }
 
-__function void rv_fmv_d_x(uint8_t rs2, uint8_t rs1, uint8_t rd) {
-    int64_t v1 = 0;
-
-    reg_read(int64_t, rs1, v1);
-    reg_write(int64_t, rd, v1);
-}
-
-__function void rv_fcvt_s_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
-    float v1 = 0;
-
-    reg_read(double, rs1, v1);
-    reg_write(float, rd, v1);
-}
-
-__function void rv_fcvt_d_s(uint8_t rs2, uint8_t rs1, uint8_t rd) {
-    double v1 = 0;
-
-    reg_read(float, rs1, v1);
-    reg_write(double, rd, v1);
-}
-
-__function void rv_fcvt_w_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
-    int32_t v1 = 0;
-
-    reg_read(double, rs1, v1);
-    reg_write(int32_t, rd, v1);
-}
-
-__function void rv_fcvt_wu_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
-    uint32_t v1 = 0;
-
-    reg_read(double, rs1, v1);
-    reg_write(uint32_t, rd, v1);
-}
-
-__function void rv_fcvt_d_w(uint8_t rs2, uint8_t rs1, uint8_t rd) {
-    int32_t v1 = 0;
-
-    reg_read(int32_t, rs1, v1);
-    reg_write(double, rd, v1);
-}
-
-__function void rv_fcvt_d_wu(uint8_t rs2, uint8_t rs1, uint8_t rd) {
-    uint32_t v1 = 0;
-
-    reg_read(uint32_t, rs1, v1);
-    reg_write(double, rd, v1);
-}
 
 __function void rv_fsgnj_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
     int64_t v1 = 0, v2 = 0;
@@ -396,6 +257,7 @@ reg_write(bool, rd, (v1 < v2));
           reg_write(bool, rd, (v1 <= v2));
             }
 
+// NOTE: maybe be itype
 __function void rv_fclass_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
     double v1 = 0;
     union {
@@ -437,6 +299,7 @@ __function void rv_fclass_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
     }
 }
 
+// NOTE: may be itype
 __function void rv_lrw(uint8_t rs2, uint8_t rs1, uint8_t rd) {
     uintptr_t address = 0;
     int32_t word = 0; 
@@ -445,7 +308,7 @@ __function void rv_lrw(uint8_t rs2, uint8_t rs1, uint8_t rd) {
     mem_read(int32_t, address, word);
 
     reg_write(int64_t, rd, retval);
-    rvm64::routines::set_load_rsv(address);
+    rvm64::memory::set_load_rsv(address);
 }
 
 __function void rv_scw(uint8_t rs2, uint8_t rs1, uint8_t rd) {
@@ -455,11 +318,11 @@ int32_t word = 0;
 mem_read(uintptr_t, rs1, address);
 reg_read(int32_t, rs2, word);
 
-if (rvm64::routines::vm_check_load_rsv(address)) {
+if (rvm64::memory::vm_check_load_rsv(address)) {
     mem_write(int32_t, address, word);
     reg_write(int32_t, rd, 0);
 
-              rvm64::routines::vm_clear_load_rsv();
+              rvm64::memory::vm_clear_load_rsv();
               } else {
               reg_write(int32_t, rd, 1);
                         }
@@ -472,10 +335,10 @@ if (rvm64::routines::vm_check_load_rsv(address)) {
                   mem_read(uintptr_t, rs1, address);
 
                   while (true) {
-        if (rvm64::routines::vm_check_load_rsv(address)) {
+        if (rvm64::memory::vm_check_load_rsv(address)) {
             continue;
         }
-        rvm64::routines::vm_set_load_rsv(address);
+        rvm64::memory::vm_set_load_rsv(address);
 
         mem_read(int32_t, address, v1);
         reg_write(int32_t, rd, v1);
@@ -483,7 +346,7 @@ if (rvm64::routines::vm_check_load_rsv(address)) {
         reg_read(int32_t, rs2, v2);
         mem_write(int32_t, address, v2);
 
-        rvm64::routines::vm_clear_load_rsv();
+        rvm64::memory::vm_clear_load_rsv();
         return;
     }
 }
@@ -495,10 +358,10 @@ __function void rv_amoadd_w(uint8_t rs2, uint8_t rs1, uint8_t rd) {
     mem_read(uintptr_t, rs1, address);
 
     while (true) {
-        if (rvm64::routines::vm_check_load_rsv(address)) {
+        if (rvm64::memory::vm_check_load_rsv(address)) {
             continue;
         }
-        rvm64::routines::vm_set_load_rsv(address);
+        rvm64::memory::vm_set_load_rsv(address);
 
         reg_read(int32_t, rs2, v2);
         mem_read(int32_t, address, v1);
@@ -506,7 +369,7 @@ __function void rv_amoadd_w(uint8_t rs2, uint8_t rs1, uint8_t rd) {
         reg_write(int32_t, rd, v1);
         mem_write(int32_t, address, (v1 + v2));
 
-        rvm64::routines::vm_clear_load_rsv();
+        rvm64::memory::vm_clear_load_rsv();
         return;
     }
 }
@@ -518,10 +381,10 @@ __function void rv_amoxor_w(uint8_t rs2, uint8_t rs1, uint8_t rd) {
     reg_read(uintptr_t, rs1, address);
 
     while (true) {
-        if (rvm64::routines::vm_check_load_rsv(address)) {
+        if (rvm64::memory::vm_check_load_rsv(address)) {
             continue;
         }
-        rvm64::routines::vm_set_load_rsv(address);
+        rvm64::memory::vm_set_load_rsv(address);
 
         reg_read(int32_t, rs2, v2);
         mem_read(int32_t, address, v1);
@@ -529,7 +392,7 @@ __function void rv_amoxor_w(uint8_t rs2, uint8_t rs1, uint8_t rd) {
         reg_write(int32_t, rd, v1);
         mem_write(int32_t, address, (v1 ^ v2));
 
-        rvm64::routines::vm_clear_load_rsv();
+        rvm64::memory::vm_clear_load_rsv();
         return;
     }
 }
@@ -541,10 +404,10 @@ __function void rv_amoand_w(uint8_t rs2, uint8_t rs1, uint8_t rd) {
     reg_read(uintptr_t, rs1, address);
 
     while (true) {
-        if (rvm64::routines::vm_check_load_rsv(address)) {
+        if (rvm64::memory::vm_check_load_rsv(address)) {
             continue;
         }
-        rvm64::routines::vm_set_load_rsv(address);
+        rvm64::memory::vm_set_load_rsv(address);
 
         reg_read(int32_t, rs2, v2);
         mem_read(int32_t, address, v1);
@@ -552,7 +415,7 @@ __function void rv_amoand_w(uint8_t rs2, uint8_t rs1, uint8_t rd) {
         reg_write(int32_t, rd, v1);
         mem_write(int32_t, address, (v1 & v2));
 
-        rvm64::routines::vm_clear_load_rsv();
+        rvm64::memory::vm_clear_load_rsv();
         return;
     }
 }
@@ -564,10 +427,10 @@ __function void rv_amoor_w(uint8_t rs2, uint8_t rs1, uint8_t rd) {
     reg_read(uintptr_t, rs1, address);
 
     while (true) {
-        if (rvm64::routines::vm_check_load_rsv(address)) {
+        if (rvm64::memory::vm_check_load_rsv(address)) {
             continue;
         }
-        rvm64::routines::vm_set_load_rsv(address);
+        rvm64::memory::vm_set_load_rsv(address);
 
         reg_read(int32_t, rs2, v2);
         mem_read(int32_t, address, v1);
@@ -575,7 +438,7 @@ __function void rv_amoor_w(uint8_t rs2, uint8_t rs1, uint8_t rd) {
         reg_write(int32_t, rd, v1);
         mem_write(int32_t, address, (v1 | v2));
 
-        rvm64::routines::vm_clear_load_rsv();
+        rvm64::memory::vm_clear_load_rsv();
         return;
     }
 }
@@ -586,10 +449,10 @@ int32_t v1 = 0, v2 = 0;
 
 reg_read(uintptr_t, rs1, address);
 while (true) {
-if (rvm64::routines::vm_check_load_rsv(address)) {
+if (rvm64::memory::vm_check_load_rsv(address)) {
     continue;
 }
-rvm64::routines::vm_set_load_rsv(address);
+rvm64::memory::vm_set_load_rsv(address);
 
 reg_read(int32_t, rs2, v2);
 mem_read(int32_t, address, v1);
@@ -597,7 +460,7 @@ mem_read(int32_t, address, v1);
 reg_write(int32_t, rd, v1);
 mem_write(int32_t, address, (v1 < v2 ? v1 : v2));
 
-          rvm64::routines::vm_clear_load_rsv();
+          rvm64::memory::vm_clear_load_rsv();
           return;
           }
           }
@@ -608,10 +471,10 @@ mem_write(int32_t, address, (v1 < v2 ? v1 : v2));
 
                reg_read(uintptr_t, rs1, address);
                while (true) {
-               if (rvm64::routines::vm_check_load_rsv(address)) {
+               if (rvm64::memory::vm_check_load_rsv(address)) {
                continue;
                }
-               rvm64::routines::vm_set_load_rsv(address);
+               rvm64::memory::vm_set_load_rsv(address);
 
                reg_read(int32_t, rs2, v2);
                mem_read(int32_t, address, v1);
@@ -619,7 +482,7 @@ mem_write(int32_t, address, (v1 < v2 ? v1 : v2));
                reg_write(int32_t, rd, v1);
                mem_write(int32_t, address, (v1 < v2 ? v2 : v1));
 
-               rvm64::routines::vm_clear_load_rsv();
+               rvm64::memory::vm_clear_load_rsv();
                return;
                }
                }
@@ -630,10 +493,10 @@ uint32_t v1 = 0, v2 = 0;
 
 reg_read(uintptr_t, rs1, address);
 while (true) {
-if (rvm64::routines::vm_check_load_rsv(address)) {
+if (rvm64::memory::vm_check_load_rsv(address)) {
     continue;
 }
-rvm64::routines::vm_set_load_rsv(address);
+rvm64::memory::vm_set_load_rsv(address);
 
 reg_read(uint32_t, rs2, v2);
 mem_read(uint32_t, address, v1);
@@ -641,7 +504,7 @@ mem_read(uint32_t, address, v1);
 reg_write(uint32_t, rd, v1);
 mem_write(uint32_t, address, (v1 < v2 ? v1 : v2));
 
-          rvm64::routines::vm_clear_load_rsv();
+          rvm64::memory::vm_clear_load_rsv();
           return;
           }
           }
@@ -652,10 +515,10 @@ mem_write(uint32_t, address, (v1 < v2 ? v1 : v2));
 
                reg_read(uintptr_t, rs1, address);
                while (true) {
-               if (rvm64::routines::vm_check_load_rsv(address)) {
+               if (rvm64::memory::vm_check_load_rsv(address)) {
                continue;
                }
-               rvm64::routines::vm_set_load_rsv(address);
+               rvm64::memory::vm_set_load_rsv(address);
 
                reg_read(uint32_t, rs2, v2);
                mem_read(uint32_t, address, v1);
@@ -663,17 +526,18 @@ mem_write(uint32_t, address, (v1 < v2 ? v1 : v2));
                reg_write(uint32_t, rd, v1);
                mem_write(uint32_t, address, (v1 < v2 ? v2 : v1));
 
-               rvm64::routines::vm_clear_load_rsv();
+               rvm64::memory::vm_clear_load_rsv();
                return;
                }
                }
 
+// NOTE: may be itype
                           __function void rv_lrd(uint8_t rs2, uint8_t rs1, uint8_t rd) {
     uintptr_t address = 0;
     int64_t value = 0;
 
     reg_read(uintptr_t, rs1, address);
-    rvm64::routines::vm_set_load_rsv(address);
+    rvm64::memory::vm_set_load_rsv(address);
 
     mem_read(int64_t, address, value);
     reg_write(int64_t, rd, value);
@@ -686,13 +550,13 @@ uintptr_t address = 0;
 reg_read(uintptr_t, rs1, address);
 reg_read(int64_t, rs2, value);
 
-if (!rvm64::routines::vm_check_load_rsv(address)) {
+if (!rvm64::memory::vm_check_load_rsv(address)) {
 reg_write(int64_t, rd, 1);
           return;
           }
 
           mem_write(int64_t, address, value);
-          rvm64::routines::vm_clear_load_rsv();
+          rvm64::memory::vm_clear_load_rsv();
           }
 
                __function void rv_amoswap_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
@@ -702,11 +566,11 @@ reg_write(int64_t, rd, 1);
     mem_read(uintptr_t, rs1, address);
 
     while (true) {
-        if (rvm64::routines::vm_check_load_rsv(address)) {
+        if (rvm64::memory::vm_check_load_rsv(address)) {
             continue;
         }
 
-        rvm64::routines::vm_set_load_rsv(address);
+        rvm64::memory::vm_set_load_rsv(address);
 
         mem_read(int64_t, address, v1);
         reg_write(int64_t, rd, v1);
@@ -714,7 +578,7 @@ reg_write(int64_t, rd, 1);
         reg_read(int64_t, rs2, v2);
         mem_write(int64_t, address, v2);
 
-        rvm64::routines::vm_clear_load_rsv();
+        rvm64::memory::vm_clear_load_rsv();
     }
 }
 
@@ -725,11 +589,11 @@ __function void rv_amoadd_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
     mem_read(uintptr_t, rs1, address);
 
     while(true) {
-        if (rvm64::routines::vm_check_load_rsv(address)) {
+        if (rvm64::memory::vm_check_load_rsv(address)) {
             continue;
         }
 
-        rvm64::routines::vm_set_load_rsv(address);
+        rvm64::memory::vm_set_load_rsv(address);
 
         mem_read(int64_t, address, v1);
         reg_read(int64_t, rs2, v2);
@@ -737,7 +601,7 @@ __function void rv_amoadd_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
         mem_write(int64_t, address, (v1 + v2));
         reg_write(int64_t, rd, v1);
 
-        rvm64::routines::vm_clear_load_rsv();
+        rvm64::memory::vm_clear_load_rsv();
         return;
     }
 }
@@ -749,11 +613,11 @@ __function void rv_amoxor_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
     reg_read(uintptr_t, rs1, address);
 
     while (true) {
-        if (rvm64::routines::vm_check_load_rsv(address)) {
+        if (rvm64::memory::vm_check_load_rsv(address)) {
             continue;
         }
 
-        rvm64::routines::vm_set_load_rsv(address);
+        rvm64::memory::vm_set_load_rsv(address);
 
         reg_read(int64_t, rs2, v2);
         mem_read(int64_t, address, v1);
@@ -761,7 +625,7 @@ __function void rv_amoxor_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
         reg_write(int64_t, rd, v1);
         mem_write(int64_t, address, (v1 ^ v2));
 
-        rvm64::routines::vm_clear_load_rsv();
+        rvm64::memory::vm_clear_load_rsv();
         return;
     }
 }
@@ -773,11 +637,11 @@ __function void rv_amoand_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
     reg_read(uintptr_t, rs1, address);
 
     while (true) {
-        if (rvm64::routines::vm_check_load_rsv(address)) {
+        if (rvm64::memory::vm_check_load_rsv(address)) {
             continue;
         }
 
-        rvm64::routines::vm_set_load_rsv(address);
+        rvm64::memory::vm_set_load_rsv(address);
 
         reg_read(int64_t, rs2, v2);
         mem_read(int64_t, address, v1);
@@ -785,7 +649,7 @@ __function void rv_amoand_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
         reg_write(int64_t, rd, v1);
         mem_write(int64_t, address, (v1 & v2));
 
-        rvm64::routines::vm_clear_load_rsv();
+        rvm64::memory::vm_clear_load_rsv();
         return;
     }
 }
@@ -797,11 +661,11 @@ __function void rv_amoor_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
     reg_read(uintptr_t, rs1, address);
 
     while(true) {
-        if (rvm64::routines::vm_check_load_rsv(address)) {
+        if (rvm64::memory::vm_check_load_rsv(address)) {
             continue;
         }
 
-        rvm64::routines::vm_set_load_rsv(address);
+        rvm64::memory::vm_set_load_rsv(address);
 
         reg_read(int64_t, rs2, v2);
         mem_read(int64_t, address, v1);
@@ -809,7 +673,7 @@ __function void rv_amoor_d(uint8_t rs2, uint8_t rs1, uint8_t rd) {
         reg_write(int64_t, rd, v1);
         mem_write(int64_t, address, (v1 | v2));
 
-        rvm64::routines::vm_clear_load_rsv();
+        rvm64::memory::vm_clear_load_rsv();
         return;
     }
 }
@@ -820,11 +684,11 @@ uint64_t v1 = 0, v2 = 0;
 
 reg_read(uintptr_t, rs1, address);
 while(true) {
-if (rvm64::routines::vm_check_load_rsv(address)) {
+if (rvm64::memory::vm_check_load_rsv(address)) {
     continue;
 }
 
-rvm64::routines::vm_set_load_rsv(address);
+rvm64::memory::vm_set_load_rsv(address);
 
 reg_read(uint64_t, rs2, v2);
 mem_read(uint64_t, address, v1);
@@ -832,7 +696,7 @@ mem_read(uint64_t, address, v1);
 reg_write(uint64_t, rd, v1);
 mem_write(uint64_t, address, (v1 < v2 ? v1 : v2));
 
-          rvm64::routines::vm_clear_load_rsv();
+          rvm64::memory::vm_clear_load_rsv();
           return;
           }
           }
@@ -843,11 +707,11 @@ mem_write(uint64_t, address, (v1 < v2 ? v1 : v2));
 
                reg_read(uintptr_t, rs1, address);
                while (true) {
-               if (rvm64::routines::vm_check_load_rsv(address)) {
+               if (rvm64::memory::vm_check_load_rsv(address)) {
                continue;
                }
 
-               rvm64::routines::vm_set_load_rsv(address);
+               rvm64::memory::vm_set_load_rsv(address);
 
                reg_read(int64_t, rs2, v2);
                mem_read(int64_t, address, v1);
@@ -855,7 +719,7 @@ mem_write(uint64_t, address, (v1 < v2 ? v1 : v2));
                reg_write(int64_t, rd, v1);
                mem_write(int64_t, address, (v1 < v2 ? v2 : v1));
 
-               rvm64::routines::vm_clear_load_rsv();
+               rvm64::memory::vm_clear_load_rsv();
                return;
                }
                }
@@ -866,11 +730,11 @@ mem_write(uint64_t, address, (v1 < v2 ? v1 : v2));
 
                                     reg_read(uintptr_t, rs1, address);
                                     while (true) {
-                                        if (rvm64::routines::vm_check_load_rsv(address)) {
+                                        if (rvm64::memory::vm_check_load_rsv(address)) {
                                             continue;
                                         }
 
-                                        rvm64::routines::vm_set_load_rsv(address);
+                                        rvm64::memory::vm_set_load_rsv(address);
 
                                         reg_read(uint64_t, rs2, v2);
                                         mem_read(uint64_t, address, v1);
@@ -878,7 +742,7 @@ mem_write(uint64_t, address, (v1 < v2 ? v1 : v2));
                                         reg_write(uint64_t, rd, v1);
                                         mem_write(uint64_t, address, (v1 < v2 ? v1 : v2));
 
-                                        rvm64::routines::vm_clear_load_rsv();
+                                        rvm64::memory::vm_clear_load_rsv();
                                         return;
                                     }
                                 }
@@ -889,11 +753,11 @@ mem_write(uint64_t, address, (v1 < v2 ? v1 : v2));
 
                 reg_read(uintptr_t, rs1, address);
                 while (true) {
-                    if (rvm64::routines::vm_check_load_rsv(address)) {
+                    if (rvm64::memory::vm_check_load_rsv(address)) {
                         continue;
                     }
 
-                    rvm64::routines::vm_set_load_rsv(address);
+                    rvm64::memory::vm_set_load_rsv(address);
 
                     reg_read(uint64_t, rs2, v2);
                     mem_read(uint64_t, address, v1);
@@ -901,7 +765,7 @@ mem_write(uint64_t, address, (v1 < v2 ? v1 : v2));
                     reg_write(uint64_t, rd, v1);
                     mem_write(uint64_t, address, (v1 < v2 ? v2 : v1));
 
-                    rvm64::routines::vm_clear_load_rsv();
+                    rvm64::memory::vm_clear_load_rsv();
                     return;
                 }
             }
@@ -1271,8 +1135,8 @@ __function void rv_slliw(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
     reg_read(int32_t, rs1, v1);
 
     if ((imm_11_0 >> 5) != 0) {
-        m_halt = 1;
-        m_reason = vm_reason::illegal_op;
+        vmcs.halt = 1;
+        vmcs.reason = illegal_op;
         return;
     }
 
@@ -1286,8 +1150,8 @@ __function void rv_srliw(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
     reg_read(int32_t, rs1, v1);
 
     if ((imm_11_0 >> 5) != 0) {
-        m_halt = 1;
-        m_reason = vm_reason::illegal_op;
+        vmcs.halt = 1;
+        vmcs.reason = illegal_op;
         return;
     }
 
@@ -1301,8 +1165,8 @@ __function void rv_sraiw(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
     reg_read(int32_t, rs1, v1);
 
     if ((imm_11_0 >> 5) != 0) {
-        m_halt = 1;
-        m_reason = vm_reason::illegal_op;
+        vmcs.halt = 1;
+        vmcs.reason = illegal_op;
         return;
     }
 
@@ -1392,15 +1256,16 @@ __function void rv_fence_i(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) { }
 
 __function void rv_jalr(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
     uintptr_t address = 0;
+    uintptr_t retval = 0;
 
     reg_read(uintptr_t, rs1, address);
     address += (intptr_t)(int16_t)imm_11_0;
     address &= ~1;
 
-    uintptr_t ret = ip_read();
-    ret += 4;
+    ip_read(retval);
+    retval += 4;
 
-    reg_write(uintptr_t, rd, ret);
+    reg_write(uintptr_t, rd, retval);
     set_branch(address);
 }
 
@@ -1772,200 +1637,200 @@ __function uintptr_t vm_decode(uint32_t opcode) {
         // I_TYPE
         case typenum::itype: switch(opcode) {
             case 0b0010011: switch(func3) {
-                case 0b000: return rvm64::operation::__handler[tblenum::_addi];
-                case 0b010: return rvm64::operation::__handler[tblenum::_slti];
-                case 0b011: return rvm64::operation::__handler[tblenum::_sltiu];
-                case 0b100: return rvm64::operation::__handler[tblenum::_xori];
-                case 0b110: return rvm64::operation::__handler[tblenum::_ori];
-                case 0b111: return rvm64::operation::__handler[tblenum::_andi];
-                case 0b001: return rvm64::operation::__handler[tblenum::_slli];
+                case 0b000: return rvm64::operation::__handler[_addi];
+                case 0b010: return rvm64::operation::__handler[_slti];
+                case 0b011: return rvm64::operation::__handler[_sltiu];
+                case 0b100: return rvm64::operation::__handler[_xori];
+                case 0b110: return rvm64::operation::__handler[_ori];
+                case 0b111: return rvm64::operation::__handler[_andi];
+                case 0b001: return rvm64::operation::__handler[_slli];
                 case 0b101: switch(imm_mask) {
-                    case 0b0000000: return rvm64::operation::__handler[tblenum::_srli]; 
-                    case 0b0100000: return rvm64::operation::__handler[tblenum::_srai];
+                    case 0b0000000: return rvm64::operation::__handler[_srli];
+                    case 0b0100000: return rvm64::operation::__handler[_srai];
                 }
             }
             case 0b0011011: switch(func3) {
-                case 0b000: return rvm64::operation::__handler[tblenum::_addiw];
-                case 0b001: return rvm64::operation::__handler[tblenum::_slliw];
+                case 0b000: return rvm64::operation::__handler[_addiw];
+                case 0b001: return rvm64::operation::__handler[_slliw];
                 case 0b101: switch(func7) {
-                    case 0b0000000: return rvm64::operation::__handler[tblenum::_srliw];
-                    case 0b0100000: return rvm64::operation::__handler[tblenum::_sraiw];
+                    case 0b0000000: return rvm64::operation::__handler[_srliw];
+                    case 0b0100000: return rvm64::operation::__handler[_sraiw];
                 }
             }
             case 0b0000011: switch(func3) {
-                case 0b000: return rvm64::operation::__handler[tblenum::_lb]; 
-                case 0b001: return rvm64::operation::__handler[tblenum::_lh]; 
-                case 0b010: return rvm64::operation::__handler[tblenum::_lw]; 
-                case 0b100: return rvm64::operation::__handler[tblenum::_lbu]; 
-                case 0b101: return rvm64::operation::__handler[tblenum::_lhu]; 
-                case 0b110: return rvm64::operation::__handler[tblenum::_lwu];
-                case 0b011: return rvm64::operation::__handler[tblenum::_ld];
+                case 0b000: return rvm64::operation::__handler[_lb];
+                case 0b001: return rvm64::operation::__handler[_lh];
+                case 0b010: return rvm64::operation::__handler[_lw];
+                case 0b100: return rvm64::operation::__handler[_lbu];
+                case 0b101: return rvm64::operation::__handler[_lhu];
+                case 0b110: return rvm64::operation::__handler[_lwu];
+                case 0b011: return rvm64::operation::__handler[_ld];
             }
         } 
 
         // R_TYPE
-        case typenum::rtype: switch(opcode) {
+        case rtype: switch(opcode) {
             case 0b1010011: switch(func7) {
-                case 0b0000001: return rvm64::operation::__handler[tblenum::_fadd_d];
-                case 0b0000101: return rvm64::operation::__handler[tblenum::_fsub_d];
-                case 0b0001001: return rvm64::operation::__handler[tblenum::_fmul_d];
-                case 0b0001101: return rvm64::operation::__handler[tblenum::_fdiv_d];
-                case 0b0101101: return rvm64::operation::__handler[tblenum::_fsqrt_d];
-                case 0b1111001: return rvm64::operation::__handler[tblenum::_fmv_d_x];
+                case 0b0000001: return rvm64::operation::__handler[_fadd_d];
+                case 0b0000101: return rvm64::operation::__handler[_fsub_d];
+                case 0b0001001: return rvm64::operation::__handler[_fmul_d];
+                case 0b0001101: return rvm64::operation::__handler[_fdiv_d];
+                case 0b0101101: return rvm64::operation::__handler[_fsqrt_d];
+                case 0b1111001: return rvm64::operation::__handler[_fmv_d_x];
                 case 0b0100000: switch(rs2) {
-                    case 0b00001: return rvm64::operation::__handler[tblenum::_fcvt_s_d]; 
-                    case 0b00011: return rvm64::operation::__handler[tblenum::_fcvt_s_q];
+                    case 0b00001: return rvm64::operation::__handler[_fcvt_s_d];
+                    case 0b00011: return rvm64::operation::__handler[_fcvt_s_q];
                 }
                 case 0b0100001: switch(rs2) {
-                    case 0b00000: return rvm64::operation::__handler[tblenum::_fcvt_d_s]; 
-                    case 0b00011: return rvm64::operation::__handler[tblenum::_fcvt_d_q];
+                    case 0b00000: return rvm64::operation::__handler[_fcvt_d_s];
+                    case 0b00011: return rvm64::operation::__handler[_fcvt_d_q];
                 }
                 case 0b1100001: switch(rs2) {
-                    case 0b00000: return rvm64::operation::__handler[tblenum::_fcvt_w_d]; 
-                    case 0b00001: return rvm64::operation::__handler[tblenum::_fcvt_wu_d];
-                    case 0b00010: return rvm64::operation::__handler[tblenum::_fcvt_l_d];
-                    case 0b00011: return rvm64::operation::__handler[tblenum::_fcvt_lu_d];
+                    case 0b00000: return rvm64::operation::__handler[_fcvt_w_d];
+                    case 0b00001: return rvm64::operation::__handler[_fcvt_wu_d];
+                    case 0b00010: return rvm64::operation::__handler[_fcvt_l_d];
+                    case 0b00011: return rvm64::operation::__handler[_fcvt_lu_d];
                 }
                 case 0b1101001: switch(rs2) {
-                    case 0b00000: return rvm64::operation::__handler[tblenum::_fcvt_d_w]; 
-                    case 0b00001: return rvm64::operation::__handler[tblenum::_fcvt_d_wu];
-                    case 0b00010: return rvm64::operation::__handler[tblenum::_fcvt_d_l];
-                    case 0b00011: return rvm64::operation::__handler[tblenum::_fcvt_d_lu];
+                    case 0b00000: return rvm64::operation::__handler[_fcvt_d_w];
+                    case 0b00001: return rvm64::operation::__handler[_fcvt_d_wu];
+                    case 0b00010: return rvm64::operation::__handler[_fcvt_d_l];
+                    case 0b00011: return rvm64::operation::__handler[_fcvt_d_lu];
                 }
                 case 0b0010001: switch(func3) {
-                    case 0b000: return rvm64::operation::__handler[tblenum::_fsgnj_d];
-                    case 0b001: return rvm64::operation::__handler[tblenum::_fsgnjn_d];
-                    case 0b010: return rvm64::operation::__handler[tblenum::_fsgnjx_d];
+                    case 0b000: return rvm64::operation::__handler[_fsgnj_d];
+                    case 0b001: return rvm64::operation::__handler[_fsgnjn_d];
+                    case 0b010: return rvm64::operation::__handler[_fsgnjx_d];
                 }
                 case 0b0010101: switch(func3) {
-                    case 0b000: return rvm64::operation::__handler[tblenum::_fmin_d];
-                    case 0b001: return rvm64::operation::__handler[tblenum::_fmax_d];
+                    case 0b000: return rvm64::operation::__handler[_fmin_d];
+                    case 0b001: return rvm64::operation::__handler[_fmax_d];
                 }
                 case 0b1010001: switch(func3) {
-                    case 0b010: return rvm64::operation::__handler[tblenum::_feq_d];
-                    case 0b001: return rvm64::operation::__handler[tblenum::_flt_d];
-                    case 0b000: return rvm64::operation::__handler[tblenum::_fle_d];
+                    case 0b010: return rvm64::operation::__handler[_feq_d];
+                    case 0b001: return rvm64::operation::__handler[_flt_d];
+                    case 0b000: return rvm64::operation::__handler[_fle_d];
                 }
                 case 0b1110001: switch(func3) {
-                    case 0b001: return rvm64::operation::__handler[tblenum::_fclass_d];
-                    case 0b000: return rvm64::operation::__handler[tblenum::_fmv_x_d];
+                    case 0b001: return rvm64::operation::__handler[_fclass_d];
+                    case 0b000: return rvm64::operation::__handler[_fmv_x_d];
                 }
             }
             case 0b0101111: switch(func3) {
                 case 0b010: switch(func5) {
-                    case 0b00010: return rvm64::operation::__handler[tblenum::_lrw];
-                    case 0b00011: return rvm64::operation::__handler[tblenum::_scw];
-                    case 0b00001: return rvm64::operation::__handler[tblenum::_amoswap_w];
-                    case 0b00000: return rvm64::operation::__handler[tblenum::_amoadd_w];
-                    case 0b00100: return rvm64::operation::__handler[tblenum::_amoxor_w];
-                    case 0b01100: return rvm64::operation::__handler[tblenum::_amoand_w];
-                    case 0b01000: return rvm64::operation::__handler[tblenum::_amoor_w];
-                    case 0b10000: return rvm64::operation::__handler[tblenum::_amomin_w];
-                    case 0b10100: return rvm64::operation::__handler[tblenum::_amomax_w];
-                    case 0b11000: return rvm64::operation::__handler[tblenum::_amominu_w];
-                    case 0b11100: return rvm64::operation::__handler[tblenum::_amomaxu_w];
+                    case 0b00010: return rvm64::operation::__handler[_lrw];
+                    case 0b00011: return rvm64::operation::__handler[_scw];
+                    case 0b00001: return rvm64::operation::__handler[_amoswap_w];
+                    case 0b00000: return rvm64::operation::__handler[_amoadd_w];
+                    case 0b00100: return rvm64::operation::__handler[_amoxor_w];
+                    case 0b01100: return rvm64::operation::__handler[_amoand_w];
+                    case 0b01000: return rvm64::operation::__handler[_amoor_w];
+                    case 0b10000: return rvm64::operation::__handler[_amomin_w];
+                    case 0b10100: return rvm64::operation::__handler[_amomax_w];
+                    case 0b11000: return rvm64::operation::__handler[_amominu_w];
+                    case 0b11100: return rvm64::operation::__handler[_amomaxu_w];
                 }
                 case 0b011: switch(func5) {
-                    case 0b00010: return rvm64::operation::__handler[tblenum::_lrd];
-                    case 0b00011: return rvm64::operation::__handler[tblenum::_scd];
-                    case 0b00001: return rvm64::operation::__handler[tblenum::_amoswap_d];
-                    case 0b00000: return rvm64::operation::__handler[tblenum::_amoadd_d];
-                    case 0b00100: return rvm64::operation::__handler[tblenum::_amoxor_d];
-                    case 0b01100: return rvm64::operation::__handler[tblenum::_amoand_d];
-                    case 0b01000: return rvm64::operation::__handler[tblenum::_amoor_d];
-                    case 0b10000: return rvm64::operation::__handler[tblenum::_amomin_d];
-                    case 0b10100: return rvm64::operation::__handler[tblenum::_amomax_d];
-                    case 0b11000: return rvm64::operation::__handler[tblenum::_amominu_d];
-                    case 0b11100: return rvm64::operation::__handler[tblenum::_amomaxu_d];
+                    case 0b00010: return rvm64::operation::__handler[_lrd];
+                    case 0b00011: return rvm64::operation::__handler[_scd];
+                    case 0b00001: return rvm64::operation::__handler[_amoswap_d];
+                    case 0b00000: return rvm64::operation::__handler[_amoadd_d];
+                    case 0b00100: return rvm64::operation::__handler[_amoxor_d];
+                    case 0b01100: return rvm64::operation::__handler[_amoand_d];
+                    case 0b01000: return rvm64::operation::__handler[_amoor_d];
+                    case 0b10000: return rvm64::operation::__handler[_amomin_d];
+                    case 0b10100: return rvm64::operation::__handler[_amomax_d];
+                    case 0b11000: return rvm64::operation::__handler[_amominu_d];
+                    case 0b11100: return rvm64::operation::__handler[_amomaxu_d];
                 }
             }
             case 0b0111011: switch(func3) {
                 case 0b000: switch(func7) {
-                    case 0b0000000: return rvm64::operation::__handler[tblenum::_addw]; 
-                    case 0b0100000: return rvm64::operation::__handler[tblenum::_subw];
-                    case 0b0000001: return rvm64::operation::__handler[tblenum::_mulw];
+                    case 0b0000000: return rvm64::operation::__handler[_addw];
+                    case 0b0100000: return rvm64::operation::__handler[_subw];
+                    case 0b0000001: return rvm64::operation::__handler[_mulw];
                 }
                 case 0b101: switch(func7) {
-                    case 0b0000000: return rvm64::operation::__handler[tblenum::_srlw];
-                    case 0b0100000: return rvm64::operation::__handler[tblenum::_sraw];
-                    case 0b0000001: return rvm64::operation::__handler[tblenum::_divuw];
+                    case 0b0000000: return rvm64::operation::__handler[_srlw];
+                    case 0b0100000: return rvm64::operation::__handler[_sraw];
+                    case 0b0000001: return rvm64::operation::__handler[_divuw];
                 }
-                case 0b001: return rvm64::operation::__handler[tblenum::_sllw];
-                case 0b100: return rvm64::operation::__handler[tblenum::_divw];
-                case 0b110: return rvm64::operation::__handler[tblenum::_remw];
-                case 0b111: return rvm64::operation::__handler[tblenum::_remuw];
+                case 0b001: return rvm64::operation::__handler[_sllw];
+                case 0b100: return rvm64::operation::__handler[_divw];
+                case 0b110: return rvm64::operation::__handler[_remw];
+                case 0b111: return rvm64::operation::__handler[_remuw];
             }
             case 0b0110011: switch(func3) {
                 case 0b000: switch(func7) {
-                    case 0b0000000: return rvm64::operation::__handler[tblenum::_add];
-                    case 0b0100000: return rvm64::operation::__handler[tblenum::_sub];
-                    case 0b0000001: return rvm64::operation::__handler[tblenum::_mul];
+                    case 0b0000000: return rvm64::operation::__handler[_add];
+                    case 0b0100000: return rvm64::operation::__handler[_sub];
+                    case 0b0000001: return rvm64::operation::__handler[_mul];
                 }
                 case 0b001: switch(func7) {
-                    case 0b0000000: return rvm64::operation::__handler[tblenum::_sll];
-                    case 0b0000001: return rvm64::operation::__handler[tblenum::_mulh];
+                    case 0b0000000: return rvm64::operation::__handler[_sll];
+                    case 0b0000001: return rvm64::operation::__handler[_mulh];
                 }
                 case 0b010: switch(func7) {
-                    case 0b0000000: return rvm64::operation::__handler[tblenum::_slt];
-                    case 0b0000001: return rvm64::operation::__handler[tblenum::_mulhsu];
+                    case 0b0000000: return rvm64::operation::__handler[_slt];
+                    case 0b0000001: return rvm64::operation::__handler[_mulhsu];
                 }
                 case 0b011: switch(func7) {
-                    case 0b0000000: return rvm64::operation::__handler[tblenum::_sltu];
-                    case 0b0000001: return rvm64::operation::__handler[tblenum::_mulhu];
+                    case 0b0000000: return rvm64::operation::__handler[_sltu];
+                    case 0b0000001: return rvm64::operation::__handler[_mulhu];
                 }
                 case 0b100: switch(func7) {
-                    case 0b0000000: return rvm64::operation::__handler[tblenum::_xor];
-                    case 0b0000001: return rvm64::operation::__handler[tblenum::_div];
+                    case 0b0000000: return rvm64::operation::__handler[_xor];
+                    case 0b0000001: return rvm64::operation::__handler[_div];
                 }
                 case 0b101: switch(func7) {
-                    case 0b0000000: return rvm64::operation::__handler[tblenum::_srl];
-                    case 0b0100000: return rvm64::operation::__handler[tblenum::_sra];
-                    case 0b0000001: return rvm64::operation::__handler[tblenum::_divu];
+                    case 0b0000000: return rvm64::operation::__handler[_srl];
+                    case 0b0100000: return rvm64::operation::__handler[_sra];
+                    case 0b0000001: return rvm64::operation::__handler[_divu];
                 }
                 case 0b110: switch(func7) {
-                    case 0b0000000: return rvm64::operation::__handler[tblenum::_or];
-                    case 0b0000001: return rvm64::operation::__handler[tblenum::_rem];
+                    case 0b0000000: return rvm64::operation::__handler[_or];
+                    case 0b0000001: return rvm64::operation::__handler[_rem];
                 }
                 case 0b111: switch(func7) {
-                    case 0b0000000: return rvm64::operation::__handler[tblenum::_and];
-                    case 0b0000001: return rvm64::operation::__handler[tblenum::_remu];
+                    case 0b0000000: return rvm64::operation::__handler[_and];
+                    case 0b0000001: return rvm64::operation::__handler[_remu];
                 }
             }
         } 
         // S TYPE
-        case typenum::stype: switch(opcode) {
+        case stype: switch(opcode) {
             case 0b0100011: switch(func3) {
-                case 0b000: return rvm64::operation::__handler[tblenum::_sb];
-                case 0b001: return rvm64::operation::__handler[tblenum::_sh]; 
-                case 0b010: return rvm64::operation::__handler[tblenum::_sw];
-                case 0b011: return rvm64::operation::__handler[tblenum::_sd];
+                case 0b000: return rvm64::operation::__handler[_sb];
+                case 0b001: return rvm64::operation::__handler[_sh];
+                case 0b010: return rvm64::operation::__handler[_sw];
+                case 0b011: return rvm64::operation::__handler[_sd];
             }
             case 0b0100111: switch(func3) {
-                case 0b010: return rvm64::operation::__handler[tblenum::_fsw];
-                case 0b011: return rvm64::operation::__handler[tblenum::_fsd];
-                case 0b100: return rvm64::operation::__handler[tblenum::_fsq];
+                case 0b010: return rvm64::operation::__handler[_fsw];
+                case 0b011: return rvm64::operation::__handler[_fsd];
+                case 0b100: return rvm64::operation::__handler[_fsq];
             }
         }
         // B TYPE
-        case typenum::btype: switch(func3) {
-            case 0b000: return rvm64::operation::__handler[tblenum::_beq];
-            case 0b001: return rvm64::operation::__handler[tblenum::_bne];
-            case 0b100: return rvm64::operation::__handler[tblenum::_blt];
-            case 0b101: return rvm64::operation::__handler[tblenum::_bge];
-            case 0b110: return rvm64::operation::__handler[tblenum::_bltu];
-            case 0b111: return rvm64::operation::__handler[tblenum::_bgeu];
+        case btype: switch(func3) {
+            case 0b000: return rvm64::operation::__handler[_beq];
+            case 0b001: return rvm64::operation::__handler[_bne];
+            case 0b100: return rvm64::operation::__handler[_blt];
+            case 0b101: return rvm64::operation::__handler[_bge];
+            case 0b110: return rvm64::operation::__handler[_bltu];
+            case 0b111: return rvm64::operation::__handler[_bgeu];
         }
         // U TYPE
-        case typenum::utype: switch(opcode) {
-            case 0b0110111: return rvm64::operation::__handler[tblenum::_lui];
-            case 0b0010111: return rvm64::operation::__handler[tblenum::_auipc];
+        case utype: switch(opcode) {
+            case 0b0110111: return rvm64::operation::__handler[_lui];
+            case 0b0010111: return rvm64::operation::__handler[_auipc];
         }
         // J TYPE
-        case typenum::jtype: switch(opcode) { 
-            case 0b1101111: return rvm64::operation::__handler[tblenum::_jal];
+        case jtype: switch(opcode) {
+            case 0b1101111: return rvm64::operation::__handler[_jal];
         }
         // R4 TYPE
-        case typenum::r4type: {}
+        case r4type: {}
     }
 }
 
