@@ -170,7 +170,7 @@ typedef enum tblenum : uintptr_t {
 	}											\
 												\
 	size_t index = addr / sizeof(T);			\
-	retval = vmcs.program[index]
+	retval = ((T*)vmcs.program)[index]
 
 #define mem_write(T, addr, value)				\
 	if (addr % 4 != 0) {						\
