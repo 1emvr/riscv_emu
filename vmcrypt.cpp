@@ -1,5 +1,5 @@
 #include "vmcs.h"
-namespace rvm64::encrypt {
+namespace rvm64::crypt {
     __inline __function uintptr_t decrypt_ptr(uintptr_t ptr) {
         return ptr ^ __key;
     }

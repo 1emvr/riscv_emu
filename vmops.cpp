@@ -1,4 +1,5 @@
 #include "vmmain.hpp"
+#include "vmcrypt.h"
 #include "vmmem.h"
 #include "vmcs.h"
 
@@ -1007,5 +1008,93 @@ namespace rvm64::operation {
                 return;
             }
         }
+    };
+
+    namespace stype {};
+    namespace btype {};
+    namespace utype {};
+    namespace jtype {};
+
+    __rdata constexpr uintptr_t __handler[256] = {
+        // ITYPE
+        crypt::encrypt_ptr((uintptr_t) itype::rv_addi), crypt::encrypt_ptr((uintptr_t) itype::rv_slti),
+        crypt::encrypt_ptr((uintptr_t) itype::rv_sltiu), crypt::encrypt_ptr((uintptr_t) itype::rv_xori),
+        crypt::encrypt_ptr((uintptr_t) itype::rv_ori), crypt::encrypt_ptr((uintptr_t) itype::rv_andi),
+        crypt::encrypt_ptr((uintptr_t) itype::rv_slli), crypt::encrypt_ptr((uintptr_t) itype::rv_srli),
+        crypt::encrypt_ptr((uintptr_t) itype::rv_srai), crypt::encrypt_ptr((uintptr_t) itype::rv_addiw),
+        crypt::encrypt_ptr((uintptr_t) itype::rv_slliw), crypt::encrypt_ptr((uintptr_t) itype::rv_srliw),
+        crypt::encrypt_ptr((uintptr_t) itype::rv_sraiw), crypt::encrypt_ptr((uintptr_t) itype::rv_lb),
+        crypt::encrypt_ptr((uintptr_t) itype::rv_lh), crypt::encrypt_ptr((uintptr_t) itype::rv_lw),
+
+        crypt::encrypt_ptr((uintptr_t) itype::rv_lbu), crypt::encrypt_ptr((uintptr_t) itype::rv_lhu),
+        crypt::encrypt_ptr((uintptr_t) itype::rv_lwu), crypt::encrypt_ptr((uintptr_t) itype::rv_ld),
+        crypt::encrypt_ptr((uintptr_t) itype::rv_flq), crypt::encrypt_ptr((uintptr_t) itype::rv_fence),
+        crypt::encrypt_ptr((uintptr_t) itype::rv_fence_i), crypt::encrypt_ptr((uintptr_t) itype::rv_jalr),
+        crypt::encrypt_ptr((uintptr_t) itype::rv_ecall), crypt::encrypt_ptr((uintptr_t) itype::rv_ebreak),
+        crypt::encrypt_ptr((uintptr_t) itype::rv_csrrw), crypt::encrypt_ptr((uintptr_t) itype::rv_csrrs),
+        crypt::encrypt_ptr((uintptr_t) itype::rv_csrrc), crypt::encrypt_ptr((uintptr_t) itype::rv_csrrwi),
+        crypt::encrypt_ptr((uintptr_t) itype::rv_csrrsi), crypt::encrypt_ptr((uintptr_t) itype::rv_csrrci),
+
+        // RTYPE
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_fadd_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fsub_d),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_fmul_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fdiv_d),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_fsqrt_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fmv_d_x),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_fcvt_s_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fcvt_s_q),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_fcvt_d_s), crypt::encrypt_ptr((uintptr_t) rtype::rv_fcvt_d_q),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_fcvt_w_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fcvt_wu_d),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_fcvt_l_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fcvt_lu_d),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_fcvt_d_w), crypt::encrypt_ptr((uintptr_t) rtype::rv_fcvt_d_wu),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_fcvt_d_l), crypt::encrypt_ptr((uintptr_t) rtype::rv_fcvt_d_lu),
+
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_fsgnj_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fsgnjn_d),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_fsgnjx_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fmin_d),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_fmax_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_feq_d),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_flt_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fle_d),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_fclass_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fmv_x_d),
+
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_lrw), crypt::encrypt_ptr((uintptr_t) rtype::rv_scw),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_amoswap_w), crypt::encrypt_ptr((uintptr_t) rtype::rv_amoadd_w),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_amoxor_w), crypt::encrypt_ptr((uintptr_t) rtype::rv_amoand_w),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_amoor_w), crypt::encrypt_ptr((uintptr_t) rtype::rv_amomin_w),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_amomax_w), crypt::encrypt_ptr((uintptr_t) rtype::rv_amominu_w),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_amomaxu_w),
+
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_lrd), crypt::encrypt_ptr((uintptr_t) rtype::rv_scd),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_amoswap_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_amoadd_d),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_amoxor_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_amoand_d),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_amoor_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_amomin_d),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_amomax_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_amominu_d),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_amomaxu_d),
+
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_addw), crypt::encrypt_ptr((uintptr_t) rtype::rv_subw),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_mulw), crypt::encrypt_ptr((uintptr_t) rtype::rv_srlw),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_sraw), crypt::encrypt_ptr((uintptr_t) rtype::rv_divuw),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_sllw), crypt::encrypt_ptr((uintptr_t) rtype::rv_divw),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_remw), crypt::encrypt_ptr((uintptr_t) rtype::rv_remuw),
+
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_add), crypt::encrypt_ptr((uintptr_t) rtype::rv_sub),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_mul), crypt::encrypt_ptr((uintptr_t) rtype::rv_sll),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_mulh), crypt::encrypt_ptr((uintptr_t) rtype::rv_slt),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_mulhsu), crypt::encrypt_ptr((uintptr_t) rtype::rv_sltu),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_mulhu), crypt::encrypt_ptr((uintptr_t) rtype::rv_xor),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_div), crypt::encrypt_ptr((uintptr_t) rtype::rv_srl),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_sra), crypt::encrypt_ptr((uintptr_t) rtype::rv_divu),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_or), crypt::encrypt_ptr((uintptr_t) rtype::rv_rem),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_and), crypt::encrypt_ptr((uintptr_t) rtype::rv_remu),
+
+        // STYPE
+        crypt::encrypt_ptr((uintptr_t) stype::rv_sb), crypt::encrypt_ptr((uintptr_t) stype::rv_sh),
+        crypt::encrypt_ptr((uintptr_t) stype::rv_sw), crypt::encrypt_ptr((uintptr_t) stype::rv_sd),
+        crypt::encrypt_ptr((uintptr_t) stype::rv_fsw), crypt::encrypt_ptr((uintptr_t) stype::rv_fsd),
+        crypt::encrypt_ptr((uintptr_t) stype::rv_fsq),
+
+        // BTYPE
+        crypt::encrypt_ptr((uintptr_t) btype::rv_beq), crypt::encrypt_ptr((uintptr_t) btype::rv_bne),
+        crypt::encrypt_ptr((uintptr_t) btype::rv_blt), crypt::encrypt_ptr((uintptr_t) btype::rv_bge),
+        crypt::encrypt_ptr((uintptr_t) btype::rv_bltu), crypt::encrypt_ptr((uintptr_t) btype::rv_bgeu),
+
+        // UTYPE/JTYPE
+        crypt::encrypt_ptr((uintptr_t) utype::rv_lui), crypt::encrypt_ptr((uintptr_t) utype::rv_auipc),
+        crypt::encrypt_ptr((uintptr_t) jtype::rv_jal)
     };
 };
