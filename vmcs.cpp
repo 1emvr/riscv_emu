@@ -35,16 +35,21 @@ __rdata const opcode encoding[] = {
 };
 
 __function uintptr_t vm_decode(uint32_t opcode) {
-    // TODO: drop all possible bitfields at the same time and write to scratch upon decoding
+    // TODO: drop all possible bitfields at the same time and write to scratch on decode.
     // scratch space can be used for bitfields, immediates, arguments, etc.
-    uint8_t func7 = (opcode >> 25) & 0x7F;
+
+    uint8_t func7 = (opcode >> 24) & 0x7F;
+    uint8_t func5 = (func7 >> 2) & 0x1F;
+    uint8_t func3 = (opcode >> 12) & 0x7;
+    uint8_t func2 = (opcode >> 24) & 0x3;
+
+    uint8_t rs3   = (opcode >> 27) & 0x1F;
     uint8_t rs2   = (opcode >> 20) & 0x1F;
     uint8_t rs1   = (opcode >> 15) & 0x1F;
-    uint8_t func3 = (opcode >> 12) & 0x7;
-    uint8_t func5 = (func7 >> 2) & 0x1F;
+    uint8_t rd    = (opcode >> 7) & 0x1F;
 
     uint16_t imm_11_0 = (opcode >> 20) & 0xFFF;
-    // TODO: other immx:x:x from all xtype instructions
+    // TODO: other immx:x:x from all xtype instructions which requires bit-manipulation specified in the ratified docs.
 
     uint8_t decoded = 0;
 
@@ -65,13 +70,13 @@ __function uintptr_t vm_decode(uint32_t opcode) {
         // I_TYPE
         case itype: switch(opcode) {
             case 0b0010011: switch(func3) {
-                case 0b000: return ((uintptr_t*)vmcs.handler)[_addi];
-                case 0b010: return ((uintptr_t*)vmcs.handler)[_slti];
-                case 0b011: return ((uintptr_t*)vmcs.handler)[_sltiu];
-                case 0b100: return ((uintptr_t*)vmcs.handler)[_xori];
-                case 0b110: return ((uintptr_t*)vmcs.handler)[_ori];
-                case 0b111: return ((uintptr_t*)vmcs.handler)[_andi];
-                case 0b001: return ((uintptr_t*)vmcs.handler)[_slli];
+                case 0b000: { return ((uintptr_t*)vmcs.handler)[_addi];  }
+                case 0b010: { return ((uintptr_t*)vmcs.handler)[_slti];  }
+                case 0b011: { return ((uintptr_t*)vmcs.handler)[_sltiu]; }
+                case 0b100: { return ((uintptr_t*)vmcs.handler)[_xori];  }
+                case 0b110: { return ((uintptr_t*)vmcs.handler)[_ori];   }
+                case 0b111: { return ((uintptr_t*)vmcs.handler)[_andi];  }
+                case 0b001: { return ((uintptr_t*)vmcs.handler)[_slli];  }
                 case 0b101: switch(imm_mask) {
                     case 0b0000000: return ((uintptr_t*)vmcs.handler)[_srli];
                     case 0b0100000: return ((uintptr_t*)vmcs.handler)[_srai];
