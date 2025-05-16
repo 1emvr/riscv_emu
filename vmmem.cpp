@@ -7,7 +7,6 @@ namespace rvm64::memory {
     __function void vm_init(void) {
         rvm64::context::vm_context_init();
 
-        vmcs->mod_base = 0; // TODO: instance::memory::get_module_base();
         vmcs->handler = (uintptr_t)operation::__handler;
         vmcs->dkey = __key; // lol idk...
 

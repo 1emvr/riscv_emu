@@ -31,7 +31,6 @@ typedef struct {
 } vm_memory_t;
 
 typedef struct {
-    uintptr_t mod_base;
     uintptr_t handler;
     uintptr_t dkey;
     uintptr_t pc;
