@@ -31,6 +31,7 @@ typedef struct {
     uintptr_t mod_base;
     uintptr_t dkey;
     uintptr_t handler;
+    uintptr_t pc;
 
     buffer program;
     buffer process;
