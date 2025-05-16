@@ -95,7 +95,7 @@ bool read_program_from_packet() {
 		return false;
 	}
 
-	void* elf_data = ctx->win32.RtlAllocateHeap(GetProcessHeap(), 0, size);
+	void* elf_data = ctx->win32.NtAllocateVirtualMemory(NtCurrentProcess(), nullptr, 0, (PSIZE_T)&size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 	if (!elf_data) {
 		printf("Failed to allocate memory for ELF\n");
 		return false;
@@ -115,7 +115,7 @@ bool read_program_from_packet() {
 	bool success = load_elf64_image();
 
 	// Free the temporary ELF file buffer
-	free(elf_data);
+	ctx->win32.NtFreeVirtualMemory(NtCurrentProcess(), &elf_data, size, MEM_RELEASE);
 	vmcs->program.address = 0;
 	vmcs->program.size = 0;
 
