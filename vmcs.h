@@ -46,7 +46,7 @@ typedef struct __hexane {
 } hexane;
 
 extern hexane *ctx;
-extern vmcs_t vmcs;
+extern vmcs_t *vmcs;
 extern uintptr_t __stack_cookie;
 extern uintptr_t __key;
 #endif //VMCS_H
