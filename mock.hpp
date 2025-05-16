@@ -1,7 +1,7 @@
 #ifndef MOCK_H
 #define MOCK_H
 #include <windows.h>
-#include "vmmain.hpp"
+#include "mono.hpp"
 
 bool read_program_from_packet(uintptr_t pointer) {
 	HEXANE;

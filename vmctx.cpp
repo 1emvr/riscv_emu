@@ -4,7 +4,7 @@ namespace rvm64::context {
         // TODO
     }
 
-    __function void vm_context_start() {
+    __function void vm_context_init() {
         ctx = (hexane*) VirtualAlloc(nullptr, sizeof(ctx), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
         ctx->win32.NtGetContextThread = (NtGetContextThread_t) GetProcAddress(GetModuleHandle("ntdll.dll"), "NtGetContextThread");

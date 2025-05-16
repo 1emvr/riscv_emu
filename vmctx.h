@@ -3,7 +3,7 @@
 
 namespace rvm64::context {
     __function void vm_entry(void);
-    __function void vm_context_start();
+    __function void vm_context_init();
     __function void save_host_context(void);
     __function void restore_host_context(void);
     __function void save_vm_context(void);

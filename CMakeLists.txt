@@ -10,4 +10,5 @@ add_executable(rvm64 vmcs.cpp vmcs.S
         vmmem.h
         vmcrypt.cpp
         vmcrypt.h
-        vmops.cpp)
+        vmops.cpp
+        vmops.h)

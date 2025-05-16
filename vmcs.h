@@ -1,7 +1,7 @@
 #ifndef VMCS_H
 #define VMCS_H
 
-#include "vmmain.hpp"
+#include "mono.hpp"
 #include "mock.hpp"
 
 typedef NTSTATUS(NTAPI* NtAllocateVirtualMemory_t)(HANDLE ProcessHandle, PVOID* BaseAddress, ULONG_PTR ZeroBits, PSIZE_T RegionSize, ULONG AllocationType, ULONG Protect);
@@ -12,6 +12,7 @@ typedef NTSTATUS(NTAPI* NtSetContextThread_t)(HANDLE ThreadHandle, PCONTEXT Thre
 typedef struct {
     uintptr_t mod_base;
     uintptr_t dkey;
+    uintptr_t handler;
     uintptr_t program;
     uintptr_t program_size;
 

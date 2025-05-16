@@ -141,6 +141,337 @@ namespace rvm64::operation {
                 }
             }
         }
+
+        __function void rv_addi(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
+            intptr_t v1 = 0;
+            intptr_t imm = (intptr_t) (int16_t) imm_11_0;
+
+            reg_read(intptr_t, rs1, v1);
+            reg_write(intptr_t, rd, (v1 + imm));
+        }
+
+        __function void rv_slti(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
+            intptr_t v1 = 0;
+            intptr_t imm = (intptr_t) (int16_t) imm_11_0;
+
+            reg_read(intptr_t, rs1, v1);
+            reg_write(intptr_t, rd, ((v1 < imm) ? 1 : 0));
+        }
+
+        __function void rv_sltiu(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
+            uintptr_t v1 = 0;
+            uintptr_t imm = (uintptr_t) (uint16_t) imm_11_0;
+
+            reg_read(uintptr_t, rs1, v1);
+            reg_write(uintptr_t, rd, ((v1 < imm) ? 1 : 0));
+        }
+
+        __function void rv_xori(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
+            intptr_t v1 = 0;
+            intptr_t imm = (intptr_t) (int16_t) imm_11_0;
+
+            reg_read(intptr_t, rs1, v1);
+            reg_write(intptr_t, rd, (v1 ^ imm));
+        }
+
+        __function void rv_ori(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
+            intptr_t v1 = 0;
+            intptr_t imm = (intptr_t) (int16_t) imm_11_0;
+
+            reg_read(intptr_t, rs1, v1);
+            reg_write(intptr_t, rd, (v1 | imm));
+        }
+
+        __function void rv_andi(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
+            intptr_t v1 = 0;
+            intptr_t imm = (intptr_t) (int16_t) imm_11_0;
+
+            reg_read(intptr_t, rs1, v1);
+            reg_write(intptr_t, rd, (v1 & imm));
+        }
+
+        __function void rv_slli(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
+            intptr_t v1 = 0;
+            intptr_t shamt = imm_11_0 & 0x1F;
+
+            reg_read(intptr_t, rs1, v1);
+            reg_write(intptr_t, rd, (v1 << shamt));
+        }
+
+        __function void rv_srli(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
+            intptr_t v1 = 0;
+            uint8_t shamt = imm_11_0 & 0x1F;
+
+            reg_read(intptr_t, rs1, v1);
+            reg_write(uintptr_t, rd, v1 >> shamt);
+        }
+
+        __function void rv_srai(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
+            intptr_t v1 = 0;
+            uint8_t imm = imm_11_0 & 0x1F;
+
+            reg_read(intptr_t, rs1, v1);
+            reg_write(intptr_t, rd, (v1 >> imm));
+        }
+
+        __function void rv_addiw(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
+            int32_t v1 = 0;
+            int32_t imm = (int32_t) (int16_t) imm_11_0;
+
+            reg_read(int32_t, rs1, v1);
+            reg_write(int32_t, rd, v1 + imm);
+        }
+
+        __function void rv_slliw(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
+            int32_t v1 = 0;
+            int32_t shamt = imm_11_0 & 0x1F;
+
+            reg_read(int32_t, rs1, v1);
+
+            if ((imm_11_0 >> 5) != 0) {
+                vmcs.halt = 1;
+                vmcs.reason = illegal_op;
+                return;
+            }
+
+            reg_write(int32_t, rd, (v1 << shamt));
+        }
+
+        __function void rv_srliw(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
+            int32_t v1 = 0;
+            int32_t shamt = imm_11_0 & 0x1F;
+
+            reg_read(int32_t, rs1, v1);
+
+            if ((imm_11_0 >> 5) != 0) {
+                vmcs.halt = 1;
+                vmcs.reason = illegal_op;
+                return;
+            }
+
+            reg_write(int32_t, rd, (v1 >> shamt));
+        }
+
+        __function void rv_sraiw(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
+            int32_t v1 = 0;
+            uint8_t shamt = imm_11_0 & 0x1F;
+
+            reg_read(int32_t, rs1, v1);
+
+            if ((imm_11_0 >> 5) != 0) {
+                vmcs.halt = 1;
+                vmcs.reason = illegal_op;
+                return;
+            }
+
+            reg_write(int32_t, rd, (v1 >> shamt));
+        }
+
+        __function void rv_lb(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
+            int8_t v1 = 0;
+            uintptr_t address = 0;
+
+            reg_read(uintptr_t, rs1, address);
+            address += (intptr_t) (int16_t) imm_11_0;
+
+            mem_read(int8_t, address, v1);
+            reg_write(int8_t, rd, v1);
+        }
+
+        __function void rv_lh(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
+            int16_t v1 = 0;
+            uintptr_t address = 0;
+
+            reg_read(uintptr_t, rs1, address);
+            address += (intptr_t) (int16_t) imm_11_0;
+
+            mem_read(int16_t, address, v1);
+            reg_write(intptr_t, rd, v1);
+        }
+
+        __function void rv_lw(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
+            int32_t v1 = 0;
+            uintptr_t address = 0;
+
+            reg_read(uintptr_t, rs1, address);
+            address += (intptr_t) (int16_t) imm_11_0;
+
+            mem_read(int32_t, address, v1);
+            reg_write(intptr_t, rd, v1);
+        }
+
+        __function void rv_lbu(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
+            uint8_t v1 = 0;
+            uintptr_t address = 0;
+
+            reg_read(uintptr_t, rs1, address);
+            address += (intptr_t) (int16_t) imm_11_0;
+
+            mem_read(uint8_t, address, v1);
+            reg_write(uintptr_t, rd, v1);
+        }
+
+        __function void rv_lhu(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
+            uint16_t v1 = 0;
+            uintptr_t address = 0;
+
+            reg_read(uintptr_t, rs1, address);
+            address += (intptr_t) (int16_t) imm_11_0;
+
+            mem_read(uint16_t, address, v1);
+            reg_write(uintptr_t, rd, v1);
+        }
+
+        __function void rv_lwu(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
+            uint64_t v1 = 0;
+            uintptr_t address = 0;
+
+            reg_read(uintptr_t, rs1, address);
+            address += (intptr_t) (int16_t) imm_11_0;
+
+            mem_read(uint64_t, address, v1);
+            reg_write(uint64_t, rd, v1);
+        }
+
+        __function void rv_ld(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
+            int64_t v1 = 0;
+            uintptr_t address = 0;
+
+            reg_read(uintptr_t, rs1, address);
+            address += (intptr_t) (int16_t) imm_11_0;
+
+            mem_read(int64_t, address, v1);
+            reg_write(int64_t, rd, v1);
+        }
+
+        __function void rv_flq(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
+        }
+
+        __function void rv_fence(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
+        }
+
+        __function void rv_fence_i(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
+        }
+
+        __function void rv_jalr(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
+            uintptr_t address = 0;
+            uintptr_t retval = 0;
+
+            reg_read(uintptr_t, rs1, address);
+            address += (intptr_t) (int16_t) imm_11_0;
+            address &= ~1;
+
+            ip_read(retval);
+            retval += 4;
+
+            reg_write(uintptr_t, rd, retval);
+            set_branch(address);
+        }
+
+        __function void rv_ecall(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
+            /*
+                           Description
+                           Make a request to the supporting execution environment.
+                           When executed in U-mode, S-mode, or M-mode, it generates an environment-call-from-U-mode exception,
+                           environment-call-from-S-mode exception, or environment-call-from-M-mode exception, respectively, and performs no other operation.
+
+                           Implementation
+                           RaiseException(EnvironmentCall)
+
+                           - CHECK SEDELEG
+                           - SAVE PC IN SEPC/MEPC
+                           - RAISE PRIVILEGE TO S/M
+                           - JUMP TO STVEC/MTVEC
+                           - KERNEL/SBI HANDLER
+                           - RETURN TO SEPC/MEPC
+
+                           Save register and program state
+                           */
+            rvm64::context::save_vm_context();
+            // hyperv_switch();
+            rvm64::context::restore_vm_context();
+        }
+
+        __function void rv_ebreak(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
+            /*
+                           Description
+                           Used by debuggers to cause control to be transferred back to a debugging environment.
+                           It generates a breakpoint exception and performs no other operation.
+
+                           Implementation
+                           RaiseException(Breakpoint)
+                           */
+            __debugbreak();
+        }
+
+        __function void rv_csrrw(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
+            /*
+                           Description
+                           Atomically swaps values in the CSRs and integer registers.
+                           CSRRW reads the old value of the CSR, zero-extends the value to XLEN bits, then writes it to integer register rd.
+                           The initial value in rs1 is written to the CSR.
+                           If rd=x0, then the instruction shall not read the CSR and shall not cause any of the side effects that might occur on a CSR read.
+
+                           Implementation
+                           t = CSRs[csr]; CSRs[csr] = x[rs1]; x[rd] = t
+                           */
+        }
+
+        __function void rv_csrrs(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
+            /*
+                           Description
+                           Reads the value of the CSR, zero-extends the value to XLEN bits, and writes it to integer register rd.
+                           The initial value in integer register rs1 is treated as a bit mask that specifies bit positions to be set in the CSR.
+                           Any bit that is high in rs1 will cause the corresponding bit to be set in the CSR, if that CSR bit is writable.
+                           Other bits in the CSR are unaffected (though CSRs might have side effects when written).
+
+                           Implementation
+                           t = CSRs[csr]; CSRs[csr] = t | x[rs1]; x[rd] = t
+                           */
+        }
+
+        __function void rv_csrrc(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
+            /*
+                           Description
+                           Reads the value of the CSR, zero-extends the value to XLEN bits, and writes it to integer register rd.
+                           The initial value in integer register rs1 is treated as a bit mask that specifies bit positions to be cleared in the CSR.
+                           Any bit that is high in rs1 will cause the corresponding bit to be cleared in the CSR, if that CSR bit is writable.
+                           Other bits in the CSR are unaffected.
+
+                           Implementation
+                           t = CSRs[csr]; CSRs[csr] = t &~x[rs1]; x[rd] = t
+                           */
+        }
+
+        __function void rv_csrrwi(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
+            /*
+                           Description
+                           Update the CSR using an XLEN-bit value obtained by zero-extending a 5-bit unsigned immediate (uimm[4:0]) field encoded in the rs1 field.
+
+                           Implementation
+                           x[rd] = CSRs[csr]; CSRs[csr] = zimm
+                           */
+        }
+
+        __function void rv_csrrsi(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
+            /*
+                           Description
+                           Set CSR bit using an XLEN-bit value obtained by zero-extending a 5-bit unsigned immediate (uimm[4:0]) field encoded in the rs1 field.
+
+                           Implementation
+                           t = CSRs[csr]; CSRs[csr] = t | zimm; x[rd] = t
+                           */
+        }
+
+        __function void rv_csrrci(uint16_t imm_11_0, uint8_t rs1, uint8_t rd) {
+            /*
+                           Description
+                           Clear CSR bit using an XLEN-bit value obtained by zero-extending a 5-bit unsigned immediate (uimm[4:0]) field encoded in the rs1 field.
+
+                           Implementation
+                           t = CSRs[csr]; CSRs[csr] = t &~zimm; x[rd] = t
+                           */
+        }
     };
 
     // r-type
@@ -1010,91 +1341,165 @@ namespace rvm64::operation {
         }
     };
 
-    namespace stype {};
-    namespace btype {};
-    namespace utype {};
-    namespace jtype {};
+    namespace stype {
+        __function void rv_sb(uint8_t imm_11_5, uint8_t rs2, uint8_t rs1, uint8_t imm_4_0) {
+            /*
+                           Description
+                           Store 8-bit, values from the low bits of register rs2 to memory.
 
-    __rdata constexpr uintptr_t __handler[256] = {
-        // ITYPE
-        crypt::encrypt_ptr((uintptr_t) itype::rv_addi), crypt::encrypt_ptr((uintptr_t) itype::rv_slti),
-        crypt::encrypt_ptr((uintptr_t) itype::rv_sltiu), crypt::encrypt_ptr((uintptr_t) itype::rv_xori),
-        crypt::encrypt_ptr((uintptr_t) itype::rv_ori), crypt::encrypt_ptr((uintptr_t) itype::rv_andi),
-        crypt::encrypt_ptr((uintptr_t) itype::rv_slli), crypt::encrypt_ptr((uintptr_t) itype::rv_srli),
-        crypt::encrypt_ptr((uintptr_t) itype::rv_srai), crypt::encrypt_ptr((uintptr_t) itype::rv_addiw),
-        crypt::encrypt_ptr((uintptr_t) itype::rv_slliw), crypt::encrypt_ptr((uintptr_t) itype::rv_srliw),
-        crypt::encrypt_ptr((uintptr_t) itype::rv_sraiw), crypt::encrypt_ptr((uintptr_t) itype::rv_lb),
-        crypt::encrypt_ptr((uintptr_t) itype::rv_lh), crypt::encrypt_ptr((uintptr_t) itype::rv_lw),
+                           Implementation
+                           M[x[rs1] + sext(offset)] = x[rs2][7:0]
+                           */
+        }
 
-        crypt::encrypt_ptr((uintptr_t) itype::rv_lbu), crypt::encrypt_ptr((uintptr_t) itype::rv_lhu),
-        crypt::encrypt_ptr((uintptr_t) itype::rv_lwu), crypt::encrypt_ptr((uintptr_t) itype::rv_ld),
-        crypt::encrypt_ptr((uintptr_t) itype::rv_flq), crypt::encrypt_ptr((uintptr_t) itype::rv_fence),
-        crypt::encrypt_ptr((uintptr_t) itype::rv_fence_i), crypt::encrypt_ptr((uintptr_t) itype::rv_jalr),
-        crypt::encrypt_ptr((uintptr_t) itype::rv_ecall), crypt::encrypt_ptr((uintptr_t) itype::rv_ebreak),
-        crypt::encrypt_ptr((uintptr_t) itype::rv_csrrw), crypt::encrypt_ptr((uintptr_t) itype::rv_csrrs),
-        crypt::encrypt_ptr((uintptr_t) itype::rv_csrrc), crypt::encrypt_ptr((uintptr_t) itype::rv_csrrwi),
-        crypt::encrypt_ptr((uintptr_t) itype::rv_csrrsi), crypt::encrypt_ptr((uintptr_t) itype::rv_csrrci),
+        __function void rv_sh(uint8_t imm_11_5, uint8_t rs2, uint8_t rs1, uint8_t imm_4_0) {
+            /*
+                           Description
+                           Store 16-bit, values from the low bits of register rs2 to memory.
 
-        // RTYPE
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_fadd_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fsub_d),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_fmul_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fdiv_d),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_fsqrt_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fmv_d_x),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_fcvt_s_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fcvt_s_q),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_fcvt_d_s), crypt::encrypt_ptr((uintptr_t) rtype::rv_fcvt_d_q),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_fcvt_w_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fcvt_wu_d),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_fcvt_l_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fcvt_lu_d),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_fcvt_d_w), crypt::encrypt_ptr((uintptr_t) rtype::rv_fcvt_d_wu),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_fcvt_d_l), crypt::encrypt_ptr((uintptr_t) rtype::rv_fcvt_d_lu),
+                           Implementation
+                           M[x[rs1] + sext(offset)] = x[rs2][15:0]
+                           */
+        }
 
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_fsgnj_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fsgnjn_d),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_fsgnjx_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fmin_d),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_fmax_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_feq_d),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_flt_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fle_d),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_fclass_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fmv_x_d),
+        __function void rv_sw(uint8_t imm_11_5, uint8_t rs2, uint8_t rs1, uint8_t imm_4_0) {
+            /*
+                           Description
+                           Store 32-bit, values from the low bits of register rs2 to memory.
 
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_lrw), crypt::encrypt_ptr((uintptr_t) rtype::rv_scw),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_amoswap_w), crypt::encrypt_ptr((uintptr_t) rtype::rv_amoadd_w),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_amoxor_w), crypt::encrypt_ptr((uintptr_t) rtype::rv_amoand_w),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_amoor_w), crypt::encrypt_ptr((uintptr_t) rtype::rv_amomin_w),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_amomax_w), crypt::encrypt_ptr((uintptr_t) rtype::rv_amominu_w),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_amomaxu_w),
+                           Implementation
+                           M[x[rs1] + sext(offset)] = x[rs2][31:0]
+                           */
+        }
 
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_lrd), crypt::encrypt_ptr((uintptr_t) rtype::rv_scd),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_amoswap_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_amoadd_d),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_amoxor_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_amoand_d),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_amoor_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_amomin_d),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_amomax_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_amominu_d),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_amomaxu_d),
+        __function void rv_sd(uint8_t imm_11_5, uint8_t rs2, uint8_t rs1, uint8_t imm_4_0) {
+            /*
+                           Description
+                           Store 64-bit, values from register rs2 to memory.
 
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_addw), crypt::encrypt_ptr((uintptr_t) rtype::rv_subw),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_mulw), crypt::encrypt_ptr((uintptr_t) rtype::rv_srlw),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_sraw), crypt::encrypt_ptr((uintptr_t) rtype::rv_divuw),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_sllw), crypt::encrypt_ptr((uintptr_t) rtype::rv_divw),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_remw), crypt::encrypt_ptr((uintptr_t) rtype::rv_remuw),
+                           Implementation
+                           M[x[rs1] + sext(offset)] = x[rs2][63:0]
+                           */
+        }
 
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_add), crypt::encrypt_ptr((uintptr_t) rtype::rv_sub),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_mul), crypt::encrypt_ptr((uintptr_t) rtype::rv_sll),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_mulh), crypt::encrypt_ptr((uintptr_t) rtype::rv_slt),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_mulhsu), crypt::encrypt_ptr((uintptr_t) rtype::rv_sltu),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_mulhu), crypt::encrypt_ptr((uintptr_t) rtype::rv_xor),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_div), crypt::encrypt_ptr((uintptr_t) rtype::rv_srl),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_sra), crypt::encrypt_ptr((uintptr_t) rtype::rv_divu),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_or), crypt::encrypt_ptr((uintptr_t) rtype::rv_rem),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_and), crypt::encrypt_ptr((uintptr_t) rtype::rv_remu),
+        __function void rv_fsw(uint8_t imm_11_5, uint8_t rs2, uint8_t rs1, uint8_t imm_4_0) {
+            /*
+                           [fsw]
+                           Description
+                           Store a single-precision value from floating-point register rs2 to memory.
 
-        // STYPE
-        crypt::encrypt_ptr((uintptr_t) stype::rv_sb), crypt::encrypt_ptr((uintptr_t) stype::rv_sh),
-        crypt::encrypt_ptr((uintptr_t) stype::rv_sw), crypt::encrypt_ptr((uintptr_t) stype::rv_sd),
-        crypt::encrypt_ptr((uintptr_t) stype::rv_fsw), crypt::encrypt_ptr((uintptr_t) stype::rv_fsd),
-        crypt::encrypt_ptr((uintptr_t) stype::rv_fsq),
+                           Implementation
+                           M[x[rs1] + sext(offset)] = f[rs2][31:0]
+                           */
+        }
 
-        // BTYPE
-        crypt::encrypt_ptr((uintptr_t) btype::rv_beq), crypt::encrypt_ptr((uintptr_t) btype::rv_bne),
-        crypt::encrypt_ptr((uintptr_t) btype::rv_blt), crypt::encrypt_ptr((uintptr_t) btype::rv_bge),
-        crypt::encrypt_ptr((uintptr_t) btype::rv_bltu), crypt::encrypt_ptr((uintptr_t) btype::rv_bgeu),
+        __function void rv_fsd(uint8_t imm_11_5, uint8_t rs2, uint8_t rs1, uint8_t imm_4_0) {
+            /*
+                           Description
+                           Store a double-precision value from the floating-point registers to memory.
 
-        // UTYPE/JTYPE
-        crypt::encrypt_ptr((uintptr_t) utype::rv_lui), crypt::encrypt_ptr((uintptr_t) utype::rv_auipc),
-        crypt::encrypt_ptr((uintptr_t) jtype::rv_jal)
+                           Implementation
+                           M[x[rs1] + sext(offset)] = f[rs2][63:0]
+                           */
+        }
     };
+
+    namespace btype {
+        __function void rv_beq(uint8_t imm_12_10_5, uint8_t rs2, uint8_t rs1, uint8_t imm_4_1_11) {
+            /*
+                           Description
+                           Take the branch if registers rs1 and rs2 are equal.
+
+                           Implementation
+                           if (x[rs1] == x[rs2]) pc += sext(offset)
+                           */
+        }
+
+        __function void rv_bne(uint8_t imm_12_10_5, uint8_t rs2, uint8_t rs1, uint8_t imm_4_1_11) {
+            /*
+                           Description
+                           Take the branch if registers rs1 and rs2 are not equal.
+
+                           Implementation
+                           if (x[rs1] != x[rs2]) pc += sext(offset)
+                           */
+        }
+
+        __function void rv_blt(uint8_t imm_12_10_5, uint8_t rs2, uint8_t rs1, uint8_t imm_4_1_11) {
+            /*
+                           Description
+                           Take the branch if registers rs1 is less than rs2, using signed comparison.
+
+                           Implementation
+                           if (x[rs1] <s x[rs2]) pc += sext(offset)
+                           */
+        }
+
+        __function void rv_bge(uint8_t imm_12_10_5, uint8_t rs2, uint8_t rs1, uint8_t imm_4_1_11) {
+            /*
+                           Description
+                           Take the branch if registers rs1 is greater than or equal to rs2, using signed comparison.
+
+                           Implementation
+                           if (x[rs1] >=s x[rs2]) pc += sext(offset)
+                           */
+        }
+
+        __function void rv_bltu(uint8_t imm_12_10_5, uint8_t rs2, uint8_t rs1, uint8_t imm_4_1_11) {
+            /*
+                           Description
+                           Take the branch if registers rs1 is less than rs2, using unsigned comparison.
+
+                           Implementation
+                           if (x[rs1] <u x[rs2]) pc += sext(offset)
+                           */
+        }
+
+        __function void rv_bgeu(uint8_t imm_12_10_5, uint8_t rs2, uint8_t rs1, uint8_t imm_4_1_11) {
+            /*
+                           Description
+                           Take the branch if registers rs1 is greater than or equal to rs2, using unsigned comparison.
+
+                           Implementation
+                           if (x[rs1] >=u x[rs2]) pc += sext(offset)
+                           */
+        }
+    };
+
+    namespace utype {
+        __function void rv_lui(uint32_t imm_31_12, uint8_t rd) {
+            /*
+                           Description
+                           Build 32-bit constants and uses the U-type format. LUI places the U-immediate value in the top 20 bits of the destination register rd,
+                           filling in the lowest 12 bits with zeros.
+
+                           Implementation
+                           x[rd] = sext(immediate[31:12] << 12)
+                           */
+        }
+
+        __function void rv_auipc(uint32_t imm_31_12, uint8_t rd) {
+            /*
+                           Description
+                           Build pc-relative addresses and uses the U-type format. AUIPC forms a 32-bit offset from the 20-bit U-immediate,
+                           filling in the lowest 12 bits with zeros, adds this offset to the pc, then places the result in register rd.
+
+                           Implementation
+                           x[rd] = pc + sext(immediate[31:12] << 12)
+                           */
+        }
+    };
+
+    namespace jtype {
+        __function void rv_jal(uint32_t imm_20_10_1_11_19_12, uint8_t rd) {
+            /*
+                           Description
+                           Jump to address and place return address in rd.
+
+                           Implementation
+                           x[rd] = pc+4; pc += sext(offset)
+                           */
+        }
+    };
+
 };
