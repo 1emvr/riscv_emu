@@ -7,7 +7,7 @@ namespace rvm64::memory {
     __function void vm_init(void) {
         rvm64::context::vm_context_init();
 
-        vmcs.mod_base = 0; //instance::memory::get_module_base();
+        vmcs.mod_base = 0; // TODO: instance::memory::get_module_base();
         vmcs.handler = (uintptr_t)operation::__handler;
         vmcs.dkey = __key; // lol idk...
 
@@ -51,8 +51,8 @@ namespace rvm64::memory {
             return;
         }
 
-        uintptr_t _ra = 0; // TODO: shadow_call_stack_pop();
-        if (vmcs.vregs[regenum::ra] != _ra) {
+        uintptr_t _ra = 0; // TODO: rvm64::memory::shadow_callstack_pop();
+        if (vmcs.vregs[ra] != _ra) {
             vmcs.halt = 1;
             vmcs.reason = return_address_corruption;
         }
