@@ -1,6 +1,7 @@
 #include "mono.hpp"
 #include "vmmem.h"
 #include "vmcs.h"
+#include "vmctx.h"
 
 namespace rvm64::operation {
     bool is_nan(double x) {
@@ -228,8 +229,8 @@ namespace rvm64::operation {
             reg_read(int32_t, rs1, v1);
 
             if ((imm_11_0 >> 5) != 0) {
-                vmcs.halt = 1;
-                vmcs.reason = illegal_op;
+                vmcs->halt = 1;
+                vmcs->reason = illegal_op;
                 return;
             }
 
@@ -243,8 +244,8 @@ namespace rvm64::operation {
             reg_read(int32_t, rs1, v1);
 
             if ((imm_11_0 >> 5) != 0) {
-                vmcs.halt = 1;
-                vmcs.reason = illegal_op;
+                vmcs->halt = 1;
+                vmcs->reason = illegal_op;
                 return;
             }
 
@@ -258,8 +259,8 @@ namespace rvm64::operation {
             reg_read(int32_t, rs1, v1);
 
             if ((imm_11_0 >> 5) != 0) {
-                vmcs.halt = 1;
-                vmcs.reason = illegal_op;
+                vmcs->halt = 1;
+                vmcs->reason = illegal_op;
                 return;
             }
 
