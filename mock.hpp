@@ -67,8 +67,8 @@ bool load_elf64_image(void) {
             return false;
         }
 
-        void* src = vmcs->program.address + ph->p_offset;
-        void* dst = vmcs->process.address + offset;
+        void* src = (void*)vmcs->program.address + ph->p_offset;
+        void* dst = (void*)vmcs->process.address + offset;
 
         memcpy(dst, src, ph->p_filesz);
 
