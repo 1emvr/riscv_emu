@@ -1,5 +1,6 @@
 #ifndef RV32_REGISTERS_HPP
 #define RV32_REGISTERS_HPP
+#include <windows.h>
 #include <stdint.h>
 
 #define __extern   extern "C"

@@ -14,7 +14,7 @@
 #define ET_DYN  3
 
 bool load_elf64_image(void) {
-	if (!vmcs || !vmcs->program.address || !vmcs->process.address) {
+	if (!vmcs->program.address || !vmcs->process.address) {
 		printf("Invalid VMCS or memory pointers\n");
 		return false;
 	}
@@ -82,29 +82,43 @@ bool load_elf64_image(void) {
 }
 
 bool read_program_from_packet() {
-
 	HANDLE hfile = ctx->win32.NtCreateFile("./test.o", GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hfile == INVALID_HANDLE_VALUE) {
+		printf("Failed to open file\n");
 		return false;
 	}
 
 	DWORD size = 0;
 	DWORD status = ctx->win32.NtGetFileSize(hfile, &size);
-	if (status == INVALID_FILE_SIZE) {
+	if (status == INVALID_FILE_SIZE || size == 0) {
+		printf("Invalid or empty file\n");
 		return false;
 	}
 
-	vmcs->program.address = vmcs->process.address;
+	void* elf_data = ctx->win32.RtlAllocateHeap(GetProcessHeap(), 0, size);
+	if (!elf_data) {
+		printf("Failed to allocate memory for ELF\n");
+		return false;
+	}
+
+	DWORD bytesRead = 0;
+	if (!ctx->win32.NtReadFile(hfile, elf_data, size, &bytesRead, NULL) || bytesRead != size) {
+		printf("Failed to read file\n");
+		free(elf_data);
+		return false;
+	}
+
+	vmcs->program.address = (uintptr_t)elf_data;
 	vmcs->program.size = size;
 
-	if (vmcs->process.size < vmcs->program.size) {
-		return false;
-	}
-	if (!ctx->win32.NtReadFile(hfile, (void*)&vmcs->program.address, vmcs->program.size, &status, NULL)) {
-		vmcs->reason = GetLastError();
-		return false;
-	}
+	// Load (relocate) ELF from elf_data into vmcs->process.address
+	bool success = load_elf64_image();
 
-	return load_elf64_image();
+	// Free the temporary ELF file buffer
+	free(elf_data);
+	vmcs->program.address = 0;
+	vmcs->program.size = 0;
+
+	return success;
 }
 #endif // MOCK_H

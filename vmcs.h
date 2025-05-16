@@ -7,13 +7,16 @@ typedef NTSTATUS(NTAPI* NtAllocateVirtualMemory_t)(HANDLE ProcessHandle, PVOID* 
 typedef NTSTATUS(NTAPI* NtFreeVirtualMemory_t)(HANDLE processHandle, PVOID* BaseAddress, PSIZE_T RegionSize, ULONG FreeType);
 typedef NTSTATUS(NTAPI* NtGetContextThread_t)(HANDLE ThreadHandle, PCONTEXT ThreadContext);
 typedef NTSTATUS(NTAPI* NtSetContextThread_t)(HANDLE ThreadHandle, PCONTEXT ThreadContext);
+typedef PVOID(NTAPI* RtlAllocateHeap_t)(HANDLE HeapHandle, ULONG Flags, SIZE_T Size);
 
 typedef struct __hexane {
+    void *heap;
     struct {
         NtGetContextThread_t NtGetContextThread;
         NtSetContextThread_t NtSetContextThread;
         NtAllocateVirtualMemory_t NtAllocateVirtualMemory;
         NtFreeVirtualMemory_t NtFreeVirtualMemory;
+        RtlAllocateHeap_t RtlAllocateHeap;
 
         decltype(CreateFileA)* NtCreateFile;
         decltype(GetFileSize)* NtGetFileSize;
@@ -52,8 +55,8 @@ typedef struct {
 } vmcs_t;
 
 
-__data hexane *ctx = { };
-__data vmcs_t *vmcs= { };
+__data hexane *ctx = nullptr;
+__data vmcs_t *vmcs = nullptr;
 __data uintptr_t __stack_cookie = { };
 __data uintptr_t __key;
 #endif //VMCS_H

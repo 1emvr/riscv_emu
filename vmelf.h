@@ -2,7 +2,6 @@
 #define VMELF_H
 #define EI_NIDENT 16
 #define PT_LOAD 1
-#include "stdint-gcc.h"
 
 typedef struct {
     uint8_t  e_ident[EI_NIDENT]; // ELF magic, class, data, etc.
