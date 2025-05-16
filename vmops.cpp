@@ -1,6 +1,6 @@
 #include "mono.hpp"
 #include "vmmem.h"
-#include "vmcs.h"
+#include "vmmain.h"
 #include "vmctx.h"
 
 namespace rvm64::operation {

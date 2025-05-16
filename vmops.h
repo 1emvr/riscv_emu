@@ -180,6 +180,8 @@ namespace rvm64::operation {
         crypt::encrypt_ptr((uintptr_t) itype::rv_csrrw), crypt::encrypt_ptr((uintptr_t) itype::rv_csrrs),
         crypt::encrypt_ptr((uintptr_t) itype::rv_csrrc), crypt::encrypt_ptr((uintptr_t) itype::rv_csrrwi),
         crypt::encrypt_ptr((uintptr_t) itype::rv_csrrsi), crypt::encrypt_ptr((uintptr_t) itype::rv_csrrci),
+        crypt::encrypt_ptr((uintptr_t) itype::rv_fclass_d), crypt::encrypt_ptr((uintptr_t) itype::rv_lrw),
+        crypt::encrypt_ptr((uintptr_t) itype::rv_lrd),
 
         // RTYPE
         crypt::encrypt_ptr((uintptr_t) rtype::rv_fadd_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fsub_d),
@@ -196,16 +198,14 @@ namespace rvm64::operation {
         crypt::encrypt_ptr((uintptr_t) rtype::rv_fsgnjx_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fmin_d),
         crypt::encrypt_ptr((uintptr_t) rtype::rv_fmax_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_feq_d),
         crypt::encrypt_ptr((uintptr_t) rtype::rv_flt_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fle_d),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_fclass_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fmv_x_d),
-
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_lrw), crypt::encrypt_ptr((uintptr_t) rtype::rv_scw),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_fmv_x_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_scw),
         crypt::encrypt_ptr((uintptr_t) rtype::rv_amoswap_w), crypt::encrypt_ptr((uintptr_t) rtype::rv_amoadd_w),
         crypt::encrypt_ptr((uintptr_t) rtype::rv_amoxor_w), crypt::encrypt_ptr((uintptr_t) rtype::rv_amoand_w),
         crypt::encrypt_ptr((uintptr_t) rtype::rv_amoor_w), crypt::encrypt_ptr((uintptr_t) rtype::rv_amomin_w),
         crypt::encrypt_ptr((uintptr_t) rtype::rv_amomax_w), crypt::encrypt_ptr((uintptr_t) rtype::rv_amominu_w),
         crypt::encrypt_ptr((uintptr_t) rtype::rv_amomaxu_w),
 
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_lrd), crypt::encrypt_ptr((uintptr_t) rtype::rv_scd),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_scd),
         crypt::encrypt_ptr((uintptr_t) rtype::rv_amoswap_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_amoadd_d),
         crypt::encrypt_ptr((uintptr_t) rtype::rv_amoxor_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_amoand_d),
         crypt::encrypt_ptr((uintptr_t) rtype::rv_amoor_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_amomin_d),
@@ -232,7 +232,6 @@ namespace rvm64::operation {
         crypt::encrypt_ptr((uintptr_t) stype::rv_sb), crypt::encrypt_ptr((uintptr_t) stype::rv_sh),
         crypt::encrypt_ptr((uintptr_t) stype::rv_sw), crypt::encrypt_ptr((uintptr_t) stype::rv_sd),
         crypt::encrypt_ptr((uintptr_t) stype::rv_fsw), crypt::encrypt_ptr((uintptr_t) stype::rv_fsd),
-        crypt::encrypt_ptr((uintptr_t) stype::rv_fsq),
 
         // BTYPE
         crypt::encrypt_ptr((uintptr_t) btype::rv_beq), crypt::encrypt_ptr((uintptr_t) btype::rv_bne),

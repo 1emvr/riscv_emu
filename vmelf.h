@@ -1,5 +1,6 @@
 #ifndef VMELF_H
 #define VMELF_H
+
 #define EI_NIDENT 16
 #define PT_LOAD 1
 

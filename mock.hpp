@@ -7,7 +7,7 @@
 
 #include "mono.hpp"
 #include "vmelf.h"
-#include "vmcs.h"
+#include "vmmain.h"
 
 #define PT_LOAD 1
 #define ET_EXEC 2

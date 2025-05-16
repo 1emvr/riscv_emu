@@ -1,4 +1,4 @@
-#include "vmcs.h"
+#include "vmmain.h"
 namespace rvm64::context {
     __function void vm_entry(void) {
         // TODO

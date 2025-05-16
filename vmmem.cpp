@@ -1,7 +1,7 @@
 #include "mono.hpp"
 #include "vmctx.h"
 #include "vmops.h"
-#include "vmcs.h"
+#include "vmmain.h"
 
 namespace rvm64::memory {
     __function void vm_init(void) {
