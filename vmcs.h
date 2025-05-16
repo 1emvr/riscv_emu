@@ -9,12 +9,18 @@ typedef NTSTATUS(NTAPI* NtFreeVirtualMemory_t)(HANDLE processHandle, PVOID* Base
 typedef NTSTATUS(NTAPI* NtGetContextThread_t)(HANDLE ThreadHandle, PCONTEXT ThreadContext);
 typedef NTSTATUS(NTAPI* NtSetContextThread_t)(HANDLE ThreadHandle, PCONTEXT ThreadContext);
 
+struct buffer {
+    uintptr_t address;
+    size_t size;
+};
+
 typedef struct {
     uintptr_t mod_base;
     uintptr_t dkey;
     uintptr_t handler;
-    uintptr_t program;
-    uintptr_t program_size;
+
+    buffer program;
+    buffer process;
 
     uint8_t vstack[VSTACK_MAX_CAPACITY];
     uint8_t vregs[VREGS_MAX_CAPACITY];

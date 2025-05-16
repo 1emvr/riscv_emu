@@ -14,8 +14,7 @@ namespace rvm64 {
         vmcs_t vm_instance = { };
         vmcs= &vm_instance;
 
-        // ultimately, we do need to have a process_max_capacity, right?
-        rvm64::memory::vm_init(); // initialize the process space. make sure "read_program" doesn't overflow.
+        rvm64::memory::vm_init(); // initialize the process space. Make sure "read_program" checks boundaries (process->size >= program->size).
         while(!vmcs->halt) {
             if (!read_program_from_packet(vmcs->program)) { // continue reading until successful
                 continue;
