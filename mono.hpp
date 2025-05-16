@@ -121,33 +121,47 @@ enum typenum {
 	rtype = 1, r4type, itype, stype, btype, utype, jtype, ftype,
 };
 
-enum tblenum : uintptr_t {
-	_addi, _slti, _sltiu, _xori, _ori, _andi, _slli, _srli,
-	_srai, _addiw, _slliw, _srliw, _sraiw, _lb, _lh, _lw,
-	_lbu, _lhu, _lwu, _ld, _flq, _fence, _fence_i, _jalr,
-	_ecall, _ebreak, _csrrw, _csrrs, _csrrc, _csrrwi, _csrrsi, _csrrci,
+enum HandlerIndex : uint8_t {
+	// ITYPE
+	_rv_addi, _rv_slti, _rv_sltiu, _rv_xori, _rv_ori, _rv_andi,
+	_rv_slli, _rv_srli, _rv_srai, _rv_addiw, _rv_slliw, _rv_srliw,
+	_rv_sraiw, _rv_lb, _rv_lh, _rv_lw, _rv_lbu, _rv_lhu, _rv_lwu, _rv_ld,
+	_rv_flq, _rv_fence, _rv_fence_i, _rv_jalr, _rv_ecall, _rv_ebreak,
+	_rv_csrrw, _rv_csrrs, _rv_csrrc, _rv_csrrwi, _rv_csrrsi, _rv_csrrci,
+	_rv_fclass_d, _rv_lrw, _rv_lrd,
 
-	_fadd_d, _fsub_d, _fmul_d, _fdiv_d, _fsqrt_d, _fmv_d_x,
-	_fcvt_s_d, _fcvt_s_q, _fcvt_d_s, _fcvt_d_q, _fcvt_w_d, _fcvt_wu_d,
-	_fcvt_l_d, _fcvt_lu_d, _fcvt_d_w, _fcvt_d_wu, _fcvt_d_l, _fcvt_d_lu,
+	// RTYPE
+	_rv_fadd_d, _rv_fsub_d, _rv_fmul_d, _rv_fdiv_d, _rv_fsqrt_d, _rv_fmv_d_x,
+	_rv_fcvt_s_d, _rv_fcvt_s_q, _rv_fcvt_d_s, _rv_fcvt_d_q,
+	_rv_fcvt_w_d, _rv_fcvt_wu_d, _rv_fcvt_l_d, _rv_fcvt_lu_d,
+	_rv_fcvt_d_w, _rv_fcvt_d_wu, _rv_fcvt_d_l, _rv_fcvt_d_lu,
 
-	_fsgnj_d, _fsgnjn_d, _fsgnjx_d, _fmin_d, _fmax_d, _feq_d,
-	_flt_d, _fle_d, _fclass_d, _fmv_x_d,
+	_rv_fsgnj_d, _rv_fsgnjn_d, _rv_fsgnjx_d, _rv_fmin_d, _rv_fmax_d,
+	_rv_feq_d, _rv_flt_d, _rv_fle_d, _rv_fmv_x_d, _rv_scw,
+	_rv_amoswap_w, _rv_amoadd_w, _rv_amoxor_w, _rv_amoand_w,
+	_rv_amoor_w, _rv_amomin_w, _rv_amomax_w, _rv_amominu_w,
+	_rv_amomaxu_w,
 
-	_lrw, _scw, _amoswap_w, _amoadd_w, _amoxor_w, _amoand_w,
-	_amoor_w, _amomin_w, _amomax_w, _amominu_w, _amomaxu_w,
+	_rv_scd, _rv_amoswap_d, _rv_amoadd_d, _rv_amoxor_d, _rv_amoand_d,
+	_rv_amoor_d, _rv_amomin_d, _rv_amomax_d, _rv_amominu_d,
+	_rv_amomaxu_d,
 
-	_lrd, _scd, _amoswap_d, _amoadd_d, _amoxor_d, _amoand_d,
-	_amoor_d, _amomin_d, _amomax_d, _amominu_d, _amomaxu_d,
+	_rv_addw, _rv_subw, _rv_mulw, _rv_srlw, _rv_sraw, _rv_divuw,
+	_rv_sllw, _rv_divw, _rv_remw, _rv_remuw,
 
-	_addw, _subw, _mulw, _srlw, _sraw, _divuw, _sllw, _divw,
-	_remw, _remuw, _add, _sub, _mul, _sll, _mulh, _slt,
-	_mulhsu, _sltu, _mulhu, _xor, _div, _srl, _sra, _divu,
-	_or, _rem, _and, _remu,
+	_rv_add, _rv_sub, _rv_mul, _rv_sll, _rv_mulh, _rv_slt,
+	_rv_mulhsu, _rv_sltu, _rv_mulhu, _rv_xor,
+	_rv_div, _rv_srl, _rv_sra, _rv_divu, _rv_or, _rv_rem,
+	_rv_and, _rv_remu,
 
-	_sb, _sh, _sw, _sd, _fsw, _fsd, _fsq,
-	_beq, _bne, _blt, _bge, _bltu, _bgeu,
-	_lui, _auipc, _jal
+	// STYPE
+	_rv_sb, _rv_sh, _rv_sw, _rv_sd, _rv_fsw, _rv_fsd,
+
+	// BTYPE
+	_rv_beq, _rv_bne, _rv_blt, _rv_bge, _rv_bltu, _rv_bgeu,
+
+	// UTYPE/JTYPE
+	_rv_lui, _rv_auipc, _rv_jal,
 };
 
 enum regenum {
