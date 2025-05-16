@@ -36,27 +36,11 @@ __rdata const opcode encoding[] = {
 };
 
 __function uintptr_t vm_decode(uint32_t opcode) {
-    // TODO: drop all possible bitfields at the same time and write to scratch on decode.
-    // scratch space can be used for bitfields, immediates, arguments, etc.
-
-    uint8_t func7 = (opcode >> 24) & 0x7F;
-    uint8_t func5 = (func7 >> 2) & 0x1F;
-    uint8_t func3 = (opcode >> 12) & 0x7;
-    uint8_t func2 = (opcode >> 24) & 0x3;
-
-    uint8_t rs3   = (opcode >> 27) & 0x1F;
-    uint8_t rs2   = (opcode >> 20) & 0x1F;
-    uint8_t rs1   = (opcode >> 15) & 0x1F;
-    uint8_t rd    = (opcode >> 7) & 0x1F;
-
-    uint16_t imm_11_0 = (opcode >> 20) & 0xFFF;
-    // TODO: other immx:x:x from all xtype instructions. Follow based on ratified docs for each type.
-
     uint8_t decoded = 0;
+    uint8_t opcode7 = opcode & 0x7F;
 
-    opcode &= 0b1111111; 
     for (int idx = 0; idx < sizeof(encoding); idx++) {
-        if (encoding[idx].mask == opcode) {
+        if (encoding[idx].mask == opcode7) {
             decoded = encoding[idx].type;
             break;
         }
@@ -67,9 +51,52 @@ __function uintptr_t vm_decode(uint32_t opcode) {
         return -1;
     }
 
-    switch(decoded) { 
+    uint8_t func7 = (opcode >> 24) & 0x7F;
+    uint8_t func5 = (func7 >> 2) & 0x1F;
+    uint8_t func3 = (opcode >> 12) & 0x7;
+    uint8_t func2 = (opcode >> 24) & 0x3;
+
+    uint8_t rs3   = (opcode >> 27) & 0x1F;
+    uint8_t rs2   = (opcode >> 20) & 0x1F; // also "shamt"
+    uint8_t rs1   = (opcode >> 15) & 0x1F;
+    uint8_t rd    = (opcode >> 7) & 0x1F;
+
+    int32_t imm_i = (int32_t)(opcode) >> 20;
+    int32_t imm_s = ((int32_t)(((opcode >> 25) << 5) | ((opcode >> 7) & 0x1F))) << 20 >> 20;
+    int32_t imm_u = opcode & 0xFFFFF000;
+
+    int32_t imm_b =
+    ((opcode >> 31) & 0x1) << 12 |
+    ((opcode >> 25) & 0x3F) << 5 |
+    ((opcode >> 8) & 0xF) << 1 |
+    ((opcode >> 7) & 0x1) << 11;
+    imm_b = (int32_t)(imm_b << 19) >> 19;  // Sign-extend from 13 bits
+
+    int32_t imm_j =
+    ((opcode >> 31) & 0x1) << 20 |
+    ((opcode >> 21) & 0x3FF) << 1 |
+    ((opcode >> 20) & 0x1) << 11 |
+    ((opcode >> 12) & 0xFF) << 12;
+    imm_j = (int32_t)(imm_j << 11) >> 11;  // Sign-extend from 21 bits
+
+    vmcs->vscratch1[0] = func3;
+    vmcs->vscratch1[1] = rd;
+    vmcs->vscratch1[2] = rs1;
+    vmcs->vscratch1[3] = rs2;
+    vmcs->vscratch1[4] = rs3;
+    vmcs->vscratch1[5] = func7;
+    vmcs->vscratch1[6] = func5;
+    vmcs->vscratch1[7] = func2;
+
+    vmcs->vscratch2[0] = imm_i;
+    vmcs->vscratch2[1] = imm_s;
+    vmcs->vscratch2[2] = imm_b;
+    vmcs->vscratch2[3] = imm_u;
+    vmcs->vscratch2[4] = imm_j;
+
+    switch(decoded) {
         // I_TYPE
-        case itype: switch(opcode) {
+        case itype: switch(opcode7) {
             case 0b0010011: switch(func3) {
                 case 0b000: { return ((uintptr_t*)vmcs->handler)[_addi];  } // TODO: drop fields into vmcs->vscratch
                 case 0b010: { return ((uintptr_t*)vmcs->handler)[_slti];  }
@@ -78,7 +105,7 @@ __function uintptr_t vm_decode(uint32_t opcode) {
                 case 0b110: { return ((uintptr_t*)vmcs->handler)[_ori];   }
                 case 0b111: { return ((uintptr_t*)vmcs->handler)[_andi];  }
                 case 0b001: { return ((uintptr_t*)vmcs->handler)[_slli];  }
-                case 0b101: switch(imm_mask) {
+                case 0b101: switch(func7) {
                     case 0b0000000: return ((uintptr_t*)vmcs->handler)[_srli];
                     case 0b0100000: return ((uintptr_t*)vmcs->handler)[_srai];
                 }
@@ -103,7 +130,7 @@ __function uintptr_t vm_decode(uint32_t opcode) {
         } 
 
         // R_TYPE
-        case rtype: switch(opcode) {
+        case rtype: switch(opcode7) {
             case 0b1010011: switch(func7) {
                 case 0b0000001: return ((uintptr_t*)vmcs->handler)[_fadd_d];
                 case 0b0000101: return ((uintptr_t*)vmcs->handler)[_fsub_d];
@@ -232,7 +259,7 @@ __function uintptr_t vm_decode(uint32_t opcode) {
             }
         } 
         // S TYPE
-        case stype: switch(opcode) {
+        case stype: switch(opcode7) {
             case 0b0100011: switch(func3) {
                 case 0b000: return ((uintptr_t*)vmcs->handler)[_sb];
                 case 0b001: return ((uintptr_t*)vmcs->handler)[_sh];
@@ -255,12 +282,12 @@ __function uintptr_t vm_decode(uint32_t opcode) {
             case 0b111: return ((uintptr_t*)vmcs->handler)[_bgeu];
         }
         // U TYPE
-        case utype: switch(opcode) {
+        case utype: switch(opcode7) {
             case 0b0110111: return ((uintptr_t*)vmcs->handler)[_lui];
             case 0b0010111: return ((uintptr_t*)vmcs->handler)[_auipc];
         }
         // J TYPE
-        case jtype: switch(opcode) {
+        case jtype: switch(opcode7) {
             case 0b1101111: return ((uintptr_t*)vmcs->handler)[_jal];
         }
         // R4 TYPE

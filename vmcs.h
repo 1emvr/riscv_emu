@@ -41,7 +41,9 @@ typedef struct {
 
     uint8_t vstack[VSTACK_MAX_CAPACITY];
     uint8_t vregs[VREGS_MAX_CAPACITY];
-    uint8_t vscratch[VSCRATCH_MAX_CAPACITY];
+
+    uint8_t vscratch1[8];
+    int32_t vscratch2[8];
 
     CONTEXT host_context;
     CONTEXT vm_context;
