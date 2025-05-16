@@ -26,7 +26,7 @@ typedef struct __hexane {
 } hexane;
 
 typedef struct {
-    uint8_t* address;
+    uintptr_t address;
     size_t size;
 } vm_memory_t;
 

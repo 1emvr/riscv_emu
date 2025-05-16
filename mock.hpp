@@ -77,7 +77,7 @@ bool load_elf64_image(void) {
         }
     }
 
-    vmcs->pc = (uintptr_t)(vmcs->process.address + (e_head->e_entry - base_vaddr));
+    vmcs->pc = vmcs->process.address + (e_head->e_entry - base_vaddr);
     return true;
 }
 
