@@ -160,51 +160,51 @@ enum regenum {
 #define mem_read(T, addr, retval)                                               \
 do {						                                                    \
     if ((addr) % sizeof(T) != 0) {												\
-        vmcs.halt = 1;															\
-        vmcs.reason = unaligned_op;												\
+        vmcs->halt = 1;															\
+        vmcs->reason = unaligned_op;											\
         return;																	\
     }																			\
-    if ((addr) < vmcs.program || (addr) + sizeof(T) > PROCESS_MAX_CAPACITY) {	\
-        vmcs.halt = 1;															\
-        vmcs.reason = access_violation;											\
+    if ((addr) < vmcs->process.address || (addr) + sizeof(T) > PROCESS_MAX_CAPACITY) {	\
+        vmcs->halt = 1;															\
+        vmcs->reason = access_violation;										\
         return;																	\
     }																			\
-    retval = *(T*)((uint8_t*)vmcs.program + ((addr) - vmcs.program));			\
+    retval = *(T*) (((uint8_t*)vmcs->program.address) + ((addr) - vmcs->program.address));	\
 } while (0)
 
 #define mem_write(T, addr, value)                                               \
 do {											                                \
     if ((addr) % sizeof(T) != 0) {												\
-        vmcs.halt = 1;															\
-        vmcs.reason = unaligned_op;												\
+        vmcs->halt = 1;															\
+        vmcs->reason = unaligned_op;											\
         return;																	\
     }																			\
-    if ((addr) < vmcs.program || (addr) + sizeof(T) > PROCESS_MAX_CAPACITY) {	\
-        vmcs.halt = 1;															\
-        vmcs.reason = access_violation;											\
+    if ((addr) < vmcs->process.address || (addr) + sizeof(T) > PROCESS_MAX_CAPACITY) {	\
+        vmcs->halt = 1;															\
+        vmcs->reason = access_violation;										\
         return;																	\
     }																			\
-    *(T*)((uint8_t*)vmcs.program + ((addr) - vmcs.program)) = (value);			\
+    *(T*)((uint8_t*)vmcs->program + ((addr) - vmcs->program)) = (value);		\
 } while (0)
 
 #define reg_read(T, idx, retval)				\
 	do {										\
 		if ((idx) > REGENUM_T6) {				\
-			vmcs.halt = 1;						\
-			vmcs.reason = access_violation;		\
+			vmcs->halt = 1;						\
+			vmcs->reason = access_violation;	\
 			return;								\
 		}										\
-		retval = (T)vmcs.vregs[(idx)];			\
+		retval = (T)vmcs->vregs[(idx)];			\
 	} while(0)
 
 #define reg_write(T, idx, value)							\
 	do {                                                    \
 		if ((idx) == REGENUM_ZR || (idx) > REGENUM_T6) {	\
-			vmcs.halt = 1;									\
-			vmcs.reason = access_violation;					\
+			vmcs->halt = 1;									\
+			vmcs->reason = access_violation;					\
 			return;                                         \
 		}                                                   \
-		vmcs.vregs[(idx)] = (T)value;						\
+		vmcs->vregs[(idx)] = (T)value;						\
 	} while (0)
 
 #define ip_write(target)						\
@@ -216,7 +216,7 @@ do {											                                \
 #define set_branch(target)						\
 	do {										\
 		ip_write(target);						\
-		vmcs.step = false;						\
+		vmcs->step = false;						\
 	} while (0)
 
 #endif // RV32_REGISTERS_HPP

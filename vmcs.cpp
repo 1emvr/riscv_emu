@@ -5,10 +5,6 @@
 #include "vmctx.h"
 #include "vmmem.h"
 
-__data hexane *ctx = { };
-__data vmcs_t *vmcs= { };
-__data uintptr_t __stack_cookie = { };
-
 namespace rvm64 {
     __function int64_t vm_main(void) {
         vmcs_t vm_instance = { };
@@ -16,7 +12,7 @@ namespace rvm64 {
 
         rvm64::memory::vm_init(); // initialize the process space. Make sure "read_program" checks boundaries (process->size >= program->size).
         while(!vmcs->halt) {
-            if (!read_program_from_packet(vmcs->program)) { // continue reading until successful
+            if (!read_program_from_packet()) { // continue reading until successful
                 continue;
             }
         };

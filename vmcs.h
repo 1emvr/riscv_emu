@@ -2,12 +2,25 @@
 #define VMCS_H
 
 #include "mono.hpp"
-#include "mock.hpp"
 
 typedef NTSTATUS(NTAPI* NtAllocateVirtualMemory_t)(HANDLE ProcessHandle, PVOID* BaseAddress, ULONG_PTR ZeroBits, PSIZE_T RegionSize, ULONG AllocationType, ULONG Protect);
 typedef NTSTATUS(NTAPI* NtFreeVirtualMemory_t)(HANDLE processHandle, PVOID* BaseAddress, PSIZE_T RegionSize, ULONG FreeType);
 typedef NTSTATUS(NTAPI* NtGetContextThread_t)(HANDLE ThreadHandle, PCONTEXT ThreadContext);
 typedef NTSTATUS(NTAPI* NtSetContextThread_t)(HANDLE ThreadHandle, PCONTEXT ThreadContext);
+
+typedef struct __hexane {
+    struct {
+        NtGetContextThread_t NtGetContextThread;
+        NtSetContextThread_t NtSetContextThread;
+        NtAllocateVirtualMemory_t NtAllocateVirtualMemory;
+        NtFreeVirtualMemory_t NtFreeVirtualMemory;
+
+        decltype(CreateFileA)* NtCreateFile;
+        decltype(GetFileSize)* NtGetFileSize;
+        decltype(ReadFile)* NtReadFile;
+        decltype(OpenFile)* NtOpenFile;
+    } win32;
+} hexane;
 
 struct buffer {
     uintptr_t address;
@@ -37,22 +50,9 @@ typedef struct {
     int step;
 } vmcs_t;
 
-typedef struct __hexane {
-    struct {
-        NtGetContextThread_t NtGetContextThread;
-        NtSetContextThread_t NtSetContextThread;
-        NtAllocateVirtualMemory_t NtAllocateVirtualMemory;
-        NtFreeVirtualMemory_t NtFreeVirtualMemory;
 
-        decltype(CreateFileA)* NtCreateFile;
-        decltype(GetFileSize)* NtGetFileSize;
-        decltype(ReadFile)* NtReadFile;
-        decltype(OpenFile)* NtOpenFile;
-    } win32;
-} hexane;
-
-extern hexane *ctx;
-extern vmcs_t *vmcs;
-extern uintptr_t __stack_cookie;
-extern uintptr_t __key;
+__data hexane *ctx = { };
+__data vmcs_t *vmcs= { };
+__data uintptr_t __stack_cookie = { };
+__data uintptr_t __key;
 #endif //VMCS_H
