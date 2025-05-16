@@ -165,12 +165,12 @@ do {						                                                    \
         vmcs->reason = unaligned_op;											\
         return;																	\
     }																			\
-    if ((addr) < vmcs->process.address || (addr) + sizeof(T) > PROCESS_MAX_CAPACITY) {	\
+    if ((addr) < (uintptr_t)vmcs->process.address || (addr) + sizeof(T) > PROCESS_MAX_CAPACITY) {	\
         vmcs->halt = 1;															\
         vmcs->reason = access_violation;										\
         return;																	\
     }																			\
-    retval = *(T*) (((uint8_t*)vmcs->program.address) + ((addr) - vmcs->program.address));	\
+    retval = *(T*) (vmcs->process.address + ((addr) - (uintptr_t)vmcs->process.address));	\
 } while (0)
 
 #define mem_write(T, addr, value)                                               \
@@ -180,12 +180,12 @@ do {											                                \
         vmcs->reason = unaligned_op;											\
         return;																	\
     }																			\
-    if ((addr) < vmcs->process.address || (addr) + sizeof(T) > PROCESS_MAX_CAPACITY) {	\
+    if ((addr) < (uintptr_t)vmcs->process.address || (addr) + sizeof(T) > PROCESS_MAX_CAPACITY) {	\
         vmcs->halt = 1;															\
         vmcs->reason = access_violation;										\
         return;																	\
     }																			\
-    *(T*)((uint8_t*)vmcs->program + ((addr) - vmcs->program)) = (value);		\
+    *(T*) (vmcs->process.address + ((addr) - (uintptr_t)vmcs->process.address)) = (value);		\
 } while (0)
 
 #define reg_read(T, idx, retval)				\

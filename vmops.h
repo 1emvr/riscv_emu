@@ -100,7 +100,7 @@ namespace rvm64::operation {
         __function void rv_rem(uint8_t rs2, uint8_t rs1, uint8_t rd);
         __function void rv_and(uint8_t rs2, uint8_t rs1, uint8_t rd);
         __function void rv_remu(uint8_t rs2, uint8_t rs1, uint8_t rd);
-        __function void rv_fsqrt_d();
+        __function void rv_fsqrt_d(); // NOTE: I'M VERY SURE THIS IS ITYPE, NOT RTYPE....
         __function void rv_fmv_d_x();
         __function void rv_fcvt_s_d();
         __function void rv_fcvt_s_q();
