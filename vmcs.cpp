@@ -4,7 +4,6 @@
 #include "vmcs.h"
 #include "vmctx.h"
 #include "vmmem.h"
-#include "vmops.h"
 
 __data hexane *ctx = { };
 __data vmcs_t vmcs = { };
@@ -36,13 +35,17 @@ __rdata const opcode encoding[] = {
 };
 
 __function uintptr_t vm_decode(uint32_t opcode) {
-    uint8_t rs2   = (opcode >> 20) & 0x1F;
-    uint8_t func3 = (opcode >> 12) & 0x7;
+    // TODO: drop all possible bitfields at the same time and write to scratch upon decoding
+    // scratch space can be used for bitfields, immediates, arguments, etc.
     uint8_t func7 = (opcode >> 25) & 0x7F;
+    uint8_t rs2   = (opcode >> 20) & 0x1F;
+    uint8_t rs1   = (opcode >> 15) & 0x1F;
+    uint8_t func3 = (opcode >> 12) & 0x7;
     uint8_t func5 = (func7 >> 2) & 0x1F;
 
-    // TODO: imm_mask is not defined for itype: case func3(0b101)
     uint16_t imm_11_0 = (opcode >> 20) & 0xFFF;
+    // TODO: other immx:x:x from all xtype instructions
+
     uint8_t decoded = 0;
 
     opcode &= 0b1111111; 

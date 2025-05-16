@@ -1,5 +1,4 @@
-#include "vmmain.hpp"
-#include "vmcrypt.h"
+#include "mono.hpp"
 #include "vmmem.h"
 #include "vmcs.h"
 
@@ -1339,6 +1338,21 @@ namespace rvm64::operation {
                 return;
             }
         }
+
+        __function void rv_fsqrt_d() {}
+        __function void rv_fmv_d_x() {}
+        __function void rv_fcvt_s_d() {}
+        __function void rv_fcvt_s_q() {}
+        __function void rv_fcvt_d_s() {}
+        __function void rv_fcvt_d_q() {}
+        __function void rv_fcvt_w_d() {}
+        __function void rv_fcvt_wu_d() {}
+        __function void rv_fcvt_l_d() {}
+        __function void rv_fcvt_lu_d() {}
+        __function void rv_fcvt_d_w() {}
+        __function void rv_fcvt_d_wu() {}
+        __function void rv_fcvt_d_l() {}
+        __function void rv_fcvt_d_lu() {}
     };
 
     namespace stype {
