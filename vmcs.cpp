@@ -1,6 +1,7 @@
 #include <windows.h>
 #include <stdint.h>
 
+#include "mock.hpp"
 #include "vmcs.h"
 #include "vmctx.h"
 #include "vmmem.h"

@@ -1,13 +1,13 @@
 #ifndef MOCK_H
 #define MOCK_H
 #include <windows.h>
-#include "mono.hpp"
-#include "vmelf.h"
-#include "vmcs.h"
-
 #include <cstdint>
 #include <cstring>
 #include <cstdio>
+
+#include "mono.hpp"
+#include "vmelf.h"
+#include "vmcs.h"
 
 #define PT_LOAD 1
 #define ET_EXEC 2
@@ -95,8 +95,8 @@ bool read_program_from_packet() {
 		return false;
 	}
 
-	void* elf_data = ctx->win32.NtAllocateVirtualMemory(NtCurrentProcess(), nullptr, 0, (PSIZE_T)&size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-	if (!elf_data) {
+	void* elf_data = nullptr;
+	if (!NT_SUCCESS(vmcs->reason = ctx->win32.NtAllocateVirtualMemory(NtCurrentProcess(), &elf_data, 0, (PSIZE_T)&size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE))) {
 		printf("Failed to allocate memory for ELF\n");
 		return false;
 	}
@@ -115,7 +115,7 @@ bool read_program_from_packet() {
 	bool success = load_elf64_image();
 
 	// Free the temporary ELF file buffer
-	ctx->win32.NtFreeVirtualMemory(NtCurrentProcess(), &elf_data, size, MEM_RELEASE);
+	ctx->win32.NtFreeVirtualMemory(NtCurrentProcess(), &elf_data, (PSIZE_T)&size, MEM_RELEASE);
 	vmcs->program.address = 0;
 	vmcs->program.size = 0;
 
