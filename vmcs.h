@@ -22,19 +22,19 @@ typedef struct __hexane {
     } win32;
 } hexane;
 
-struct buffer {
-    uintptr_t address;
+typedef struct {
+    uint8_t* address;
     size_t size;
-};
+} vm_memory_t;
 
 typedef struct {
     uintptr_t mod_base;
-    uintptr_t dkey;
     uintptr_t handler;
+    uintptr_t dkey;
     uintptr_t pc;
 
-    buffer program;
-    buffer process;
+    vm_memory_t program;
+    vm_memory_t process;
 
     uint8_t vstack[VSTACK_MAX_CAPACITY];
     uint8_t vregs[VREGS_MAX_CAPACITY];
