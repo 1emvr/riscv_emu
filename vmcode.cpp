@@ -17,24 +17,15 @@ namespace rvm64::decoder {
         return (val << shift) >> shift;
     }
 
-    inline int32_t imm_i(uint32_t opcode) {
-        return (int32_t)opcode >> 20;
-    }
-
-    inline int32_t imm_s(uint32_t opcode) {
-        return sign_extend(((opcode >> 25) << 5) | ((opcode >> 7) & 0x1F), 12);
-    }
-
+    inline int32_t imm_u(uint32_t opcode) { return opcode & 0xFFFFF000; }
+    inline int32_t imm_i(uint32_t opcode) { return (int32_t)opcode >> 20; }
+    inline int32_t imm_s(uint32_t opcode) { return sign_extend(((opcode >> 25) << 5) | ((opcode >> 7) & 0x1F), 12); }
     inline int32_t imm_b(uint32_t opcode) {
         int32_t val = (((opcode >> 31) & 1) << 12)
                     | (((opcode >> 25) & 0x3F) << 5)
                     | (((opcode >> 8) & 0xF) << 1)
                     | (((opcode >> 7) & 1) << 11);
         return sign_extend(val, 13);
-    }
-
-    inline int32_t imm_u(uint32_t opcode) {
-        return opcode & 0xFFFFF000;
     }
 
     inline int32_t imm_j(uint32_t opcode) {
