@@ -37,7 +37,7 @@ namespace rvm64::decoder {
         return sign_extend(val, 21);
     }
 
-    __function uintptr_t vm_decode(uint32_t opcode) {
+    __function void vm_decode(uint32_t opcode) {
         uint8_t decoded = 0;
         uint8_t opcode7 = opcode & 0x7F;
 
@@ -50,7 +50,7 @@ namespace rvm64::decoder {
         if (!decoded) {
             vmcs->halt = 1;
             vmcs->reason = illegal_op;
-            return -1;
+            return;
         }
 
         uint8_t func7 = (opcode >> 24) & 0x7F;
@@ -69,7 +69,7 @@ namespace rvm64::decoder {
         int32_t _imm_b = imm_b(opcode);
         int32_t _imm_j = imm_j(opcode);
 
-		// pass bitfields into scratch registers
+		// pass bitfields into scratch registers - scratch1 for registers and functions - scratch2 for immediate values
         vmcs->vscratch1[0] = func3;
         vmcs->vscratch1[1] = rd;
         vmcs->vscratch1[2] = rs1;
@@ -119,6 +119,10 @@ namespace rvm64::decoder {
                     case 0b110: unwrap_opcall(_rv_lwu); break;
                     case 0b011: unwrap_opcall(_rv_ld); break;
                 }
+			default:
+				vmcs->halt = 1;
+				vmcs->reason = illegal_op;
+				return;
             }
 
                 // R_TYPE
