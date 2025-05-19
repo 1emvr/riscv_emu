@@ -41,7 +41,7 @@ typedef struct {
     uint8_t vstack[VSTACK_MAX_CAPACITY];
     uint8_t vregs[VREGS_MAX_CAPACITY];
 
-    uint8_t vscratch1[8];
+    uint8_t vscratch1[8]; // register space 
     int32_t vscratch2[8];
 
     CONTEXT host_context;
@@ -55,9 +55,8 @@ typedef struct {
     int step;
 } vmcs_t;
 
-
 __data hexane *ctx = nullptr;
 __data vmcs_t *vmcs = nullptr;
 __data uintptr_t __stack_cookie = { };
-__data uintptr_t __key;
+__data uintptr_t __key = 0;
 #endif //VMCS_H
