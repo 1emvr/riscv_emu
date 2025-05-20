@@ -1,6 +1,6 @@
 #ifndef VMOPS_H
 #define VMOPS_H
-#include "mono.hpp"
+#include "monodef.hpp"
 #include "vmcrypt.h"
 
 namespace rvm64::operation {

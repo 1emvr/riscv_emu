@@ -3,6 +3,8 @@
 
 #define EI_NIDENT 16
 #define PT_LOAD 1
+#define ET_EXEC 2
+#define ET_DYN  3
 
 typedef struct {
     uint8_t  e_ident[EI_NIDENT]; // ELF magic, class, data, etc.
@@ -32,5 +34,7 @@ typedef struct {
     uint64_t p_align;
 } Elf64_Phdr;
 
-
+namespace rvm64::elf {
+    bool load_elf64_image(void);
+};
 #endif //VMELF_H

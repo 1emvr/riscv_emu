@@ -1,6 +1,6 @@
 #ifndef VMMEM_H
 #define VMMEM_H
-#include "mono.hpp"
+#include "monodef.hpp"
 
 namespace rvm64::memory {
     __function void vm_init(void);

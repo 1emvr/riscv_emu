@@ -1,5 +1,4 @@
 #include "vmmain.h"
-#define unwrap_opcall(idx) ((void (*)(void))((uintptr_t*)vmcs->handler)[idx])();
 
 namespace rvm64::decoder {
     struct opcode {
@@ -18,6 +17,11 @@ namespace rvm64::decoder {
         return (val << shift) >> shift;
     }
 
+    inline uint8_t shamt_i(uint32_t opcode) {
+        return (opcode >> 20) & 0x1F;
+    }
+
+    // NOTE: annoying as fuck to read. just let GPT do the math and say fuck it.
     inline int32_t imm_u(uint32_t opcode) { return opcode & 0xFFFFF000; }
     inline int32_t imm_i(uint32_t opcode) { return (int32_t)opcode >> 20; }
     inline int32_t imm_s(uint32_t opcode) { return sign_extend(((opcode >> 25) << 5) | ((opcode >> 7) & 0x1F), 12); }
@@ -63,6 +67,7 @@ namespace rvm64::decoder {
         uint8_t rs1   = (opcode >> 15) & 0x1F;
         uint8_t rd    = (opcode >> 7) & 0x1F;
 
+        uint32_t _shamt = shamt_i(opcode);
         int32_t _imm_i = imm_i(opcode);
         int32_t _imm_s = imm_s(opcode);
         int32_t _imm_u = imm_u(opcode);
@@ -70,25 +75,17 @@ namespace rvm64::decoder {
         int32_t _imm_j = imm_j(opcode);
 
 		// pass bitfields into scratch registers - scratch1 for registers and functions - scratch2 for immediate values
-        vmcs->vscratch1[0] = func3;
-        vmcs->vscratch1[1] = rd;
-        vmcs->vscratch1[2] = rs1;
-        vmcs->vscratch1[3] = rs2; 
-        vmcs->vscratch1[4] = rs3;
-        vmcs->vscratch1[5] = func7;
-        vmcs->vscratch1[6] = func5;
-        vmcs->vscratch1[7] = func2;
-
-        vmcs->vscratch2[0] = _imm_i;
-        vmcs->vscratch2[1] = _imm_s;
-        vmcs->vscratch2[2] = _imm_b;
-        vmcs->vscratch2[3] = _imm_u;
-        vmcs->vscratch2[4] = _imm_j;
+        vmcs->vscratch[0] = rd;
+        vmcs->vscratch[2] = rs1;
+        vmcs->vscratch[3] = rs2;
+        vmcs->vscratch[4] = rs3;
 
 	// TODO: call - do not return
         switch(decoded) {
             // I_TYPE
-            case itype: switch(opcode7) {
+            case itype:
+                scr_write(int32_t, _imm_i, imm);
+                switch(opcode7) {
                 case 0b0010011: switch(func3) {
                     case 0b000: unwrap_opcall(_rv_addi); break;
                     case 0b010: unwrap_opcall(_rv_slti); break;
@@ -96,18 +93,22 @@ namespace rvm64::decoder {
                     case 0b100: unwrap_opcall(_rv_xori); break;
                     case 0b110: unwrap_opcall(_rv_ori); break;
                     case 0b111: unwrap_opcall(_rv_andi); break;
-                    case 0b001: unwrap_opcall(_rv_slli); break;
+
+                        // separate scenario where the function takes the imm as shamt
+                    case 0b001: scr_write(int32_t, _shamt, imm); unwrap_opcall(_rv_slli); break;
                     case 0b101: switch(func7) {
-                        case 0b0000000: unwrap_opcall(_rv_srli); break;
-                        case 0b0100000: unwrap_opcall(_rv_srai); break;
+                        case 0b0000000: scr_write(int32_t, _shamt, imm); unwrap_opcall(_rv_srli); break;
+                        case 0b0100000: scr_write(int32_t, _shamt, imm); unwrap_opcall(_rv_srai); break;
                     }
                 }
                 case 0b0011011: switch(func3) {
                     case 0b000: unwrap_opcall(_rv_addiw); break;
-                    case 0b001: unwrap_opcall(_rv_slliw); break;
+
+                        // separate scenario where the function takes the imm as shamt
+                    case 0b001: scr_write(int32_t, _shamt, imm); unwrap_opcall(_rv_slliw); break;
                     case 0b101: switch(func7) {
-                        case 0b0000000: unwrap_opcall(_rv_srliw); break;
-                        case 0b0100000: unwrap_opcall(_rv_sraiw); break;
+                        case 0b0000000: scr_write(int32_t, _shamt, imm); unwrap_opcall(_rv_srliw); break;
+                        case 0b0100000: scr_write(int32_t, _shamt, imm); unwrap_opcall(_rv_sraiw); break;
                     }
                 }
                 case 0b0000011: switch(func3) {
@@ -265,7 +266,7 @@ namespace rvm64::decoder {
                 case 0b0100111: switch(func3) {
                     case 0b010: unwrap_opcall(_rv_fsw); break;
                     case 0b011: unwrap_opcall(_rv_fsd); break;
-                    case 0b100: unwrap_opcall(_rv_fsq); break; // TODO: whoops, deleted on accident
+                    // case 0b100: unwrap_opcall(_rv_fsq); break; // TODO:
                 }
             }
                 // B TYPE

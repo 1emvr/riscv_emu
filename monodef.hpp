@@ -20,85 +20,12 @@
 #define PTR_SIZE 4                          
 #endif
 
-#pragma region REG_NATIVE_RESERVED
-#define REG_FRAME  "rbp"
-#define REG_STACK  "rsp"
-#define REG_ARG0   "rcx"
-#define REG_ARG1   "rdx"
-#define REG_ARG2   "r8"
-#define REG_ARG3   "r9"
-#define REG_RETVAL "rax"
-#pragma endregion // REG_NATIVE_RESERVED
-
-#pragma region REG_RANDOM_ASSIGN
-#define REG_VIP     "rsi"
-#define REG_VSP     "rdi"
-#define REG_VREG    "rbx"
-#define REG_DKEY    "r10"
-#define REG_SKR1    "r11"
-#define REG_SKR2    "r12"
-#define REG_OPND    "r13"
-#define REG_HNDLR   "r14"
-#define REG_PROG    "r15"
-#pragma endregion // REG_RANDOM_ASSIGN
-
-#pragma region REGENUM
-#define REGENUM_ZR  0
-#define REGENUM_RA  1
-#define REGENUM_SP  2 
-#define REGENUM_GP  3 
-#define REGENUM_TP  4
-#define REGENUM_T0  5
-#define REGENUM_T1  6
-#define REGENUM_T2  7
-#define REGENUM_S0  8
-#define REGENUM_S1  9
-#define REGENUM_A0  10
-#define REGENUM_A1  11
-#define REGENUM_A2  12 
-#define REGENUM_A3  13
-#define REGENUM_A4  14
-#define REGENUM_A5  15
-#define REGENUM_A6  16
-#define REGENUM_A7  17  
-#define REGENUM_S2  18
-#define REGENUM_S3  19
-#define REGENUM_S4  20
-#define REGENUM_S5  21
-#define REGENUM_S6  22
-#define REGENUM_S7  23
-#define REGENUM_S8  24
-#define REGENUM_S9  25
-#define REGENUM_S10 26
-#define REGENUM_S11 27  
-#define REGENUM_T3  28
-#define REGENUM_T4  29
-#define REGENUM_T5  30
-#define REGENUM_T6  31  
-#pragma endregion // REGENUM
-
 #pragma region VM_CAPACITY
 #define VM_NATIVE_STACK_ALLOC             0x210
 #define PROCESS_MAX_CAPACITY              (1024 * 256) 
-#define VSTACK_MAX_CAPACITY               ((1024 * 16) + (16) * PTR_SIZE) // extra 2-uintptr for a guard page
-#define VSCRATCH_MAX_CAPACITY             (64 * PTR_SIZE)
-#define VREGS_MAX_CAPACITY                (32 * PTR_SIZE)
-
-#define VREGS_SIZE                        (VREGS_MAX_CAPACITY * PTR_SIZE)
-#define VSCRATCH_SIZE                     (VSCRATCH_MAX_CAPACITY * PTR_SIZE)
+#define VSTACK_MAX_CAPACITY               (1024 * 1024)
 #pragma endregion // VM_CAPACITY
 
-#pragma region VMCS_OFFSETS
-#define VMCS_OFFSET_MOD_BASE              (PTR_SIZE * 0)
-#define VMCS_OFFSET_DKEY                  (PTR_SIZE * 1)
-#define VMCS_OFFSET_PROGRAM               (PTR_SIZE * 2)
-#define VMCS_OFFSET_PROGRAM_SIZE          (PTR_SIZE * 3)
-#define VMCS_OFFSET_VSTACK                (PTR_SIZE * 4)
-#define VMCS_OFFSET_VSCRATCH              (PTR_SIZE * 4 + VSTACK_MAX_CAPACITY)
-#define VMCS_OFFSET_VREGS                 (PTR_SIZE * 4 + VSTACK_MAX_CAPACITY + VSCRATCH_MAX_CAPACITY)
-#pragma endregion // VMCS_OFFSETS
-
-#define SP_OFFSET                         VMCS_OFFSET_VREGS + PTR_SIZE * REGENUM_SP
 #define EXPONENT_MASK                     0x7FF0000000000000ULL
 #define FRACTION_MASK                     0x000FFFFFFFFFFFFFULL
 
@@ -164,6 +91,9 @@ enum HandlerIndex : uint8_t {
 	_rv_lui, _rv_auipc, _rv_jal,
 };
 
+enum skrenum {
+    rd, rs1, rs2, rs3, imm,
+};
 enum regenum {
 	zr, ra, sp, gp, tp,
 	t0, t1, t2, s0, s1,
@@ -172,7 +102,9 @@ enum regenum {
 	t3, t4, t5, t6,
 };
 
-#define mem_read(T, addr, retval)                                               \
+// NOTE: Probably not fool-proof. Could probably do something cynical.
+// mem r/w don't follow the same convention as the other macros for some reason.
+#define mem_read(T, retval, addr)                                               \
 do {						                                                    \
     if ((addr) % sizeof(T) != 0) {												\
         vmcs->halt = 1;															\
@@ -199,34 +131,50 @@ do {											                                \
         vmcs->reason = access_violation;										\
         return;																	\
     }																			\
-    *(T*) (vmcs->process.address + ((addr) - vmcs->process.address)) = (value);		\
+    *(T*) (vmcs->process.address + ((addr) - vmcs->process.address)) = (value); \
 } while (0)
 
-#define reg_read(T, idx, retval)				\
+#define reg_read(T, dst, src)					\
 	do {										\
-		if ((idx) > REGENUM_T6) {				\
+		if ((src) > regenum::t6) {				\
 			vmcs->halt = 1;						\
 			vmcs->reason = access_violation;	\
 			return;								\
 		}										\
-		retval = (T)vmcs->vregs[(idx)];			\
+		dst = (T)vmcs->vregs[(src)];			\
 	} while(0)
 
-#define reg_write(T, idx, value)							\
+#define reg_write(T, dst, src)								\
 	do {                                                    \
-		if ((idx) == REGENUM_ZR || (idx) > REGENUM_T6) {	\
+		if ((dst) == regenum::zr || (dst) > regenum::t6) {	\
 			vmcs->halt = 1;									\
-			vmcs->reason = access_violation;					\
+			vmcs->reason = access_violation;				\
 			return;                                         \
 		}                                                   \
-		vmcs->vregs[(idx)] = (T)value;						\
+		vmcs->vregs[(dst)] = (T)src;						\
 	} while (0)
 
-#define ip_write(target)						\
-	asm volatile ( "mov " REG_VIP ", %0" :: "r"(target) )
+#define scr_read(T, dst, src)								\
+	do {													\
+		if (src > skrenum::imm) {							\
+			vmcs->halt = 1;									\
+			vmcs->reason = access_violation;				\
+			return;                                         \
+		}													\
+		dst = (T)vmcs->vscratch[(src)];						\
+	} while (0)
 
-#define ip_read(retval)							\
-	asm volatile ( "mov %0, " REG_VIP : "=r"(retval) )
+#define scr_write(T, dst, src)								\
+	do {													\
+		if (dst > skrenum::imm) {							\
+			vmcs->halt = 1;									\
+			vmcs->reason = access_violation;				\
+			return;                                         \
+		}													\
+		vmcs->vscratch[(dst)] = (T)src;						\
+	} while (0)
+
+#define unwrap_opcall(idx) ((void (*)(void))((uintptr_t*)vmcs->handler)[idx])();
 
 #define set_branch(target)						\
 	do {										\

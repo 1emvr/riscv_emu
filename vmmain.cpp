@@ -13,7 +13,7 @@ namespace rvm64 {
         // TODO: create the main loop
 
         while (!vmcs->halt) {
-            int32_t opcode = vmcs->pc;
+            int32_t opcode = (int32_t) vmcs->pc;
             uintptr_t operation = rvm64::decoder::vm_decode(opcode);
 
             operation = rvm64::crypt::decrypt_ptr(operation);

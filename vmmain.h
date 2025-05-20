@@ -1,7 +1,7 @@
 #ifndef VMCS_H
 #define VMCS_H
 
-#include "mono.hpp"
+#include "monodef.hpp"
 
 typedef NTSTATUS(NTAPI* NtAllocateVirtualMemory_t)(HANDLE ProcessHandle, PVOID* BaseAddress, ULONG_PTR ZeroBits, PSIZE_T RegionSize, ULONG AllocationType, ULONG Protect);
 typedef NTSTATUS(NTAPI* NtFreeVirtualMemory_t)(HANDLE processHandle, PVOID* BaseAddress, PSIZE_T RegionSize, ULONG FreeType);
@@ -18,6 +18,7 @@ typedef struct __hexane {
         NtFreeVirtualMemory_t NtFreeVirtualMemory;
         RtlAllocateHeap_t RtlAllocateHeap;
 
+        decltype(CreateMutexA)* NtCreateMutex;
         decltype(CreateFileA)* NtCreateFile;
         decltype(GetFileSize)* NtGetFileSize;
         decltype(ReadFile)* NtReadFile;
@@ -31,24 +32,22 @@ typedef struct {
 } vm_memory_t;
 
 typedef struct {
-    uintptr_t handler;
-    uintptr_t dkey;
-    uintptr_t pc;
+    CONTEXT host_context;
+    CONTEXT vm_context;
 
     vm_memory_t program;
     vm_memory_t process;
 
-    uint8_t vstack[VSTACK_MAX_CAPACITY];
-    uint8_t vregs[VREGS_MAX_CAPACITY];
+    uintptr_t handler;
+    uintptr_t dkey;
+    uintptr_t pc;
 
-    uint8_t vscratch1[8]; // register space 
-    int32_t vscratch2[8];
+    uintptr_t vscratch[32];
+    uintptr_t vregs[32];
+    uintptr_t vstack[VSTACK_MAX_CAPACITY];
 
-    CONTEXT host_context;
-    CONTEXT vm_context;
-
-    uintptr_t load_rsv_addr;
-    int load_rsv_valid;
+    volatile uintptr_t load_rsv_addr;
+    volatile int load_rsv_valid;
 
     int halt;
     int reason;
@@ -59,4 +58,9 @@ __data hexane *ctx = nullptr;
 __data vmcs_t *vmcs = nullptr;
 __data uintptr_t __stack_cookie = { };
 __data uintptr_t __key = 0;
+
+namespace rvm64 {
+    __function void vm_entry(void);
+    __function int64_t vm_main(void);
+};
 #endif //VMCS_H
