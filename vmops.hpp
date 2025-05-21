@@ -1858,6 +1858,10 @@ namespace rvm64::operation {
         }
     };
 
+    namespace stype {};
+    namespace btype {};
+    namespace r4type {};
+
     __rdata constexpr uintptr_t __handler[256] = {
         // ITYPE
         crypt::encrypt_ptr((uintptr_t) itype::rv_addi), crypt::encrypt_ptr((uintptr_t) itype::rv_slti),
