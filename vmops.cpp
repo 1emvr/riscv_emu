@@ -528,7 +528,6 @@ namespace rvm64::operation {
                            Save register and program state
                            */
             rvm64::context::save_vm_context();
-            // hyperv_switch();
             rvm64::context::restore_vm_context();
         }
 
