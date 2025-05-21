@@ -4,7 +4,8 @@
 #include "monodef.hpp"
 #include "vmctx.hpp"
 #include "vmmain.hpp"
-#include "vmops.h"
+#include "vmops.hpp"
+#include "vmops.hpp"
 
 /*
 Main (Manager) Thread:
@@ -42,55 +43,11 @@ Shared Resources:
 
     */
 
-struct atom_lock_t {
-    uintptr_t address;
-    int hart_id;
-    bool valid;
-};
-
-static atom_lock_t global_lock = {0, -1, false};
-static HANDLE atom_mutex = nullptr;
-
 namespace rvm64::memory {
-    bool atom_lock(uintptr_t address, int hart_id) {
-        ctx->win32.NtWaitForSingleObject(atom_mutex, INFINITE);
-
-        if (!global_lock.valid || global_lock.address == address) {
-            global_lock.address = address;
-            global_lock.hart_id = hart_id;
-            global_lock.valid = true;
-            ctx->win32.NtReleaseMutex(atom_mutex);
-            return true;
-        }
-
-        ctx->win32.NtReleaseMutex(atom_mutex);
-        return false;
-    }
-
-    bool atom_check(uintptr_t address, int hart_id) {
-        ctx->win32.NtWaitForSingleObject(atom_mutex, INFINITE);
-
-        bool ok = global_lock.valid && global_lock.address == address && global_lock.hart_id == hart_id;
-        ctx->win32.NtReleaseMutex(atom_mutex);
-
-        return ok;
-    }
-
-    void atom_release(uintptr_t address, int hart_id) {
-        ctx->win32.NtWaitForSingleObject(atom_mutex, INFINITE);
-
-        if (global_lock.valid && global_lock.address == address && global_lock.hart_id == hart_id) {
-            global_lock.valid = false;
-            global_lock.address = 0;
-            global_lock.hart_id = -1;
-        }
-        ctx->win32.NtReleaseMutex(atom_mutex);
-    }
-
     __function void vm_init() {
         rvm64::context::vm_context_init();
 
-        vmcs->handler = (uintptr_t) operation::__handler;
+        vmcs->handler = (uintptr_t) rvm64::operation::__handler;
         vmcs->dkey = __key; // lol idk...
 
         vmcs->process.size = PROCESS_MAX_CAPACITY;

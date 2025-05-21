@@ -63,7 +63,7 @@ __data uintptr_t __stack_cookie = { };
 __data uintptr_t __key = 0;
 
 namespace rvm64 {
-    __function void vm_entry(void);
-    __function int64_t vm_main(void);
+    __function void vm_entry();
+    __function int64_t vm_main();
 };
 #endif //VMCS_H
