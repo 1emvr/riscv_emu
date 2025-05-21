@@ -1770,6 +1770,51 @@ namespace rvm64::operation {
                            if (x[_rs1] == x[_rs2]) pc += sext(offset)
                            */
         }
+    };
+
+    namespace utype {
+        __function void rv_lui() {
+            /*
+                           Description
+                           Build 32-bit constants and uses the U-type format. LUI places the U-immediate value in the top 20 bits of the destination register _rd,
+                           filling in the lowest 12 bits with zeros.
+
+                           Implementation
+                           x[_rd] = sext(immediate[31:12] << 12)
+                           */
+        }
+
+        __function void rv_auipc() {
+            /*
+                           Description
+                           Build pc-relative addresses and uses the U-type format. AUIPC forms a 32-bit offset from the 20-bit U-immediate,
+                           filling in the lowest 12 bits with zeros, adds this offset to the pc, then places the result in register _rd.
+
+                           Implementation
+                           x[_rd] = pc + sext(immediate[31:12] << 12)
+                           */
+        }
+    };
+
+    namespace jtype {
+        __function void rv_jal() {
+            /*
+                           Description
+                           Jump to address and place return address in _rd.
+
+                           Implementation
+                           x[_rd] = pc+4; pc += sext()
+                           */
+        }
+    };
+
+    namespace btype {
+        __function void rv_beq() {
+            /*
+                           Description
+                           Take the branch if registers _rs1 and _rs2 are equal.
+                           */
+        }
 
         __function void rv_bne() {
             /*
@@ -1822,44 +1867,7 @@ namespace rvm64::operation {
         }
     };
 
-    namespace utype {
-        __function void rv_lui() {
-            /*
-                           Description
-                           Build 32-bit constants and uses the U-type format. LUI places the U-immediate value in the top 20 bits of the destination register _rd,
-                           filling in the lowest 12 bits with zeros.
-
-                           Implementation
-                           x[_rd] = sext(immediate[31:12] << 12)
-                           */
-        }
-
-        __function void rv_auipc() {
-            /*
-                           Description
-                           Build pc-relative addresses and uses the U-type format. AUIPC forms a 32-bit offset from the 20-bit U-immediate,
-                           filling in the lowest 12 bits with zeros, adds this offset to the pc, then places the result in register _rd.
-
-                           Implementation
-                           x[_rd] = pc + sext(immediate[31:12] << 12)
-                           */
-        }
-    };
-
-    namespace jtype {
-        __function void rv_jal() {
-            /*
-                           Description
-                           Jump to address and place return address in _rd.
-
-                           Implementation
-                           x[_rd] = pc+4; pc += sext()
-                           */
-        }
-    };
-
     namespace stype {};
-    namespace btype {};
     namespace r4type {};
 
     __rdata constexpr uintptr_t __handler[256] = {
@@ -1932,7 +1940,7 @@ namespace rvm64::operation {
         crypt::encrypt_ptr((uintptr_t) stype::rv_sw), crypt::encrypt_ptr((uintptr_t) stype::rv_sd),
         crypt::encrypt_ptr((uintptr_t) stype::rv_fsw), crypt::encrypt_ptr((uintptr_t) stype::rv_fsd),
 
-        // BTYPE : MISSING
+        // BTYPE
         crypt::encrypt_ptr((uintptr_t) btype::rv_beq), crypt::encrypt_ptr((uintptr_t) btype::rv_bne),
         crypt::encrypt_ptr((uintptr_t) btype::rv_blt), crypt::encrypt_ptr((uintptr_t) btype::rv_bge),
         crypt::encrypt_ptr((uintptr_t) btype::rv_bltu), crypt::encrypt_ptr((uintptr_t) btype::rv_bgeu),
