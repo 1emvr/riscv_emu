@@ -1,7 +1,9 @@
+#ifndef VMCTX_H
+#define VMCTX_H
 #include "monodef.hpp"
-#include "vmmain.h"
-namespace rvm64::context {
+#include "vmmain.hpp"
 
+namespace rvm64::context {
     __function void vm_context_init() {
         // Fake implant context
         ctx = (hexane*) VirtualAlloc(nullptr, sizeof(ctx), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
@@ -43,3 +45,4 @@ namespace rvm64::context {
         }
     }
 };
+#endif // VMCTX_H

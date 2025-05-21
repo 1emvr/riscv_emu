@@ -6,7 +6,7 @@
 #include <cstdio>
 
 #include "monodef.hpp"
-#include "vmmain.h"
+#include "vmmain.hpp"
 #include "vmelf.h"
 
 bool read_program_from_packet() {

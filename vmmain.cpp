@@ -2,7 +2,7 @@
 #include <stdint.h>
 
 #include "mock.hpp"
-#include "vmmain.h"
+#include "vmmain.hpp"
 #include "vmctx.h"
 #include "vmmem.h"
 #include "vmcode.h"

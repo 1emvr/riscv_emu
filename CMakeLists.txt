@@ -3,16 +3,10 @@ project(rvm64)
 
 set(CMAKE_CXX_STANDARD 20)
 add_executable(rvm64 vmmain.cpp vmcs.S
-        vmmain.h
-        vmctx.cpp
-        vmctx.h
-        vmmem.cpp
-        vmmem.h
-        vmcrypt.cpp
-        vmcrypt.h
-        vmops.cpp
-        vmops.h
-        vmelf.h
-        vmcode.cpp
-        vmcode.h
-        vmelf.cpp)
+        vmmain.hpp
+        vmctx.hpp
+        vmmem.hpp
+        vmcrypt.hpp
+        vmops.hpp
+        vmcode.hpp
+        vmelf.hpp)

@@ -1,4 +1,6 @@
-#include "vmmain.h"
+#ifndef VMCODE_H
+#define VMCODE_H
+#include "vmmain.hpp"
 
 namespace rvm64::decoder {
     struct opcode {
@@ -292,3 +294,4 @@ namespace rvm64::decoder {
         }
     }
 };
+#endif // VMCODE_H
