@@ -174,7 +174,7 @@ do {											                                \
 		vmcs->vscratch[(dst)] = (T)src;						\
 	} while (0)
 
-#define unwrap_opcall(idx) ((void (*)(void))((uintptr_t*)vmcs->handler)[idx])();
+#define unwrap_opcall(idx) (void (*)()) rvm64::crypt::decrypt_ptr( ((uintptr_t*)vmcs->handler) [idx] )();
 
 #define set_branch(target)						\
 	do {										\

@@ -1,6 +1,7 @@
 #ifndef VMCODE_H
 #define VMCODE_H
 #include "vmmain.hpp"
+#include "vmcrypt.hpp"
 
 namespace rvm64::decoder {
     struct opcode {
