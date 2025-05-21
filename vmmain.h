@@ -18,7 +18,9 @@ typedef struct __hexane {
         NtFreeVirtualMemory_t NtFreeVirtualMemory;
         RtlAllocateHeap_t RtlAllocateHeap;
 
+        decltype(WaitForSingleObject)* NtWaitForSingleObject;
         decltype(CreateMutexA)* NtCreateMutex;
+        decltype(ReleaseMutex)* NtReleaseMutex;
         decltype(CreateFileA)* NtCreateFile;
         decltype(GetFileSize)* NtGetFileSize;
         decltype(ReadFile)* NtReadFile;
@@ -56,6 +58,7 @@ typedef struct {
 
 __data hexane *ctx = nullptr;
 __data vmcs_t *vmcs = nullptr;
+__data HANDLE vmcs_mutex = 0;
 __data uintptr_t __stack_cookie = { };
 __data uintptr_t __key = 0;
 

@@ -4,7 +4,7 @@
 #include "vmmain.h"
 
 namespace rvm64::memory {
-    __function void vm_init(void) {
+    __function void vm_init() {
         rvm64::context::vm_context_init();
 
         vmcs->handler = (uintptr_t)operation::__handler;
@@ -20,24 +20,38 @@ namespace rvm64::memory {
         }
     }
 
-    __function void vm_end(void) {
+    __function void vm_end() {
         if (!NT_SUCCESS(vmcs->reason = ctx->win32.NtFreeVirtualMemory(NtCurrentProcess(), (void**)&vmcs->process.address, &vmcs->process.size, MEM_RELEASE))) {
             vmcs->halt = 1;
         }
     }
 
-    __function void vm_set_load_rsv(uintptr_t address) {
-        vmcs->load_rsv_addr = address;
-        vmcs->load_rsv_valid = true;
+    __function void vm_set_load_rsv(/*int hart_id, */uintptr_t address) {
+    	ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+
+        vmcs->load_rsv_addr = address; // vmcs_array[hart_id]->load_rsv_addr = address;
+        vmcs->load_rsv_valid = true; // vmcs_array[hart_id]->load_rsv_valid = true;
+
+    	ctx->win32.NtReleaseMutex(vmcs_mutex);
     }
 
-    __function void vm_clear_load_rsv(void) {
-        vmcs->load_rsv_addr = 0LL;
-        vmcs->load_rsv_valid = false;
+    __function void vm_clear_load_rsv(/*int hart_id, */) {
+    	ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+
+        vmcs->load_rsv_addr = 0LL; // vmcs_array[hart_id]->load_rsv_addr = 0LL;
+        vmcs->load_rsv_valid = false; // vmcs_array[hart_id]->load_rsv_valid = false;
+
+    	ctx->win32.NtReleaseMutex(vmcs_mutex);
     }
 
-    __function bool vm_check_load_rsv(uintptr_t address) {
-        return vmcs->load_rsv_valid && vmcs->load_rsv_addr == address;
+    __function bool vm_check_load_rsv(/*int hart_id, */uintptr_t address) {
+    	int valid = 0;
+
+    	ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+        valid = (vmcs->load_rsv_valid && vmcs->load_rsv_addr == address); // (vmcs_array[hart_id]->load_rsv_valid && vmcs_array[hart_id]->load_rsv_addr == address)
+
+    	ctx->win32.NtReleaseMutex(vmcs_mutex);
+    	return valid;
     }
 };
 

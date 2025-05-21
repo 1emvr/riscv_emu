@@ -528,6 +528,9 @@ namespace rvm64::operation {
                            Save register and program state
                            */
             rvm64::context::save_vm_context();
+            // rvm64::context::decode_syscall();
+            // rvm64::context::setup_arguments();
+            // rvm64::context::vm_exit();
             rvm64::context::restore_vm_context();
         }
 
