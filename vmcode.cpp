@@ -74,7 +74,7 @@ namespace rvm64::decoder {
         int32_t _imm_b = imm_b(opcode);
         int32_t _imm_j = imm_j(opcode);
 
-		// pass bitfields into scratch registers - scratch1 for registers and functions - scratch2 for immediate values
+		// pass bitfields into scratch registers
         vmcs->vscratch[0] = rd;
         vmcs->vscratch[2] = rs1;
         vmcs->vscratch[3] = rs2;
@@ -84,7 +84,7 @@ namespace rvm64::decoder {
         switch(decoded) {
             // I_TYPE
             case itype:
-                scr_write(int32_t, _imm_i, imm);
+                scr_write(int32_t, imm, _imm_i);
                 switch(opcode7) {
                 case 0b0010011: switch(func3) {
                     case 0b000: unwrap_opcall(_rv_addi); break;
@@ -95,20 +95,20 @@ namespace rvm64::decoder {
                     case 0b111: unwrap_opcall(_rv_andi); break;
 
                         // separate scenario where the function takes the imm as shamt
-                    case 0b001: scr_write(int32_t, _shamt, imm); unwrap_opcall(_rv_slli); break;
+                    case 0b001: scr_write(int32_t, imm, _shamt); unwrap_opcall(_rv_slli); break;
                     case 0b101: switch(func7) {
-                        case 0b0000000: scr_write(int32_t, _shamt, imm); unwrap_opcall(_rv_srli); break;
-                        case 0b0100000: scr_write(int32_t, _shamt, imm); unwrap_opcall(_rv_srai); break;
+                        case 0b0000000: scr_write(int32_t, imm, _shamt); unwrap_opcall(_rv_srli); break;
+                        case 0b0100000: scr_write(int32_t, imm, _shamt); unwrap_opcall(_rv_srai); break;
                     }
                 }
                 case 0b0011011: switch(func3) {
                     case 0b000: unwrap_opcall(_rv_addiw); break;
 
                         // separate scenario where the function takes the imm as shamt
-                    case 0b001: scr_write(int32_t, _shamt, imm); unwrap_opcall(_rv_slliw); break;
+                    case 0b001: scr_write(int32_t, imm, _shamt); unwrap_opcall(_rv_slliw); break;
                     case 0b101: switch(func7) {
-                        case 0b0000000: scr_write(int32_t, _shamt, imm); unwrap_opcall(_rv_srliw); break;
-                        case 0b0100000: scr_write(int32_t, _shamt, imm); unwrap_opcall(_rv_sraiw); break;
+                        case 0b0000000: scr_write(int32_t, imm, _shamt); unwrap_opcall(_rv_srliw); break;
+                        case 0b0100000: scr_write(int32_t, imm, _shamt); unwrap_opcall(_rv_sraiw); break;
                     }
                 }
                 case 0b0000011: switch(func3) {
@@ -256,7 +256,7 @@ namespace rvm64::decoder {
                 }
             }
                 // S TYPE
-            case stype: switch(opcode7) {
+            case stype: scr_write(int32_t, imm, _imm_s); switch(opcode7) {
                 case 0b0100011: switch(func3) {
                     case 0b000: unwrap_opcall(_rv_sb); break;
                     case 0b001: unwrap_opcall(_rv_sh); break;
@@ -270,7 +270,7 @@ namespace rvm64::decoder {
                 }
             }
                 // B TYPE
-            case btype: switch(func3) {
+            case btype: scr_write(int32_t, imm, _imm_b); switch(func3) {
                 case 0b000: unwrap_opcall(_rv_beq); break;
                 case 0b001: unwrap_opcall(_rv_bne); break;
                 case 0b100: unwrap_opcall(_rv_blt); break;
@@ -279,12 +279,12 @@ namespace rvm64::decoder {
                 case 0b111: unwrap_opcall(_rv_bgeu); break;
             }
                 // U TYPE
-            case utype: switch(opcode7) {
+            case utype: scr_write(int32_t, imm, _imm_u); switch(opcode7) {
                 case 0b0110111: unwrap_opcall(_rv_lui); break;
                 case 0b0010111: unwrap_opcall(_rv_auipc); break;
             }
                 // J TYPE
-            case jtype: switch(opcode7) {
+            case jtype: scr_write(int32_t, imm, _imm_j); switch(opcode7) {
                 case 0b1101111: unwrap_opcall(_rv_jal); break;
             }
                 // R4 TYPE
