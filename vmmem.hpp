@@ -6,11 +6,91 @@
 #include "vmmain.hpp"
 #include "vmops.h"
 
+/*
+Main (Manager) Thread:
+    - Listens for new RISC-V programs (VM images or bytecode).
+    - For each new program, spins up a dedicated VM thread.
+    - Keeps track of VM threads, their states, and communication channels.
+
+Per-VM Thread:
+    - Owns its own VM state (vmcs_t or equivalent).
+    - Runs the RISC-V emulation loop for that program.
+    - Handles VM instructions, memory, interrupts, etc.
+    - Uses your atomic primitives (locks or reservations) to safely share any resources if needed.
+
+Shared Resources:
+    - If VMs share anything (memory regions, IO devices), protect those with fine-grained locks or atomic reservations.
+    - Otherwise, keep VMs isolated for simplicity and better parallelism.
+
++----------------+
+|     main()     |   <--- Main thread: starts the hypervisor manager thread
++----------------+
+         |
+         | creates
+         v
++-------------------------+
+| Hypervisor Manager Thread|  <--- Listens for new VM programs
++-------------------------+
+         |
+         | on new VM program:
+         |  spin VM thread per program
+         v
++---------------------+     +---------------------+    +---------------------+
+| VM Thread (VM #1)    | ... | VM Thread (VM #2)    | ...| VM Thread (VM #N)    |
+| Runs one RISC-V VM   |     | Runs another VM      |    | Runs another VM      |
++---------------------+     +---------------------+    +---------------------+
+
+    */
+
+struct atom_lock_t {
+    uintptr_t address;
+    int hart_id;
+    bool valid;
+};
+
+static atom_lock_t global_lock = {0, -1, false};
+static HANDLE atom_mutex = nullptr;
+
 namespace rvm64::memory {
+    bool atom_lock(uintptr_t address, int hart_id) {
+        ctx->win32.NtWaitForSingleObject(atom_mutex, INFINITE);
+
+        if (!global_lock.valid || global_lock.address == address) {
+            global_lock.address = address;
+            global_lock.hart_id = hart_id;
+            global_lock.valid = true;
+            ctx->win32.NtReleaseMutex(atom_mutex);
+            return true;
+        }
+
+        ctx->win32.NtReleaseMutex(atom_mutex);
+        return false;
+    }
+
+    bool atom_check(uintptr_t address, int hart_id) {
+        ctx->win32.NtWaitForSingleObject(atom_mutex, INFINITE);
+
+        bool ok = global_lock.valid && global_lock.address == address && global_lock.hart_id == hart_id;
+        ctx->win32.NtReleaseMutex(atom_mutex);
+
+        return ok;
+    }
+
+    void atom_release(uintptr_t address, int hart_id) {
+        ctx->win32.NtWaitForSingleObject(atom_mutex, INFINITE);
+
+        if (global_lock.valid && global_lock.address == address && global_lock.hart_id == hart_id) {
+            global_lock.valid = false;
+            global_lock.address = 0;
+            global_lock.hart_id = -1;
+        }
+        ctx->win32.NtReleaseMutex(atom_mutex);
+    }
+
     __function void vm_init() {
         rvm64::context::vm_context_init();
 
-        vmcs->handler = (uintptr_t)operation::__handler;
+        vmcs->handler = (uintptr_t) operation::__handler;
         vmcs->dkey = __key; // lol idk...
 
         vmcs->process.size = PROCESS_MAX_CAPACITY;
@@ -27,34 +107,6 @@ namespace rvm64::memory {
         if (!NT_SUCCESS(vmcs->reason = ctx->win32.NtFreeVirtualMemory(NtCurrentProcess(), (void**)&vmcs->process.address, &vmcs->process.size, MEM_RELEASE))) {
             vmcs->halt = 1;
         }
-    }
-
-    __function void vm_set_load_rsv(/*int hart_id, */uintptr_t address) {
-    	ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
-
-        vmcs->load_rsv_addr = address; // vmcs_array[hart_id]->load_rsv_addr = address;
-        vmcs->load_rsv_valid = true; // vmcs_array[hart_id]->load_rsv_valid = true;
-
-    	ctx->win32.NtReleaseMutex(vmcs_mutex);
-    }
-
-    __function void vm_clear_load_rsv(/*int hart_id, */) {
-    	ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
-
-        vmcs->load_rsv_addr = 0LL; // vmcs_array[hart_id]->load_rsv_addr = 0LL;
-        vmcs->load_rsv_valid = false; // vmcs_array[hart_id]->load_rsv_valid = false;
-
-    	ctx->win32.NtReleaseMutex(vmcs_mutex);
-    }
-
-    __function bool vm_check_load_rsv(/*int hart_id, */uintptr_t address) {
-    	int valid = 0;
-
-    	ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
-        valid = (vmcs->load_rsv_valid && vmcs->load_rsv_addr == address); // (vmcs_array[hart_id]->load_rsv_valid && vmcs_array[hart_id]->load_rsv_addr == address)
-
-    	ctx->win32.NtReleaseMutex(vmcs_mutex);
-    	return valid;
     }
 };
 #endif // VMMEM_H
