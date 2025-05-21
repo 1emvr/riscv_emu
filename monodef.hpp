@@ -103,7 +103,7 @@ enum regenum {
 };
 
 // NOTE: Probably not fool-proof. Could probably do something cynical.
-// mem r/w don't follow the same convention as the other macros for some reason.
+
 #define mem_read(T, retval, addr)                                               \
 do {						                                                    \
     if ((addr) % sizeof(T) != 0) {												\
