@@ -7,7 +7,7 @@ compile a risc-v binary object named "test.o" in the root folder and run.
 
 Example:
 ```sh
-clang --target=riscv64 -march=rv64g rotate.s -c -o rotate.o
+clang --target=riscv64 -march=rv64g rotate.s -c -o test.o
 ./rvm64.exe
 ```
 
