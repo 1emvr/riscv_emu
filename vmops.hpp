@@ -25,9 +25,7 @@ namespace rvm64::operation {
     // i-type
     namespace itype {
         __function void rv_lrw() {
-            uint8_t _rd = 0, _rs1 = 0;
-            uintptr_t address = 0;
-            int32_t value = 0;
+            uint8_t _rd = 0, _rs1 = 0; uintptr_t address = 0; int32_t value = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -41,9 +39,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_lrd() {
-            uint8_t _rd = 0, _rs1 = 0;
-            uintptr_t address = 0;
-            int64_t value = 0;
+            uint8_t _rd = 0, _rs1 = 0; uintptr_t address = 0; int64_t value = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -57,8 +53,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_fmv_d_x() {
-            uint8_t _rd = 0, _rs1 = 0;
-            int64_t v1 = 0;
+            uint8_t _rd = 0, _rs1 = 0; int64_t v1 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -68,8 +63,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_fcvt_s_d() {
-            uint8_t _rd = 0, _rs1 = 0;
-            float v1 = 0;
+            uint8_t _rd = 0, _rs1 = 0; float v1 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -79,8 +73,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_fcvt_d_s() {
-            uint8_t _rd = 0, _rs1 = 0;
-            double v1 = 0;
+            uint8_t _rd = 0, _rs1 = 0; double v1 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -90,8 +83,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_fcvt_w_d() {
-            uint8_t _rd = 0, _rs1 = 0;
-            int32_t v1 = 0;
+            uint8_t _rd = 0, _rs1 = 0; int32_t v1 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -101,8 +93,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_fcvt_wu_d() {
-            uint8_t _rd = 0, _rs1 = 0;
-            uint32_t v1 = 0;
+            uint8_t _rd = 0, _rs1 = 0; uint32_t v1 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -112,8 +103,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_fcvt_d_w() {
-            uint8_t _rd = 0, _rs1 = 0;
-            int32_t v1 = 0;
+            uint8_t _rd = 0, _rs1 = 0; int32_t v1 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -123,8 +113,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_fcvt_d_wu() {
-            uint8_t _rd = 0, _rs1 = 0;
-            uint32_t v1 = 0;
+            uint8_t _rd = 0, _rs1 = 0; uint32_t v1 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -135,8 +124,7 @@ namespace rvm64::operation {
 
         // NOTE: maybe an I_TYPE
         __function void rv_fclass_d() {
-            uint8_t _rd = 0, _rs1 = 0;
-            double v1 = 0;
+            uint8_t _rd = 0, _rs1 = 0; double v1 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -187,8 +175,7 @@ namespace rvm64::operation {
 
         // NOTE: immediates are always signed unless there's a bitwise operation
         __function void rv_addi() {
-            uint8_t _rd = 0, _rs1 = 0;
-            int32_t _imm = 0, v1 = 0;
+            uint8_t _rd = 0, _rs1 = 0; int32_t _imm = 0, v1 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -199,8 +186,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_slti() {
-            uint8_t _rd = 0, _rs1 = 0;
-            int32_t _imm = 0, v1 = 0;
+            uint8_t _rd = 0, _rs1 = 0; int32_t _imm = 0, v1 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -211,8 +197,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_sltiu() {
-            uint8_t _rd = 0, _rs1 = 0;
-            int32_t _imm = 0, v1 = 0;
+            uint8_t _rd = 0, _rs1 = 0; int32_t _imm = 0, v1 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -223,8 +208,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_xori() {
-            uint8_t _rd = 0, _rs1 = 0;
-            int32_t _imm = 0, v1 = 0;
+            uint8_t _rd = 0, _rs1 = 0; int32_t _imm = 0, v1 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -235,24 +219,21 @@ namespace rvm64::operation {
         }
 
         __function void rv_ori() {
-            uint8_t _rd = 0, _rs1 = 0;
-            int32_t _imm = 0, v1 = 0;
+            uint8_t _rd = 0, _rs1 = 0; int32_t _imm = 0, v1 = 0;
 
             reg_read(int32_t, v1, _rs1);
             reg_write(int32_t, _rd, (v1 | _imm));
         }
 
         __function void rv_andi() {
-            uint8_t _rd = 0, _rs1 = 0;
-            int32_t _imm = 0, v1 = 0;
+            uint8_t _rd = 0, _rs1 = 0; int32_t _imm = 0, v1 = 0;
 
             reg_read(int32_t, v1, _rs1);
             reg_write(int32_t, _rd, (v1 & _imm));
         }
 
         __function void rv_slli() {
-            uint8_t _rd = 0, _rs1 = 0;
-            uint32_t shamt = 0, v1 = 0;
+            uint8_t _rd = 0, _rs1 = 0; uint32_t shamt = 0, v1 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -263,9 +244,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_srli() {
-            uint8_t _rd = 0, _rs1 = 0;
-            intptr_t v1 = 0;
-            uint32_t shamt = 0;
+            uint8_t _rd = 0, _rs1 = 0; intptr_t v1 = 0; uint32_t shamt = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -276,9 +255,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_srai() {
-            uint8_t _rd = 0, _rs1 = 0;
-            int32_t v1 = 0;
-            uint32_t shamt = 0;
+            uint8_t _rd = 0, _rs1 = 0; int32_t v1 = 0; uint32_t shamt = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -289,9 +266,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_addiw() {
-            uint8_t _rd = 0, _rs1 = 0;
-            int32_t v1 = 0;
-            int32_t imm = 0;
+            uint8_t _rd = 0, _rs1 = 0; int32_t v1 = 0; int32_t imm = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -302,9 +277,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_slliw() {
-            uint8_t _rd = 0, _rs1 = 0;
-            int32_t v1 = 0;
-            uint32_t shamt = 0;
+            uint8_t _rd = 0, _rs1 = 0; int32_t v1 = 0; uint32_t shamt = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -321,9 +294,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_srliw() {
-            uint8_t _rd = 0, _rs1 = 0;
-            int32_t v1 = 0;
-            uint32_t shamt = 0;
+            uint8_t _rd = 0, _rs1 = 0; int32_t v1 = 0; uint32_t shamt = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -340,9 +311,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_sraiw() {
-            uint8_t _rd = 0, _rs1 = 0;
-            int32_t v1 = 0;
-            uint32_t shamt = 0;
+            uint8_t _rd = 0, _rs1 = 0; int32_t v1 = 0; uint32_t shamt = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -359,10 +328,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_lb() {
-            uint8_t _rd = 0, _rs1 = 0;
-            int32_t _imm = 0;
-            uintptr_t address = 0;
-            int8_t v1 = 0;
+            uint8_t _rd = 0, _rs1 = 0; int32_t _imm = 0; uintptr_t address = 0; int8_t v1 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -376,10 +342,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_lh() {
-            uint8_t _rd = 0, _rs1 = 0;
-            int32_t _imm = 0;
-            uintptr_t address = 0;
-            int16_t v1 = 0;
+            uint8_t _rd = 0, _rs1 = 0; int32_t _imm = 0; uintptr_t address = 0; int16_t v1 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -393,10 +356,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_lw() {
-            uint8_t _rd = 0, _rs1 = 0;
-            int32_t _imm = 0;
-            uintptr_t address = 0;
-            int32_t v1 = 0;
+            uint8_t _rd = 0, _rs1 = 0; int32_t _imm = 0; uintptr_t address = 0; int32_t v1 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -410,10 +370,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_lbu() {
-            uint8_t _rd = 0, _rs1 = 0;
-            int32_t _imm = 0;
-            uintptr_t address = 0;
-            uint8_t v1 = 0;
+            uint8_t _rd = 0, _rs1 = 0; int32_t _imm = 0; uintptr_t address = 0; uint8_t v1 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -427,10 +384,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_lhu() {
-            uint8_t _rd = 0, _rs1 = 0;
-            int32_t _imm = 0;
-            uintptr_t address = 0;
-            uint16_t v1 = 0;
+            uint8_t _rd = 0, _rs1 = 0; int32_t _imm = 0; uintptr_t address = 0; uint16_t v1 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -444,10 +398,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_lwu() {
-            uint8_t _rd = 0, _rs1 = 0;
-            int32_t _imm = 0;
-            uintptr_t address = 0;
-            uint32_t v1 = 0;
+            uint8_t _rd = 0, _rs1 = 0; int32_t _imm = 0; uintptr_t address = 0; uint32_t v1 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -461,10 +412,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_ld() {
-            uint8_t _rd = 0, _rs1 = 0;
-            int32_t _imm = 0;
-            uintptr_t address = 0;
-            int64_t v1 = 0;
+            uint8_t _rd = 0, _rs1 = 0; int32_t _imm = 0; uintptr_t address = 0; int64_t v1 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -490,9 +438,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_jalr() {
-            uint8_t _rd = 0, _rs1 = 0;
-            int32_t _imm = 0;
-            uintptr_t address = 0;
+            uint8_t _rd = 0, _rs1 = 0; int32_t _imm = 0; uintptr_t address = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -618,9 +564,7 @@ namespace rvm64::operation {
     // r-type
     namespace rtype {
         __function void rv_scw() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            uintptr_t address = 0;
-            int32_t value = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; uintptr_t address = 0; int32_t value = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -640,9 +584,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_scd() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            int64_t value = 0;
-            uintptr_t address = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; int64_t value = 0; uintptr_t address = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -662,8 +604,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_fadd_d() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            float v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; float v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -675,8 +616,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_fsub_d() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            float v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; float v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -688,8 +628,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_fmul_d() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            float v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; float v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -701,8 +640,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_fdiv_d() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            float v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; float v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -715,8 +653,7 @@ namespace rvm64::operation {
 
 
         __function void rv_fsgnj_d() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            int64_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; int64_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -734,8 +671,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_fsgnjn_d() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            int64_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; int64_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -753,8 +689,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_fsgnjx_d() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            int64_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; int64_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -773,8 +708,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_fmin_d() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            double v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; double v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -793,8 +727,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_fmax_d() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            double v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; double v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -813,8 +746,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_feq_d() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            double v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; double v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -832,8 +764,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_flt_d() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            double v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; double v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -851,8 +782,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_fle_d() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            double v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; double v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -870,8 +800,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_addw() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            int32_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; int32_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -883,8 +812,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_subw() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            int32_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; int32_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -896,8 +824,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_mulw() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            int32_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; int32_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -909,9 +836,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_srlw() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            int32_t v1 = 0;
-            uint32_t v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; int32_t v1 = 0; uint32_t v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -923,9 +848,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_sraw() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            int32_t v1 = 0;
-            uint32_t v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; int32_t v1 = 0; uint32_t v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -937,8 +860,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_divuw() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            uint32_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; uint32_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -950,9 +872,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_sllw() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            int32_t v1 = 0;
-            uint32_t v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; int32_t v1 = 0; uint32_t v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -964,8 +884,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_divw() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            int32_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; int32_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -977,8 +896,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_remw() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            int32_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; int32_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -990,8 +908,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_remuw() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            uint32_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; uint32_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1003,8 +920,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_add() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            int32_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; int32_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1016,8 +932,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_sub() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            int32_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; int32_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1029,8 +944,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_mul() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            int32_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; int32_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1042,9 +956,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_sll() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            int32_t v1 = 0;
-            uint32_t v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; int32_t v1 = 0; uint32_t v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1056,8 +968,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_mulh() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            intptr_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; intptr_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1078,8 +989,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_slt() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            intptr_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; intptr_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1091,9 +1001,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_mulhsu() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            intptr_t v1 = 0;
-            uintptr_t v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; intptr_t v1 = 0; uintptr_t v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1114,8 +1022,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_sltu() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            uintptr_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; uintptr_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1127,8 +1034,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_mulhu() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            uintptr_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; uintptr_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1147,8 +1053,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_xor() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            uintptr_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; uintptr_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1160,8 +1065,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_div() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            uintptr_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; uintptr_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1173,9 +1077,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_srl() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            uintptr_t v1 = 0;
-            uint32_t v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; uintptr_t v1 = 0; uint32_t v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1187,9 +1089,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_sra() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            intptr_t v1 = 0;
-            uint32_t v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; intptr_t v1 = 0; uint32_t v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1202,8 +1102,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_divu() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            uintptr_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; uintptr_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1220,8 +1119,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_or() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            intptr_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; intptr_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1233,8 +1131,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_rem() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            intptr_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; intptr_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1251,8 +1148,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_and() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            uintptr_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; uintptr_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1264,8 +1160,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_remu() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            uintptr_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; uintptr_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1282,9 +1177,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_amoswap_d() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            uintptr_t address = 0;
-            int64_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; uintptr_t address = 0; int64_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1301,9 +1194,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_amoadd_d() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            uintptr_t address = 0;
-            int64_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; uintptr_t address = 0; int64_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1320,9 +1211,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_amoxor_d() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            uintptr_t address = 0;
-            int64_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; uintptr_t address = 0; int64_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1339,9 +1228,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_amoand_d() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            uintptr_t address = 0;
-            int64_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; uintptr_t address = 0; int64_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1358,9 +1245,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_amoor_d() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            uintptr_t address = 0;
-            int64_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; uintptr_t address = 0; int64_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1377,9 +1262,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_amomin_d() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            uintptr_t address = 0;
-            int64_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; uintptr_t address = 0; int64_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1396,9 +1279,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_amomax_d() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            uintptr_t address = 0;
-            int64_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; uintptr_t address = 0; int64_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1415,9 +1296,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_amominu_d() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            uintptr_t address = 0;
-            uint64_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; uintptr_t address = 0; uint64_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1434,9 +1313,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_amomaxu_d() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            uintptr_t address = 0;
-            uint64_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; uintptr_t address = 0; uint64_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1453,9 +1330,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_amoswap_w() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            uintptr_t address = 0;
-            int32_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; uintptr_t address = 0; int32_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1472,9 +1347,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_amoadd_w() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            uintptr_t address = 0;
-            int32_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; uintptr_t address = 0; int32_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1491,9 +1364,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_amoxor_w() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            uintptr_t address = 0;
-            int32_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; uintptr_t address = 0; int32_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1510,9 +1381,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_amoand_w() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            uintptr_t address = 0;
-            int32_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; uintptr_t address = 0; int32_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1529,9 +1398,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_amoor_w() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            uintptr_t address = 0;
-            int32_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; uintptr_t address = 0; int32_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1548,9 +1415,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_amomin_w() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            uintptr_t address = 0;
-            int32_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; uintptr_t address = 0; int32_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1567,9 +1432,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_amomax_w() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            uintptr_t address = 0;
-            int32_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; uintptr_t address = 0; int32_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1586,9 +1449,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_amominu_w() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            uintptr_t address = 0;
-            uint32_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; uintptr_t address = 0; uint32_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1605,9 +1466,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_amomaxu_w() {
-            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0;
-            uintptr_t address = 0;
-            uint32_t v1 = 0, v2 = 0;
+            uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; uintptr_t address = 0; uint32_t v1 = 0, v2 = 0;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -1739,10 +1598,7 @@ namespace rvm64::operation {
             Implementation
             M[x[rs1] + sext(offset)] = x[rs2][7:0]
             */
-            uint8_t _rs1 = 0, _rs2 = 0;
-            int32_t _imm = 0;
-            uintptr_t address = 0;
-            uint8_t v1 = 0;
+            uint8_t _rs1 = 0, _rs2 = 0; int32_t _imm = 0; uintptr_t address = 0; uint8_t v1 = 0;
 
             scr_read(uint8_t, _rs1, rs1);
             scr_read(uint8_t, _rs2, rs2);
@@ -1756,10 +1612,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_sh() {
-            uint8_t _rs1 = 0, _rs2 = 0;
-            int32_t _imm = 0;
-            uintptr_t address = 0;
-            uint16_t v1 = 0;
+            uint8_t _rs1 = 0, _rs2 = 0; int32_t _imm = 0; uintptr_t address = 0; uint16_t v1 = 0;
 
             scr_read(uint8_t, _rs1, rs1);
             scr_read(uint8_t, _rs2, rs2);
@@ -1773,10 +1626,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_sw() {
-            uint8_t _rs1 = 0, _rs2 = 0;
-            int32_t _imm = 0;
-            uintptr_t address = 0;
-            uint32_t v1 = 0;
+            uint8_t _rs1 = 0, _rs2 = 0; int32_t _imm = 0; uintptr_t address = 0; uint32_t v1 = 0;
 
             scr_read(uint8_t, _rs1, rs1);
             scr_read(uint8_t, _rs2, rs2);
@@ -1790,10 +1640,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_sd() {
-            uint8_t _rs1 = 0, _rs2 = 0;
-            int32_t _imm = 0;
-            uintptr_t address = 0;
-            uint64_t v1 = 0;
+            uint8_t _rs1 = 0, _rs2 = 0; int32_t _imm = 0; uintptr_t address = 0; uint64_t v1 = 0;
 
             scr_read(uint8_t, _rs1, rs1);
             scr_read(uint8_t, _rs2, rs2);
@@ -1807,10 +1654,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_fsw() {
-            uint8_t _rs1 = 0, _rs2 = 0;
-            int32_t _imm = 0;
-            uintptr_t address = 0;
-            float v1 = 0;
+            uint8_t _rs1 = 0, _rs2 = 0; int32_t _imm = 0; uintptr_t address = 0; float v1 = 0;
 
             scr_read(uint8_t, _rs1, rs1);
             scr_read(uint8_t, _rs2, rs2);
@@ -1824,10 +1668,7 @@ namespace rvm64::operation {
         }
 
         __function void rv_fsd() {
-            uint8_t _rs1 = 0, _rs2 = 0;
-            int32_t _imm = 0;
-            uintptr_t address = 0;
-            double v1 = 0;
+            uint8_t _rs1 = 0, _rs2 = 0; int32_t _imm = 0; uintptr_t address = 0; double v1 = 0;
 
             scr_read(uint8_t, _rs1, rs1);
             scr_read(uint8_t, _rs2, rs2);
