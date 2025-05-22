@@ -9,28 +9,32 @@
 #include "vmelf.hpp"
 
 bool read_program_from_packet() {
+	NTSTATUS status = 0;
 	HANDLE hfile = ctx->win32.NtCreateFile("./test.o", 
 			GENERIC_READ, FILE_SHARE_READ, NULL, 
 			OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
 	if (hfile == INVALID_HANDLE_VALUE) {
-		printf("ERR: failed to open file\n");
+		vmcs->halt = 1;
+		vmcs->reason = status;
 		return false;
 	}
 
-	DWORD status = ctx->win32.NtGetFileSize(hfile, &vmcs->program.size);
+	status = ctx->win32.NtGetFileSize(hfile, &vmcs->program.size);
 
 	if (status == INVALID_FILE_SIZE || size == 0) {
-		printf("ERR: invalid or empty file\n");
+		vmcs->halt = 1;
+		vmcs->reason = status;
 		return false;
 	}
 
 	void* elf_data = nullptr;
-	if (!NT_SUCCESS(ctx->win32.NtAllocateVirtualMemory(
+	if (!NT_SUCCESS(status = ctx->win32.NtAllocateVirtualMemory(
 					NtCurrentProcess(), (LPVOID)&vmcs->program.address, 0, 
 					&vmcs->program.size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE))) {
 
-		printf("ERR: failed to allocate memory for ELF\n");
+		vmcs->halt = 1;
+		vmcs->reason = status;
 		return false;
 	}
 
@@ -38,8 +42,9 @@ bool read_program_from_packet() {
 	if (!ctx->win32.NtReadFile(hfile, vmcs->program.address, vmcs->program.size, &bytesRead, NULL) || 
 			bytesRead != size) {
 
-		printf("ERR: failed to read file\n");
 		ctx->win32.NtFreeVirtualMemory(NtCurrentProcess(), (LPVOID)&vmcs->program.address, MEM_RELEASE);
+		vmcs->halt = 1;
+		vmcs->reason = vm_invalid_value;
 		return false;
 	}
 
