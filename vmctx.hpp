@@ -23,24 +23,28 @@ namespace rvm64::context {
     __function void save_host_context() {
         if (!NT_SUCCESS(vmcs->reason = ctx->win32.NtGetContextThread(NtCurrentThread(), &vmcs->host_context))) {
             vmcs->halt = 1;
+	    vmcs->reason = vm_undefined;
         }
     }
 
     __function void restore_host_context() {
         if (!NT_SUCCESS(vmcs->reason = ctx->win32.NtSetContextThread(NtCurrentThread(), &vmcs->host_context))) {
             vmcs->halt = 1;
+	    vmcs->reason = vm_undefined;
         }
     }
 
     __function void save_vm_context() {
         if (!NT_SUCCESS(vmcs->reason = ctx->win32.NtGetContextThread(NtCurrentThread(), &vmcs->vm_context))) {
             vmcs->halt = 1;
+	    vmcs->reason = vm_undefined;
         }
     }
 
     __function void restore_vm_context() {
         if (!NT_SUCCESS(vmcs->reason = ctx->win32.NtSetContextThread(NtCurrentThread(), &vmcs->vm_context))) {
             vmcs->halt = 1;
+	    vmcs->reason = vm_undefined;
         }
     }
 };

@@ -93,13 +93,13 @@ namespace rvm64 {
 	do {						                                                \
 		if ((addr) % sizeof(T) != 0) {								\
 			vmcs->halt = 1;									\
-			vmcs->reason = unaligned_op;							\
+			vmcs->reason = vm_unaligned_op;							\
 			return;										\
 		}											\
 		if ((addr) < vmcs->process.address || 							\
 				(addr) > vmcs->process.address + PROCESS_MAX_CAPACITY) {		\
 			vmcs->halt = 1;									\
-			vmcs->reason = access_violation;						\
+			vmcs->reason = vm_access_violation;						\
 			return;										\
 		}											\
 		retval = *(T*) (vmcs->process.address + ((addr) - vmcs->process.address));		\
@@ -109,13 +109,13 @@ namespace rvm64 {
 	do {											        \
 		if ((addr) % sizeof(T) != 0) {								\
 			vmcs->halt = 1;									\
-			vmcs->reason = unaligned_op;							\
+			vmcs->reason = vm_unaligned_op;							\
 			return;										\
 		}											\
 		if ((addr) < vmcs->process.address ||  							\
 				(addr) > vmcs->process.address + PROCESS_MAX_CAPACITY) {		\
 			vmcs->halt = 1;									\
-			vmcs->reason = access_violation;						\
+			vmcs->reason = vm_access_violation;						\
 			return;										\
 		}											\
 		*(T*) (vmcs->process.address + ((addr) - vmcs->process.address)) = (value); 		\
@@ -125,7 +125,7 @@ namespace rvm64 {
 	do {												\
 		if ((src) > regenum::t6) {								\
 			vmcs->halt = 1;									\
-			vmcs->reason = access_violation;						\
+			vmcs->reason = vm_access_violation;						\
 			return;										\
 		}											\
 		dst = (T)vmcs->vregs[(src)];								\
@@ -135,7 +135,7 @@ namespace rvm64 {
 	do {                                                    					\
 		if ((dst) == regenum::zr || (dst) > regenum::t6) {					\
 			vmcs->halt = 1;									\
-			vmcs->reason = access_violation;						\
+			vmcs->reason = vm_access_violation;						\
 			return;                                         				\
 		}                                                   					\
 		vmcs->vregs[(dst)] = (T)src;								\
@@ -145,7 +145,7 @@ namespace rvm64 {
 	do {												\
 		if (src > skrenum::imm) {								\
 			vmcs->halt = 1;									\
-			vmcs->reason = access_violation;						\
+			vmcs->reason = vm_access_violation;						\
 			return;                                         				\
 		}											\
 		dst = (T)vmcs->vscratch[(src)];								\
@@ -155,7 +155,7 @@ namespace rvm64 {
 	do {												\
 		if (dst > skrenum::imm) {								\
 			vmcs->halt = 1;									\
-			vmcs->reason = access_violation;						\
+			vmcs->reason = vm_access_violation;						\
 			return;                                         				\
 		}											\
 		vmcs->vscratch[(dst)] = (T)src;								\
@@ -176,16 +176,16 @@ namespace rvm64 {
 	} while (0)
 
 enum vm_reason {
-	ok,
-	illegal_op,
-	unaligned_op,
-	access_violation,
-	return_address_corruption,
-	stack_overflow,
+	vm_ok,
+	vm_illegal_op,
+	vm_access_violation,
+	vm_unaligned_op,
+	vm_return_address_corruption,
+	vm_stack_overflow,
 	vm_init_failed,
-	undefined,
-	user_ecall,
-	debug_break,
+	vm_undefined,
+	vm_user_ecall,
+	vm_debug_break,
 };
 
 enum skrenum {

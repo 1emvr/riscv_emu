@@ -57,7 +57,7 @@ namespace rvm64::decoder {
         }
         if (!decoded) {
             vmcs->halt = 1;
-            vmcs->reason = illegal_op;
+            vmcs->reason = vm_illegal_op;
             return;
         }
 
@@ -126,7 +126,7 @@ namespace rvm64::decoder {
                 }
 			default:
 				vmcs->halt = 1;
-				vmcs->reason = illegal_op;
+				vmcs->reason = vm_illegal_op;
 				return;
             }
 

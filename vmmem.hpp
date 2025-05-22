@@ -45,13 +45,13 @@ namespace rvm64::memory {
     __function void vm_init() {
         rvm64::context::vm_context_init();
 
-        vmcs->process.size = PROCESS_MAX_CAPACITY;
         vmcs->handler = (uintptr_t)rvm64::operation::__handler;
         vmcs->dkey = __key; // lol idk...
 
+        vmcs->process.size = PROCESS_MAX_CAPACITY;
 	if (vmcs->program.size > vmcs->process.size) {
 		vmcs->halt = 1;
-		vmcs->reason = stack_overflow;
+		vmcs->reason = vm_stack_overflow;
 		return;
 	}
 
@@ -63,7 +63,7 @@ namespace rvm64::memory {
 					&vmcs->process.size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE))) 
 	{
             vmcs->halt = 1;
-	    vmcs->reason = mem_init_failed;
+	    vmcs->reason = vm_mem_init_failed;
         }
     }
 
@@ -72,7 +72,7 @@ namespace rvm64::memory {
 					NtCurrentProcess(), (LPVOID*)&vmcs->process.address, &vmcs->process.size, MEM_RELEASE))) 
 	{
             vmcs->halt = 1;
-	    vmcs->reason = mem_init_failed;
+	    vmcs->reason = vm_mem_init_failed;
         }
     }
 };

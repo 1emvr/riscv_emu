@@ -47,11 +47,9 @@ bool read_program_from_packet() {
 	// TODO: patch .got/.plt
 
 	// Free the temporary ELF file buffer
-	ctx->win32.NtFreeVirtualMemory(NtCurrentProcess(), &elf_data, (PSIZE_T)&size, MEM_RELEASE);
+	ctx->win32.NtFreeVirtualMemory(NtCurrentProcess(), (LPVOID)&vmcs->program.address, &vmcs->program.size, MEM_RELEASE);
 
 	vmcs->program.address = 0;
-	vmcs->program.size = 0;
-
 	return success;
 }
 #endif // MOCK_H
