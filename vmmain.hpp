@@ -33,7 +33,6 @@ typedef struct __hexane {
 #endif
 
 #define __extern   extern "C"
-#define __vmcall   __attribute__((annotate("vm_calling_convention")))
 #define __function //__attribute__((section(".text$B")))
 #define __rdata    __attribute__((section(".rdata")))
 #define __data     __attribute__((section(".data")))
@@ -62,10 +61,10 @@ typedef struct {
 
     vm_memory_t program;
     vm_memory_t process;
+    uint32_t pc;
 
     uintptr_t handler;
     uintptr_t dkey;
-    uintptr_t pc;
 
     uintptr_t vscratch[32];
     uintptr_t vregs[32];
@@ -90,88 +89,88 @@ namespace rvm64 {
     __function int64_t vm_main();
 };
 
-#define mem_read(T, retval, addr)                                               \
-do {						                                                    \
-    if ((addr) % sizeof(T) != 0) {												\
-        vmcs->halt = 1;															\
-        vmcs->reason = unaligned_op;											\
-        return;																	\
-    }																			\
+#define mem_read(T, retval, addr)                                               			\
+do {						                                                    	\
+    if ((addr) % sizeof(T) != 0) {									\
+        vmcs->halt = 1;											\
+        vmcs->reason = unaligned_op;									\
+        return;												\
+    }													\
     if ((addr) < vmcs->process.address || (addr) > vmcs->process.address + PROCESS_MAX_CAPACITY) {	\
-        vmcs->halt = 1;															\
-        vmcs->reason = access_violation;										\
-        return;																	\
-    }																			\
-    retval = *(T*) (vmcs->process.address + ((addr) - vmcs->process.address));	\
+        vmcs->halt = 1;											\
+        vmcs->reason = access_violation;								\
+        return;												\
+    }													\
+    retval = *(T*) (vmcs->process.address + ((addr) - vmcs->process.address));				\
 } while (0)
 
-#define mem_write(T, addr, value)                                               \
-do {											                                \
-    if ((addr) % sizeof(T) != 0) {												\
-        vmcs->halt = 1;															\
-        vmcs->reason = unaligned_op;											\
-        return;																	\
-    }																			\
+#define mem_write(T, addr, value)                                               			\
+do {											                \
+    if ((addr) % sizeof(T) != 0) {									\
+        vmcs->halt = 1;											\
+        vmcs->reason = unaligned_op;									\
+        return;												\
+    }													\
     if ((addr) < vmcs->process.address || (addr) > vmcs->process.address + PROCESS_MAX_CAPACITY) {	\
-        vmcs->halt = 1;															\
-        vmcs->reason = access_violation;										\
-        return;																	\
-    }																			\
-    *(T*) (vmcs->process.address + ((addr) - vmcs->process.address)) = (value); \
+        vmcs->halt = 1;											\
+        vmcs->reason = access_violation;								\
+        return;												\
+    }													\
+    *(T*) (vmcs->process.address + ((addr) - vmcs->process.address)) = (value); 			\
 } while (0)
 
-#define reg_read(T, dst, src)					\
-	do {										\
-		if ((src) > regenum::t6) {				\
-			vmcs->halt = 1;						\
-			vmcs->reason = access_violation;	\
-			return;								\
-		}										\
-		dst = (T)vmcs->vregs[(src)];			\
+#define reg_read(T, dst, src)										\
+	do {												\
+		if ((src) > regenum::t6) {								\
+			vmcs->halt = 1;									\
+			vmcs->reason = access_violation;						\
+			return;										\
+		}											\
+		dst = (T)vmcs->vregs[(src)];								\
 	} while(0)
 
-#define reg_write(T, dst, src)								\
-	do {                                                    \
-		if ((dst) == regenum::zr || (dst) > regenum::t6) {	\
+#define reg_write(T, dst, src)										\
+	do {                                                    					\
+		if ((dst) == regenum::zr || (dst) > regenum::t6) {					\
 			vmcs->halt = 1;									\
-			vmcs->reason = access_violation;				\
-			return;                                         \
-		}                                                   \
-		vmcs->vregs[(dst)] = (T)src;						\
+			vmcs->reason = access_violation;						\
+			return;                                         				\
+		}                                                   					\
+		vmcs->vregs[(dst)] = (T)src;								\
 	} while (0)
 
-#define scr_read(T, dst, src)								\
-	do {													\
-		if (src > skrenum::imm) {							\
+#define scr_read(T, dst, src)										\
+	do {												\
+		if (src > skrenum::imm) {								\
 			vmcs->halt = 1;									\
-			vmcs->reason = access_violation;				\
-			return;                                         \
-		}													\
-		dst = (T)vmcs->vscratch[(src)];						\
+			vmcs->reason = access_violation;						\
+			return;                                         				\
+		}											\
+		dst = (T)vmcs->vscratch[(src)];								\
 	} while (0)
 
-#define scr_write(T, dst, src)								\
-	do {													\
-		if (dst > skrenum::imm) {							\
+#define scr_write(T, dst, src)										\
+	do {												\
+		if (dst > skrenum::imm) {								\
 			vmcs->halt = 1;									\
-			vmcs->reason = access_violation;				\
-			return;                                         \
-		}													\
-		vmcs->vscratch[(dst)] = (T)src;						\
+			vmcs->reason = access_violation;						\
+			return;                                         				\
+		}											\
+		vmcs->vscratch[(dst)] = (T)src;								\
 	} while (0)
 
-#define unwrap_opcall(idx)									\
-	do {													\
-		auto a = ((uintptr_t*)vmcs->handler)[idx];			\
-		auto b = rvm64::crypt::decrypt_ptr((uintptr_t)a);	\
-		void (*fn)() = (void (*)())(b);						\
-		fn();												\
+#define unwrap_opcall(idx)										\
+	do {												\
+		auto a = ((uintptr_t*)vmcs->handler)[idx];						\
+		auto b = rvm64::crypt::decrypt_ptr((uintptr_t)a);					\
+		void (*fn)() = (void (*)())(b);								\
+		fn();											\
 	} while(0)
 
-#define set_branch(target)						\
-	do {										\
-		ip_write(target);						\
-		vmcs->step = false;						\
+#define set_branch(target)										\
+	do {												\
+		ip_write(target);									\
+		vmcs->step = false;									\
 	} while (0)
 
 enum vm_reason {
