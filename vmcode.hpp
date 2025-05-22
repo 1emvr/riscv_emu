@@ -79,9 +79,9 @@ namespace rvm64::decoder {
 
 		// pass bitfields into scratch registers
         vmcs->vscratch[0] = rd;
-        vmcs->vscratch[2] = rs1;
-        vmcs->vscratch[3] = rs2;
-        vmcs->vscratch[4] = rs3;
+        vmcs->vscratch[1] = rs1;
+        vmcs->vscratch[2] = rs2;
+        vmcs->vscratch[3] = rs3;
 
 	// TODO: call - do not return
         switch(decoded) {
