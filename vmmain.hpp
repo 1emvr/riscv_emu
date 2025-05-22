@@ -90,91 +90,85 @@ namespace rvm64 {
     __function int64_t vm_main();
 };
 
-#define mem_read(T, retval, addr)                                               			\
-	do {						                                                \
-		if ((addr) % sizeof(T) != 0) {								\
-			vmcs->halt = 1;									\
-			vmcs->reason = vm_unaligned_op;							\
-			return;										\
-		}											\
-		if ((addr) < vmcs->process.address || 							\
-				(addr) > vmcs->process.address + PROCESS_MAX_CAPACITY) {		\
-			vmcs->halt = 1;									\
-			vmcs->reason = vm_access_violation;						\
-			return;										\
-		}											\
-		retval = *(T*) (vmcs->process.address + ((addr) - vmcs->process.address));		\
+#define mem_read(T, retval, addr)                                               	\
+	do {						                                                	\
+		if ((addr) % sizeof(T) != 0) {												\
+			vmcs->halt = 1;															\
+			vmcs->reason = vm_unaligned_op;											\
+			return;																	\
+		}																			\
+		if ((addr) < vmcs->process.address || 										\
+				(addr) > vmcs->process.address + PROCESS_MAX_CAPACITY) {			\
+			vmcs->halt = 1;															\
+			vmcs->reason = vm_access_violation;										\
+			return;																	\
+		}																			\
+		retval = *(T*) (vmcs->process.address + ((addr) - vmcs->process.address));	\
 	} while (0)
 
-#define mem_write(T, addr, value)                                               			\
-	do {											        \
-		if ((addr) % sizeof(T) != 0) {								\
-			vmcs->halt = 1;									\
-			vmcs->reason = vm_unaligned_op;							\
-			return;										\
-		}											\
-		if ((addr) < vmcs->process.address ||  							\
-				(addr) > vmcs->process.address + PROCESS_MAX_CAPACITY) {		\
-			vmcs->halt = 1;									\
-			vmcs->reason = vm_access_violation;						\
-			return;										\
-		}											\
-		*(T*) (vmcs->process.address + ((addr) - vmcs->process.address)) = (value); 		\
+#define mem_write(T, addr, value)                                               	\
+	do {											        						\
+		if ((addr) % sizeof(T) != 0) {												\
+			vmcs->halt = 1;															\
+			vmcs->reason = vm_unaligned_op;											\
+			return;																	\
+		}																			\
+		if ((addr) < vmcs->process.address ||  										\
+				(addr) > vmcs->process.address + PROCESS_MAX_CAPACITY) {			\
+			vmcs->halt = 1;															\
+			vmcs->reason = vm_access_violation;										\
+			return;																	\
+		}																			\
+		*(T*) (vmcs->process.address + ((addr) - vmcs->process.address)) = (value); \
 	} while (0)
 
-#define reg_read(T, dst, src)										\
-	do {												\
-		if ((src) > regenum::t6) {								\
-			vmcs->halt = 1;									\
-			vmcs->reason = vm_access_violation;						\
-			return;										\
-		}											\
-		dst = (T)vmcs->vregs[(src)];								\
+#define reg_read(T, dst, src)														\
+	do {																			\
+		if ((src) > regenum::t6) {													\
+			vmcs->halt = 1;															\
+			vmcs->reason = vm_access_violation;										\
+			return;																	\
+		}																			\
+		dst = (T)vmcs->vregs[(src)];												\
 	} while(0)
 
-#define reg_write(T, dst, src)										\
-	do {                                                    					\
-		if ((dst) == regenum::zr || (dst) > regenum::t6) {					\
-			vmcs->halt = 1;									\
-			vmcs->reason = vm_access_violation;						\
-			return;                                         				\
-		}                                                   					\
-		vmcs->vregs[(dst)] = (T)src;								\
+#define reg_write(T, dst, src)														\
+	do {                                                    						\
+		if ((dst) == regenum::zr || (dst) > regenum::t6) {							\
+			vmcs->halt = 1;															\
+			vmcs->reason = vm_access_violation;										\
+			return;                                         						\
+		}                                                   						\
+		vmcs->vregs[(dst)] = (T)src;												\
 	} while (0)
 
-#define scr_read(T, dst, src)										\
-	do {												\
-		if (src > skrenum::imm) {								\
-			vmcs->halt = 1;									\
-			vmcs->reason = vm_access_violation;						\
-			return;                                         				\
-		}											\
-		dst = (T)vmcs->vscratch[(src)];								\
+#define scr_read(T, dst, src)														\
+	do {																			\
+		if (src > skrenum::imm) {													\
+			vmcs->halt = 1;															\
+			vmcs->reason = vm_access_violation;										\
+			return;                                         						\
+		}																			\
+		dst = (T)vmcs->vscratch[(src)];												\
 	} while (0)
 
-#define scr_write(T, dst, src)										\
-	do {												\
-		if (dst > skrenum::imm) {								\
-			vmcs->halt = 1;									\
-			vmcs->reason = vm_access_violation;						\
-			return;                                         				\
-		}											\
-		vmcs->vscratch[(dst)] = (T)src;								\
+#define scr_write(T, dst, src)														\
+	do {																			\
+		if (dst > skrenum::imm) {													\
+			vmcs->halt = 1;															\
+			vmcs->reason = vm_access_violation;										\
+			return;                                         						\
+		}																			\
+		vmcs->vscratch[(dst)] = (T)src;												\
 	} while (0)
 
-#define unwrap_opcall(idx)										\
-	do {												\
-		auto a = ((uintptr_t*)vmcs->handler)[idx];						\
-		auto b = rvm64::crypt::decrypt_ptr((uintptr_t)a);					\
-		void (*fn)() = (void (*)())(b);								\
-		fn();											\
+#define unwrap_opcall(idx)															\
+	do {																			\
+		auto a = ((uintptr_t*)vmcs->handler)[idx];									\
+		auto b = rvm64::crypt::decrypt_ptr((uintptr_t)a);							\
+		void (*fn)() = (void (*)())(b);												\
+		fn();																		\
 	} while(0)
-
-#define set_branch(target)										\
-	do {												\
-		ip_write(target);									\
-		vmcs->step = false;									\
-	} while (0)
 
 enum vm_reason {
 	vm_ok,
