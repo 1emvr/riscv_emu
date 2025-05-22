@@ -112,7 +112,7 @@ do {						                                                    \
         vmcs->reason = unaligned_op;											\
         return;																	\
     }																			\
-    if ((addr) < (uintptr_t)vmcs->process.address || (addr) + sizeof(T) > PROCESS_MAX_CAPACITY) {	\
+    if ((addr) < (uintptr_t)vmcs->process.address || (addr) > vmcs->process.address + PROCESS_MAX_CAPACITY) {	\
         vmcs->halt = 1;															\
         vmcs->reason = access_violation;										\
         return;																	\
