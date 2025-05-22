@@ -22,4 +22,4 @@ clang --target=riscv64 -march=rv64g rotate.s -c -o test.o
 - implement vm exit for syscalls
 - implement full F/D Extension
 - implement branch instructions
-- create native interface for common tasks
+- create native interface (RVNI)
