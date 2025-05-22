@@ -15,8 +15,10 @@ clang --target=riscv64 -march=rv64g rotate.s -c -o test.o
 - currently only supports math operations
 - does not support a majority of floating-point operations
 - does not support syscalls or any VM_EXIT
+- does not support branch instructions
 - no debug output
 ### TODO:
 - implement rolling key decryption
 - implement vm exit for syscalls
 - implement full F/D Extension
+- implement branch instructions
