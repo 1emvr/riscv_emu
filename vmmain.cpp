@@ -10,13 +10,9 @@
 
 namespace rvm64 {
     __function void vm_entry(void) {
-        // TODO: create the main loop
-
         while (!vmcs->halt) {
-            int32_t opcode = (int32_t) vmcs->pc;
+            int32_t opcode = *(int32_t*) vmcs->pc;
             rvm64::decoder::vm_decode(opcode);
-
-            // select wrapper here
 
             if (vmcs->step) {
                 vmcs->pc += 4; // step while-not j/b-instruction
@@ -29,6 +25,7 @@ namespace rvm64 {
         vmcs= &vm_instance;
 
         rvm64::memory::vm_init(); // initialize the process space. Make sure "read_program" checks boundaries (process->size >= program->size).
+				  
         while(!vmcs->halt) {
             if (!read_program_from_packet()) { // continue reading until successful
                 continue;
