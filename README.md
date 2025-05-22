@@ -12,4 +12,3 @@ compile a risc-v binary object named "test.o" in the root folder and run.
 ### TODO:
 - implement rolling key decryption
 - implement vm exit for syscalls
-- actually test the fuckin thing
