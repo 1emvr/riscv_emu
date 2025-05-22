@@ -1731,7 +1731,118 @@ namespace rvm64::operation {
         }
     };
 
-    namespace stype {};
+    namespace stype {
+        __function void rv_sb() {
+            /*
+            Format
+            sb rs2,offset(rs1)
+            Description
+            Store 8-bit, values from the low bits of register rs2 to memory.
+            Implementation
+            M[x[rs1] + sext(offset)] = x[rs2][7:0]
+            */
+            uint8_t _rs1 = 0, _rs2 = 0;
+            int32_t _imm = 0;
+            uintptr_t address = 0;
+            uint8_t v1 = 0;
+
+            scr_read(uint8_t, _rs1, rs1);
+            scr_read(uint8_t, _rs2, rs2);
+            scr_read(uint8_t, _imm, imm);
+
+            reg_read(uintptr_t, address, _rs1);
+            reg_read(int8_t, v1, _rs2);
+
+            address += (intptr_t)_imm;
+            mem_write(uint8_t, address, v1);
+        }
+
+        __function void rv_sh() {
+            uint8_t _rs1 = 0, _rs2 = 0;
+            int32_t _imm = 0;
+            uintptr_t address = 0;
+            uint16_t v1 = 0;
+
+            scr_read(uint8_t, _rs1, rs1);
+            scr_read(uint8_t, _rs2, rs2);
+            scr_read(uint8_t, _imm, imm);
+
+            reg_read(uintptr_t, address, _rs1);
+            reg_read(uint16_t, v1, _rs2);
+
+            address += (intptr_t)_imm;
+            mem_write(uint16_t, address, v1);
+        }
+
+        __function void rv_sw() {
+            uint8_t _rs1 = 0, _rs2 = 0;
+            int32_t _imm = 0;
+            uintptr_t address = 0;
+            uint32_t v1 = 0;
+
+            scr_read(uint8_t, _rs1, rs1);
+            scr_read(uint8_t, _rs2, rs2);
+            scr_read(uint8_t, _imm, imm);
+
+            reg_read(uintptr_t, address, _rs1);
+            reg_read(uint32_t, v1, _rs2);
+
+            address += (intptr_t)_imm;
+            mem_write(uint32_t, address, v1);
+        }
+
+        __function void rv_sd() {
+            uint8_t _rs1 = 0, _rs2 = 0;
+            int32_t _imm = 0;
+            uintptr_t address = 0;
+            uint64_t v1 = 0;
+
+            scr_read(uint8_t, _rs1, rs1);
+            scr_read(uint8_t, _rs2, rs2);
+            scr_read(uint8_t, _imm, imm);
+
+            reg_read(uintptr_t, address, _rs1);
+            reg_read(uint64_t, v1, _rs2);
+
+            address += (intptr_t)_imm;
+            mem_write(uint64_t, address, v1);
+        }
+
+        __function void rv_fsw() {
+            uint8_t _rs1 = 0, _rs2 = 0;
+            int32_t _imm = 0;
+            uintptr_t address = 0;
+            float v1 = 0;
+
+            scr_read(uint8_t, _rs1, rs1);
+            scr_read(uint8_t, _rs2, rs2);
+            scr_read(int32_t, _imm, imm);
+
+            reg_read(uintptr_t, address, _rs1);
+            reg_read(float, v1, _rs2);
+
+            address += (intptr_t)_imm;
+            mem_write(float, address, v1);
+        }
+
+        __function void rv_fsd() {
+            uint8_t _rs1 = 0, _rs2 = 0;
+            int32_t _imm = 0;
+            uintptr_t address = 0;
+            double v1 = 0;
+
+            scr_read(uint8_t, _rs1, rs1);
+            scr_read(uint8_t, _rs2, rs2);
+            scr_read(int32_t, _imm, imm);
+
+            reg_read(uintptr_t, address, _rs1);
+            reg_read(uint64_t, v1, _rs2);
+
+            address += (intptr_t)_imm;
+            mem_write(double, address, v1);
+        }
+    };
+
     namespace r4type {};
 
     __rdata const uintptr_t __handler[256] = {
@@ -1755,12 +1866,9 @@ namespace rvm64::operation {
         crypt::encrypt_ptr((uintptr_t) itype::rv_csrrsi), crypt::encrypt_ptr((uintptr_t) itype::rv_csrrci),
         crypt::encrypt_ptr((uintptr_t) itype::rv_fclass_d), crypt::encrypt_ptr((uintptr_t) itype::rv_lrw),
         crypt::encrypt_ptr((uintptr_t) itype::rv_lrd), crypt::encrypt_ptr((uintptr_t) itype::rv_fmv_d_x),
-        crypt::encrypt_ptr((uintptr_t) itype::rv_fcvt_s_d), crypt::encrypt_ptr((uintptr_t) itype::rv_fcvt_s_q),
-        crypt::encrypt_ptr((uintptr_t) itype::rv_fcvt_d_s), crypt::encrypt_ptr((uintptr_t) itype::rv_fcvt_d_q),
+        crypt::encrypt_ptr((uintptr_t) itype::rv_fcvt_s_d), crypt::encrypt_ptr((uintptr_t) itype::rv_fcvt_d_s),
         crypt::encrypt_ptr((uintptr_t) itype::rv_fcvt_w_d), crypt::encrypt_ptr((uintptr_t) itype::rv_fcvt_wu_d),
-        crypt::encrypt_ptr((uintptr_t) itype::rv_fcvt_l_d), crypt::encrypt_ptr((uintptr_t) itype::rv_fcvt_lu_d),
         crypt::encrypt_ptr((uintptr_t) itype::rv_fcvt_d_w), crypt::encrypt_ptr((uintptr_t) itype::rv_fcvt_d_wu),
-        crypt::encrypt_ptr((uintptr_t) itype::rv_fcvt_d_l), crypt::encrypt_ptr((uintptr_t) itype::rv_fcvt_d_lu),
 
         // RTYPE
         crypt::encrypt_ptr((uintptr_t) rtype::rv_fadd_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fsub_d),
@@ -1769,12 +1877,12 @@ namespace rvm64::operation {
         crypt::encrypt_ptr((uintptr_t) rtype::rv_fsgnjn_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fsgnjx_d),
         crypt::encrypt_ptr((uintptr_t) rtype::rv_fmin_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fmax_d),
         crypt::encrypt_ptr((uintptr_t) rtype::rv_feq_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_flt_d),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_fle_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fmv_x_d),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_scw), crypt::encrypt_ptr((uintptr_t) rtype::rv_amoswap_w),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_amoadd_w), crypt::encrypt_ptr((uintptr_t) rtype::rv_amoxor_w),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_amoand_w), crypt::encrypt_ptr((uintptr_t) rtype::rv_amoor_w),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_amomin_w), crypt::encrypt_ptr((uintptr_t) rtype::rv_amomax_w),
-        crypt::encrypt_ptr((uintptr_t) rtype::rv_amominu_w), crypt::encrypt_ptr((uintptr_t) rtype::rv_amomaxu_w),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_fle_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_scw),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_amoswap_w), crypt::encrypt_ptr((uintptr_t) rtype::rv_amoadd_w),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_amoxor_w), crypt::encrypt_ptr((uintptr_t) rtype::rv_amoand_w),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_amoor_w), crypt::encrypt_ptr((uintptr_t) rtype::rv_amomin_w),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_amomax_w), crypt::encrypt_ptr((uintptr_t) rtype::rv_amominu_w),
+        crypt::encrypt_ptr((uintptr_t) rtype::rv_amomaxu_w),
 
         crypt::encrypt_ptr((uintptr_t) rtype::rv_scd),
         crypt::encrypt_ptr((uintptr_t) rtype::rv_amoswap_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_amoadd_d),
@@ -1799,7 +1907,8 @@ namespace rvm64::operation {
         crypt::encrypt_ptr((uintptr_t) rtype::rv_or), crypt::encrypt_ptr((uintptr_t) rtype::rv_rem),
         crypt::encrypt_ptr((uintptr_t) rtype::rv_and), crypt::encrypt_ptr((uintptr_t) rtype::rv_remu),
 
-        // STYPE : MISSING
+        // TODO: Finish floating point instructions (probably S and I types) - f, fm, fnm, fcvt - have a few already done.
+        // STYPE
         crypt::encrypt_ptr((uintptr_t) stype::rv_sb), crypt::encrypt_ptr((uintptr_t) stype::rv_sh),
         crypt::encrypt_ptr((uintptr_t) stype::rv_sw), crypt::encrypt_ptr((uintptr_t) stype::rv_sd),
         crypt::encrypt_ptr((uintptr_t) stype::rv_fsw), crypt::encrypt_ptr((uintptr_t) stype::rv_fsd),
