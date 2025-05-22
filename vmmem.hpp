@@ -49,6 +49,7 @@ namespace rvm64::memory {
         vmcs->dkey = __key; // lol idk...
 
         vmcs->process.size = PROCESS_MAX_CAPACITY;
+
 	if (vmcs->program.size > vmcs->process.size) {
 		vmcs->halt = 1;
 		vmcs->reason = vm_stack_overflow;
@@ -58,21 +59,19 @@ namespace rvm64::memory {
         vmcs->load_rsv_valid = false;
         vmcs->load_rsv_addr = 0LL;
 
-	if (!NT_SUCCESS(ctx->win32.NtAllocateVirtualMemory(
+	if (!NT_SUCCESS(vmcs->reason = ctx->win32.NtAllocateVirtualMemory(
 					NtCurrentProcess(), (void**)&vmcs->process.address, 0, 
 					&vmcs->process.size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE))) 
 	{
             vmcs->halt = 1;
-	    vmcs->reason = vm_mem_init_failed;
         }
     }
 
     __function void vm_end() {
-        if (!NT_SUCCESS(ctx->win32.NtFreeVirtualMemory(
+        if (!NT_SUCCESS(vmcs->reason = ctx->win32.NtFreeVirtualMemory(
 					NtCurrentProcess(), (LPVOID*)&vmcs->process.address, &vmcs->process.size, MEM_RELEASE))) 
 	{
             vmcs->halt = 1;
-	    vmcs->reason = vm_mem_init_failed;
         }
     }
 };

@@ -11,6 +11,7 @@
 namespace rvm64 {
     __function void vm_entry(void) {
         while (!vmcs->halt) {
+
             int32_t opcode = *(int32_t*) vmcs->pc;
             rvm64::decoder::vm_decode(opcode);
 

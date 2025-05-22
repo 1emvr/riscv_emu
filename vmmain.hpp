@@ -73,14 +73,15 @@ typedef struct {
     volatile uintptr_t load_rsv_addr;
     volatile int load_rsv_valid;
 
-    int halt;
-    int reason;
-    int step;
+    uint32_t halt;
+    uint32_t reason;
+    uint32_t step;
 } vmcs_t;
 
 __data hexane *ctx = nullptr;
 __data vmcs_t *vmcs = nullptr;
 __data HANDLE vmcs_mutex = 0;
+
 __data uintptr_t __stack_cookie = { };
 __rdata const uintptr_t __key = 0;
 
@@ -182,7 +183,6 @@ enum vm_reason {
 	vm_unaligned_op,
 	vm_return_address_corruption,
 	vm_stack_overflow,
-	vm_init_failed,
 	vm_undefined,
 	vm_user_ecall,
 	vm_debug_break,

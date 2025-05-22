@@ -81,6 +81,7 @@ namespace rvm64::elf {
             }
 
             uint64_t offset = ph->p_vaddr - base_vaddr;
+
             if (ph->p_type != PT_LOAD) {
                 continue;
             }

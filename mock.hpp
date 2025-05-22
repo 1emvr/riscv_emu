@@ -17,26 +17,22 @@ bool read_program_from_packet() {
 			OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
 	if (hfile == INVALID_HANDLE_VALUE) {
+		vmcs->reason = vm_undefined;
 		vmcs->halt = 1;
-		vmcs->reason = status;
 		goto defer;
 	}
 
-	status = ctx->win32.NtGetFileSize(hfile, &vmcs->program.size);
+	vmcs->reason = ctx->win32.NtGetFileSize(hfile, &vmcs->program.size);
 
 	if (status == INVALID_FILE_SIZE || size == 0) {
 		vmcs->halt = 1;
-		vmcs->reason = status;
 		goto defer;
 	}
 
-	void* elf_data = nullptr;
-	if (!NT_SUCCESS(status = ctx->win32.NtAllocateVirtualMemory(
+	if (!NT_SUCCESS(vmcs->reason = ctx->win32.NtAllocateVirtualMemory(
 					NtCurrentProcess(), (LPVOID)&vmcs->program.address, 0, 
 					&vmcs->program.size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE))) {
-
 		vmcs->halt = 1;
-		vmcs->reason = status;
 		goto defer;
 	}
 
@@ -45,7 +41,7 @@ bool read_program_from_packet() {
 			bytesRead != size) {
 
 		vmcs->halt = 1;
-		vmcs->reason = vm_invalid_value;
+		vmcs->reason = vm_undefined;
 		goto defer;
 	}
 
