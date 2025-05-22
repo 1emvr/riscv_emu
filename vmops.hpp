@@ -978,8 +978,8 @@ namespace rvm64::operation {
             reg_read(intptr_t, v2, _rs2);
 
 #if UINTPTR_MAX == 0xFFFFFFFF
-    int64_t result = (int64_t)v1 * (int64_t)v2;
-    reg_write(int32_t, _rd, (result >> 32));
+	    int64_t result = (int64_t)v1 * (int64_t)v2;
+	    reg_write(int32_t, _rd, (result >> 32));
 
 #elif UINTPTR_MAX == 0xFFFFFFFFFFFFFFFF
             __int128 result = (__int128)v1 * (__int128)v2;
@@ -1011,8 +1011,8 @@ namespace rvm64::operation {
             reg_read(uintptr_t, v2, _rs2);
 
 #if UINTPTR_MAX == 0xFFFFFFFF
-    int64_t result = (int64_t)(int32_t)v1 * (uint64_t)(uint32_t)v2;
-    reg_write(int32_t, _rd, (result >> 32));
+	    int64_t result = (int64_t)(int32_t)v1 * (uint64_t)(uint32_t)v2;
+	    reg_write(int32_t, _rd, (result >> 32));
 
 #elif UINTPTR_MAX == 0xFFFFFFFFFFFFFFFF
             __int128 result = (__int128) (int64_t) v1 * (__uint128_t) (uint64_t) v2;
@@ -1045,7 +1045,7 @@ namespace rvm64::operation {
 
             uintptr_t result = v1 * v2;
 #if UINTPTR_MAX == 0xFFFFFFFF
-    reg_write(uintptr_t, _rd, (result >> 16));
+	    reg_write(uintptr_t, _rd, (result >> 16));
 
 #elif UINTPTR_MAX == 0xFFFFFFFFFFFFFFFF
             reg_write(uintptr_t, _rd, (result >> 32));
