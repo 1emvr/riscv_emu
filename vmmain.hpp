@@ -182,12 +182,9 @@ enum vm_reason {
 	access_violation,
 	return_address_corruption,
 	stack_overflow,
-	out_of_memory,
 	vm_init_failed,
 	undefined,
 	user_ecall,
-	visor_ecall,
-	machine_ecall,
 	debug_break,
 };
 
