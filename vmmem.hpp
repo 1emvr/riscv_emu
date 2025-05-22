@@ -5,7 +5,6 @@
 #include "vmctx.hpp"
 #include "vmmain.hpp"
 #include "vmops.hpp"
-#include "vmops.hpp"
 
 /*
 Main (Manager) Thread:

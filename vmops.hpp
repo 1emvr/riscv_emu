@@ -6,21 +6,21 @@
 #include "vmmain.hpp"
 #include "vmcrypt.hpp"
 #include "vmctx.hpp"
-#include "vmmem.hpp"
+#include "vmatom.hpp"
 
 namespace rvm64::operation {
-    bool is_nan(double x) {
-        union {
-            double d = 0LL;
-            uint64_t u = 0LL;
-        } converter;
+    union {
+        double d;
+        uint64_t u;
+    } converter;
 
+    bool is_nan(double x) {
         converter.d = x;
 
-        uint64_t exponent = converter.u & EXPONENT_MASK;
+        uint64_t exponent = (converter.u & EXPONENT_MASK) >> 52;
         uint64_t fraction = converter.u & FRACTION_MASK;
 
-        return (exponent == EXPONENT_MASK) && (fraction != 0);
+        return (exponent == 0x7FF) && (fraction != 0);
     }
 
     // i-type
@@ -138,11 +138,6 @@ namespace rvm64::operation {
         __function void rv_fclass_d() {
             uint8_t _rd = 0, _rs1 = 0;
             double v1 = 0;
-
-            union {
-                double d = 0LL;
-                int64_t u = 0LL;
-            } converter;
 
             scr_read(uint8_t, _rd, rd);
             scr_read(uint8_t, _rs1, rs1);
@@ -635,9 +630,11 @@ namespace rvm64::operation {
             mem_read(uintptr_t, address, _rs1);
             reg_read(int32_t, value, _rs2);
 
-            if (rvm64::memory::vm_check_load_rsv(address)) {
-                rvm64::memory::vm_atom_memory_write(0, address, value);
+            if (rvm64::atom::vm_check_load_rsv(0, address)) {
+                rvm64::atom::vm_set_load_rsv(0, address);
+                mem_write(int32_t, address, value);
                 reg_write(int32_t, _rd, 0);
+                rvm64::atom::vm_clear_load_rsv(0);
             } else {
                 reg_write(int32_t, _rd, 1);
             }
@@ -655,9 +652,11 @@ namespace rvm64::operation {
             reg_read(uintptr_t, address, _rs1);
             reg_read(int64_t, value, _rs2);
 
-            if (!rvm64::memory::vm_check_load_rsv(address)) {
-                rvm64::memory::vm_atom_memory_write(0, address, value);
+            if (!rvm64::atom::vm_check_load_rsv(0, address)) {
+                rvm64::atom::vm_set_load_rsv(0, address);
+                mem_write(int64_t, address, value);
                 reg_write(int64_t, _rd, 0);
+                rvm64::atom::vm_clear_load_rsv(0);
             } else {
                 reg_write(int64_t, _rd, 1);
             }

@@ -60,7 +60,7 @@ __data hexane *ctx = nullptr;
 __data vmcs_t *vmcs = nullptr;
 __data HANDLE vmcs_mutex = 0;
 __data uintptr_t __stack_cookie = { };
-__data uintptr_t __key = 0;
+__rdata const uintptr_t __key = 0;
 
 namespace rvm64 {
     __function void vm_entry();

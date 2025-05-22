@@ -3,10 +3,10 @@
 
 #include "mock.hpp"
 #include "vmmain.hpp"
-#include "vmctx.h"
-#include "vmmem.h"
-#include "vmcode.h"
-#include "vmcrypt.h"
+#include "vmctx.hpp"
+#include "vmmem.hpp"
+#include "vmcode.hpp"
+#include "vmcrypt.hpp"
 
 namespace rvm64 {
     __function void vm_entry(void) {
@@ -14,9 +14,8 @@ namespace rvm64 {
 
         while (!vmcs->halt) {
             int32_t opcode = (int32_t) vmcs->pc;
-            uintptr_t operation = rvm64::decoder::vm_decode(opcode);
+            rvm64::decoder::vm_decode(opcode);
 
-            operation = rvm64::crypt::decrypt_ptr(operation);
             // select wrapper here
 
             if (vmcs->step) {
@@ -36,11 +35,15 @@ namespace rvm64 {
             }
         };
 
-        rvm64::context::vm_entry();
+        rvm64::vm_entry();
         rvm64::memory::vm_end();
 
         return vmcs->reason;
     }
 };
+
+int main() {
+    rvm64::vm_main();
+}
 
 

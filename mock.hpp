@@ -7,7 +7,7 @@
 
 #include "monodef.hpp"
 #include "vmmain.hpp"
-#include "vmelf.h"
+#include "vmelf.hpp"
 
 bool read_program_from_packet() {
 	HANDLE hfile = ctx->win32.NtCreateFile("./test.o", GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);

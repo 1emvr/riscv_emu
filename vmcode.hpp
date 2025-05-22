@@ -142,23 +142,17 @@ namespace rvm64::decoder {
                     case 0b1111001: unwrap_opcall(_rv_fmv_d_x); break;
                     case 0b0100000: switch(rs2) {
                         case 0b00001: unwrap_opcall(_rv_fcvt_s_d); break;
-                        case 0b00011: unwrap_opcall(_rv_fcvt_s_q); break;
                     }
                     case 0b0100001: switch(rs2) {
                         case 0b00000: unwrap_opcall(_rv_fcvt_d_s); break;
-                        case 0b00011: unwrap_opcall(_rv_fcvt_d_q); break;
                     }
                     case 0b1100001: switch(rs2) {
                         case 0b00000: unwrap_opcall(_rv_fcvt_w_d); break;
                         case 0b00001: unwrap_opcall(_rv_fcvt_wu_d); break;
-                        case 0b00010: unwrap_opcall(_rv_fcvt_l_d); break;
-                        case 0b00011: unwrap_opcall(_rv_fcvt_lu_d); break;
                     }
                     case 0b1101001: switch(rs2) {
                         case 0b00000: unwrap_opcall(_rv_fcvt_d_w); break;
                         case 0b00001: unwrap_opcall(_rv_fcvt_d_wu); break;
-                        case 0b00010: unwrap_opcall(_rv_fcvt_d_l); break;
-                        case 0b00011: unwrap_opcall(_rv_fcvt_d_lu); break;
                     }
                     case 0b0010001: switch(func3) {
                         case 0b000: unwrap_opcall(_rv_fsgnj_d); break;
@@ -176,7 +170,6 @@ namespace rvm64::decoder {
                     }
                     case 0b1110001: switch(func3) {
                         case 0b001: unwrap_opcall(_rv_fclass_d); break;
-                        case 0b000: unwrap_opcall(_rv_fmv_x_d); break;
                     }
                 }
                 case 0b0101111: switch(func3) {
