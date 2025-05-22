@@ -1,7 +1,6 @@
 #ifndef VMMEM_H
 #define VMMEM_H
 
-#include "monodef.hpp"
 #include "vmctx.hpp"
 #include "vmmain.hpp"
 #include "vmops.hpp"

@@ -2,7 +2,6 @@
 #define VMOPS_H
 #include <compare>
 
-#include "monodef.hpp"
 #include "vmmain.hpp"
 #include "vmcrypt.hpp"
 #include "vmctx.hpp"

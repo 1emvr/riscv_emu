@@ -1,6 +1,5 @@
 #ifndef VMATOM_H
 #define VMATOM_H
-#include "monodef.hpp"
 #include "vmmain.hpp"
 
 namespace rvm64::atom {

@@ -1,6 +1,5 @@
 #ifndef VMCTX_H
 #define VMCTX_H
-#include "monodef.hpp"
 #include "vmmain.hpp"
 
 namespace rvm64::context {

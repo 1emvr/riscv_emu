@@ -5,7 +5,6 @@
 #include <cstring>
 #include <cstdio>
 
-#include "monodef.hpp"
 #include "vmmain.hpp"
 #include "vmelf.hpp"
 
