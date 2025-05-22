@@ -90,34 +90,36 @@ namespace rvm64 {
 };
 
 #define mem_read(T, retval, addr)                                               			\
-do {						                                                    	\
-    if ((addr) % sizeof(T) != 0) {									\
-        vmcs->halt = 1;											\
-        vmcs->reason = unaligned_op;									\
-        return;												\
-    }													\
-    if ((addr) < vmcs->process.address || (addr) > vmcs->process.address + PROCESS_MAX_CAPACITY) {	\
-        vmcs->halt = 1;											\
-        vmcs->reason = access_violation;								\
-        return;												\
-    }													\
-    retval = *(T*) (vmcs->process.address + ((addr) - vmcs->process.address));				\
-} while (0)
+	do {						                                                \
+		if ((addr) % sizeof(T) != 0) {								\
+			vmcs->halt = 1;									\
+			vmcs->reason = unaligned_op;							\
+			return;										\
+		}											\
+		if ((addr) < vmcs->process.address || 							\
+				(addr) > vmcs->process.address + PROCESS_MAX_CAPACITY) {		\
+			vmcs->halt = 1;									\
+			vmcs->reason = access_violation;						\
+			return;										\
+		}											\
+		retval = *(T*) (vmcs->process.address + ((addr) - vmcs->process.address));		\
+	} while (0)
 
 #define mem_write(T, addr, value)                                               			\
-do {											                \
-    if ((addr) % sizeof(T) != 0) {									\
-        vmcs->halt = 1;											\
-        vmcs->reason = unaligned_op;									\
-        return;												\
-    }													\
-    if ((addr) < vmcs->process.address || (addr) > vmcs->process.address + PROCESS_MAX_CAPACITY) {	\
-        vmcs->halt = 1;											\
-        vmcs->reason = access_violation;								\
-        return;												\
-    }													\
-    *(T*) (vmcs->process.address + ((addr) - vmcs->process.address)) = (value); 			\
-} while (0)
+	do {											        \
+		if ((addr) % sizeof(T) != 0) {								\
+			vmcs->halt = 1;									\
+			vmcs->reason = unaligned_op;							\
+			return;										\
+		}											\
+		if ((addr) < vmcs->process.address ||  							\
+				(addr) > vmcs->process.address + PROCESS_MAX_CAPACITY) {		\
+			vmcs->halt = 1;									\
+			vmcs->reason = access_violation;						\
+			return;										\
+		}											\
+		*(T*) (vmcs->process.address + ((addr) - vmcs->process.address)) = (value); 		\
+	} while (0)
 
 #define reg_read(T, dst, src)										\
 	do {												\

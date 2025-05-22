@@ -26,7 +26,7 @@ typedef struct {
     uint16_t e_shentsize;
     uint16_t e_shnum;
     uint16_t e_shstrndx;
-} Elf64_Ehdr;
+} e_ehdr;
 
 typedef struct {
     uint32_t p_type;
@@ -37,31 +37,28 @@ typedef struct {
     uint64_t p_filesz;   // Bytes in file
     uint64_t p_memsz;    // Bytes in memory
     uint64_t p_align;
-} Elf64_Phdr;
+} e_phdr;
 
 namespace rvm64::elf {
     bool load_elf64_image(void) {
         if (!vmcs->program.address || !vmcs->process.address) {
-            printf("Invalid VMCS or memory pointers\n");
             return false;
         }
 
-        Elf64_Ehdr* e_head = (Elf64_Ehdr*)vmcs->program.address;
+        e_ehdr* e_head = (e_ehdr*)vmcs->program.address;
         if (!(e_head->e_ident[0] == 0x7F &&
               e_head->e_ident[1] == 'E' &&
               e_head->e_ident[2] == 'L' &&
               e_head->e_ident[3] == 'F'))
         {
-            printf("Invalid ELF magic\n");
             return false;
         }
 
         if (e_head->e_type != ET_EXEC) {
-            printf("Only ET_EXEC supported (no PIE)\n");
             return false;
         }
 
-        Elf64_Phdr* p_heads = (Elf64_Phdr*)(vmcs->program.address + e_head->e_phoff);
+        e_phdr* p_heads = (e_phdr*)(vmcs->program.address + e_head->e_phoff);
         uint64_t base_vaddr = UINT64_MAX;
 
         for (int i = 0; i < e_head->e_phnum; i++) {
@@ -73,15 +70,13 @@ namespace rvm64::elf {
         }
 
         if (base_vaddr == UINT64_MAX) {
-            printf("No loadable segments found\n");
             return false;
         }
 
         for (int i = 0; i < e_head->e_phnum; i++) {
-            Elf64_Phdr* ph = &p_heads[i];
+            e_phdr* ph = &p_heads[i];
 
             if (ph->p_vaddr < base_vaddr) {
-                printf("Malformed ELF segment: integer underflow possible from base.\n");
                 return false;
             }
 
