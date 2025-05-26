@@ -178,19 +178,21 @@ struct thunk {
 std::unordered_map<void*, thunk*> thunk_table;
 
 typedef uint64_t (*win_func_t)(...);
-uint64_t call_windows_function(void* func, vm_registers_t* regs) {
+
+// NOTE: This is not going to work correctly if the function signature does not match. Arguments/ return values will be screwed up.
+uint64_t call_windows_function(void* func) {
     win_func_t winfn = (win_func_t)func;
 
-    uint64_t a0 = regs->x[10];
-    uint64_t a1 = regs->x[11];
-    uint64_t a2 = regs->x[12];
-    uint64_t a3 = regs->x[13];
-    uint64_t a4 = regs->x[14];
-    uint64_t a5 = regs->x[15];
-    uint64_t a6 = regs->x[16];
-    uint64_t a7 = regs->x[17];
+    uint64_t _a0 = vmcs->vregs[regenum::a0];
+    uint64_t _a1 = vmcs->vregs[regenum::a1];
+    uint64_t _a2 = vmcs->vregs[regenum::a2];
+    uint64_t _a3 = vmcs->vregs[regenum::a3];
+    uint64_t _a4 = vmcs->vregs[regenum::a4];
+    uint64_t _a5 = vmcs->vregs[regenum::a5];
+    uint64_t _a6 = vmcs->vregs[regenum::a6];
+    uint64_t _a7 = vmcs->vregs[regenum::a7];
 
-    return winfn(a0, a1, a2, a3, a4, a5, a6, a7);
+    return winfn(_a0, _a1, _a2, _a3, _a4, _a5, _a6, _a7);
 }
 
 uint64_t generic_thunk(void* fn, vm_registers_t* regs) {
