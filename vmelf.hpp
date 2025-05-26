@@ -135,21 +135,20 @@ namespace rvm64::elf {
         return true;
     }
 
-
-	void* windows_thunk_resolver(const char* name) {
+	void* windows_thunk_resolver(const char* sym_name) {
 		static HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
-		if (!ucrt) {
-			return nullptr;
-		}
+		if (!ucrt) return nullptr;
 
-		// NOTE: add more linux-specific functions we can't handle correctly
-		if (strcmp(name, "open") == 0) name = "_open";
-		if (strcmp(name, "read") == 0) name = "_read";
-		if (strcmp(name, "write") == 0) name = "_write";
+		// Alias table
+		if (strcmp(sym_name, "open") == 0) sym_name = "_open";
+		if (strcmp(sym_name, "read") == 0) sym_name = "_read";
+		if (strcmp(sym_name, "write") == 0) sym_name = "_write";
+		if (strcmp(sym_name, "close") == 0) sym_name = "_close";
+		if (strcmp(sym_name, "exit") == 0) sym_name = "_exit";
 
-		void* proc = GetProcAddress(ucrt, name);
+		void* proc = (void*)GetProcAddress(ucrt, sym_name);
 		if (!proc) {
-			printf("Missing thunk for %s\n", name);
+			printf("Missing thunk for %s\n", sym_name);
 		}
 
 		return proc;
@@ -220,17 +219,9 @@ namespace rvm64::elf {
 				continue;
 			}
 			
-			// NOTE: dangling pointers here.
 			// NOTE: patching .got/.plt with win32 wrapper
-			thunk* t = new thunk {
-				.target = win_func,
-				.wrapper = generic_thunk
-			};
-
 			void** reloc_addr = (void**)((uint8_t*)vmcs->process.address + rel_entries[i].r_offset);
-			*reloc_addr = (void*)t->wrapper; // PATCH
-
-			thunk_table[*reloc_addr] = t;
+			*reloc_addr = win_func; // PATCH
 		}
 
 		return true;

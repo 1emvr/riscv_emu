@@ -170,35 +170,6 @@ namespace rvm64 {
 		fn();																		\
 	} while(0)
 
-struct thunk {
-	void* target; // The real Windows function
-	uint64_t (*wrapper)(void* fn, vm_registers_t* regs); // Always generic_thunk
-};
-
-std::unordered_map<void*, thunk*> thunk_table;
-
-typedef uint64_t (*win_func_t)(...);
-
-// NOTE: This is not going to work correctly if the function signature does not match. Arguments/ return values will be screwed up/stack corruption/misalignment.
-uint64_t call_windows_function(void* func) {
-    win_func_t winfn = (win_func_t)func;
-
-    uint64_t _a0 = vmcs->vregs[regenum::a0];
-    uint64_t _a1 = vmcs->vregs[regenum::a1];
-    uint64_t _a2 = vmcs->vregs[regenum::a2];
-    uint64_t _a3 = vmcs->vregs[regenum::a3];
-    uint64_t _a4 = vmcs->vregs[regenum::a4];
-    uint64_t _a5 = vmcs->vregs[regenum::a5];
-    uint64_t _a6 = vmcs->vregs[regenum::a6];
-    uint64_t _a7 = vmcs->vregs[regenum::a7];
-
-    return winfn(_a0, _a1, _a2, _a3, _a4, _a5, _a6, _a7);
-}
-
-uint64_t generic_thunk(void* fn, vm_registers_t* regs) {
-	return call_windows_function(fn, regs);
-}
-
 enum vm_reason {
 	vm_ok,
 	vm_illegal_op,
