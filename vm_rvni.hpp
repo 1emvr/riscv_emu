@@ -105,6 +105,7 @@ namespace rvm64::rvni {
 	}
 
 	__function void vm_trap_exit() {
+		// NOTE: Native functions will be resolved to ucrt_table during vm_init. When the elf is loaded .got/.plt will be linked with native functions and resolved/called from here.
 		//
 		uintptr_t start = vmcs->process.address; 
 		uintptr_t end = start + vmcs->process.size;
@@ -112,7 +113,6 @@ namespace rvm64::rvni {
 		if ((vmcs->pc < start) || (vmcs->pc >= end)) {
 			auto it = ucrt_table.find((void*)vmcs->pc);
 
-			// NOTE: Native functions will be resolved to ucrt_table during vm_init. When the elf is loaded .got/.plt will be linked with native functions and resolved/called from here.
 			if (it == ucrt_table.end()) {
 				vmcs->halt = 1;
 				vmcs->reason = vm_invalid_pc;
