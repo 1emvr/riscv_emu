@@ -135,25 +135,6 @@ namespace rvm64::elf {
         return true;
     }
 
-	void* windows_thunk_resolver(const char* sym_name) {
-		static HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
-		if (!ucrt) return nullptr;
-
-		// Alias table
-		if (strcmp(sym_name, "open") == 0) sym_name = "_open";
-		if (strcmp(sym_name, "read") == 0) sym_name = "_read";
-		if (strcmp(sym_name, "write") == 0) sym_name = "_write";
-		if (strcmp(sym_name, "close") == 0) sym_name = "_close";
-		if (strcmp(sym_name, "exit") == 0) sym_name = "_exit";
-
-		void* proc = (void*)GetProcAddress(ucrt, sym_name);
-		if (!proc) {
-			printf("Missing thunk for %s\n", sym_name);
-		}
-
-		return proc;
-	}
-
 	bool patch_elf64_imports(void) {
 		e_ehdr* ehdr = (e_ehdr*)vmcs->process.address;
 
@@ -212,7 +193,7 @@ namespace rvm64::elf {
 			uint32_t r_type  = ELF64_R_TYPE(rel_entries[i].r_info);
 
 			const char* sym_name = strtab + symtab[sym_idx].st_name;
-			void* win_func = rvm64::elf::windows_thunk_resolver(sym_name);
+			void* win_func = rvm64::rvni::windows_thunk_resolver(sym_name);
 
 			if (!win_func) {
 				printf("WARN: unresolved import: %s\n", sym_name);

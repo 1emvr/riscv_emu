@@ -18,14 +18,10 @@ namespace rvm64 {
             rvm64::decoder::vm_decode(opcode);
 
 			if (!vmcs->step) {
-				if (!rvm64::rvni::vm_trap_exit()) {
-					vmcs->halt = 1;
-					vmcs->reason = vm_invalid_pc;
-					continue;
-				}
+				rvm64::rvni::vm_trap_exit();
+				continue;
 			}
 
-			// NOTE: jalr will save the address at current pc since this block increments it anyway.
 			vmcs->pc += 4; // step while-not j/b-instruction
         }
     }

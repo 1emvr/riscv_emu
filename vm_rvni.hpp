@@ -4,8 +4,8 @@
 
 namespace rvm64::rvni {
 	struct native_wrapper {
-		void* raw_ptr;  // raw function pointer
-		enum FuncType {
+		void* raw_ptr;  
+		enum typecaster {
 			FUNC_OPEN, FUNC_READ, FUNC_WRITE, FUNC_CLOSE,
 			FUNC_LSEEK, FUNC_STAT64, FUNC_MALLOC, FUNC_FREE,
 			FUNC_MEMCPY, FUNC_MEMSET, FUNC_STRLEN, FUNC_STRCPY,
@@ -30,77 +30,103 @@ namespace rvm64::rvni {
 
 	__data std::unordered_map<void*, native_wrapper> ucrt_table; // NOTE: might cause compiler exception (unsure)
 
-	void resolve_ucrt_imports() {
+	void* windows_thunk_resolver(const char* sym_name) {
+		static HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
+		if (!ucrt) {
+			vmcs->halt = 1;
+			vmcs->reason = vm_undefined;
+			return nullptr;
+		}
+
+		// Alias table
+		if (strcmp(sym_name, "open") == 0) sym_name = "_open";
+		if (strcmp(sym_name, "read") == 0) sym_name = "_read";
+		if (strcmp(sym_name, "write") == 0) sym_name = "_write";
+		if (strcmp(sym_name, "close") == 0) sym_name = "_close";
+		if (strcmp(sym_name, "exit") == 0) sym_name = "_exit";
+
+		void* proc = (void*)GetProcAddress(ucrt, sym_name);
+		if (!proc) {
+			vmcs->halt = 1;
+			vmcs->reason = vm_undefined;
+			return nullptr;
+		}
+
+		return proc;
+	}
+
+	__function void resolve_ucrt_imports() {
 		HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
 
 		if (!ucrt) {
-			printf("ERROR: Failed to load ucrtbase.dll\n");
+			vmcs->halt = 1;
+			vmcs->reason = vm_undefined;
 			return;
 		}
 
 		struct {
 			const char* name;
-			native_wrapper::FuncType type;
+			native_wrapper::typecaster type;
 		} funcs[] = {
 			{"_open", native_wrapper::FUNC_OPEN}, {"_read", native_wrapper::FUNC_READ}, {"_write", native_wrapper::FUNC_WRITE}, {"_close", native_wrapper::FUNC_CLOSE},
 			{"_lseek", native_wrapper::FUNC_LSEEK}, {"_stat64", native_wrapper::FUNC_STAT64}, {"malloc", native_wrapper::FUNC_MALLOC}, {"free", native_wrapper::FUNC_FREE},
-			{"memcpy", native_wrapper::FUNC_MEMCPY}, {"memset", native_wrapper::FUNC_MEMSET}, {"strlen", native_wrapper::FUNC_STRLEN}, {"strcpy", native_wrapper::FUNC_STRCPY}
+			{"memcpy", native_wrapper::FUNC_MEMCPY}, {"memset", native_wrapper::FUNC_MEMSET}, {"strlen", native_wrapper::FUNC_STRLEN}, {"strcpy", native_wrapper::FUNC_STRCPY},
 		};
 
 		for (auto& f : funcs) {
-			void* addr = (void*)GetProcAddress(ucrt, f.name);
-			if (!addr) {
+			void* link = (void*)GetProcAddress(ucrt, f.name);
+			if (!link) {
 				printf("WARN: could not resolve %s\n", f.name);
 				continue;
 			}
 
 			native_wrapper wrap;
-			wrap.raw_ptr = addr;
+			wrap.raw_ptr = link;
 			wrap.type = f.type;
 
 			switch (f.type) {
-				case native_wrapper::FUNC_OPEN:    wrap.open = (decltype(wrap.open))addr; break;
-				case native_wrapper::FUNC_READ:    wrap.read = (decltype(wrap.read))addr; break;
-				case native_wrapper::FUNC_WRITE:   wrap.write = (decltype(wrap.write))addr; break;
-				case native_wrapper::FUNC_CLOSE:   wrap.close = (decltype(wrap.close))addr; break;
-				case native_wrapper::FUNC_LSEEK:   wrap.lseek = (decltype(wrap.lseek))addr; break;
-				case native_wrapper::FUNC_STAT64:  wrap.stat64 = (decltype(wrap.stat64))addr; break;
-				case native_wrapper::FUNC_MALLOC:  wrap.malloc = (decltype(wrap.malloc))addr; break;
-				case native_wrapper::FUNC_FREE:    wrap.free = (decltype(wrap.free))addr; break;
-				case native_wrapper::FUNC_MEMCPY:  wrap.memcpy = (decltype(wrap.memcpy))addr; break;
-				case native_wrapper::FUNC_MEMSET:  wrap.memset = (decltype(wrap.memset))addr; break;
-				case native_wrapper::FUNC_STRLEN:  wrap.strlen = (decltype(wrap.strlen))addr; break;
-				case native_wrapper::FUNC_STRCPY:  wrap.strcpy = (decltype(wrap.strcpy))addr; break;
+				case native_wrapper::FUNC_OPEN:    wrap.open = (decltype(wrap.open))link; break;
+				case native_wrapper::FUNC_READ:    wrap.read = (decltype(wrap.read))link; break;
+				case native_wrapper::FUNC_WRITE:   wrap.write = (decltype(wrap.write))link; break;
+				case native_wrapper::FUNC_CLOSE:   wrap.close = (decltype(wrap.close))link; break;
+				case native_wrapper::FUNC_LSEEK:   wrap.lseek = (decltype(wrap.lseek))link; break;
+				case native_wrapper::FUNC_STAT64:  wrap.stat64 = (decltype(wrap.stat64))link; break;
+				case native_wrapper::FUNC_MALLOC:  wrap.malloc = (decltype(wrap.malloc))link; break;
+				case native_wrapper::FUNC_FREE:    wrap.free = (decltype(wrap.free))link; break;
+				case native_wrapper::FUNC_MEMCPY:  wrap.memcpy = (decltype(wrap.memcpy))link; break;
+				case native_wrapper::FUNC_MEMSET:  wrap.memset = (decltype(wrap.memset))link; break;
+				case native_wrapper::FUNC_STRLEN:  wrap.strlen = (decltype(wrap.strlen))link; break;
+				case native_wrapper::FUNC_STRCPY:  wrap.strcpy = (decltype(wrap.strcpy))link; break;
 				default:                       break;
 			}
 
-			ucrt_table[addr] = wrap;
+			ucrt_table[link] = wrap;
 		}
 	}
 
-	__function bool vm_trap_exit() {
+	__function void vm_trap_exit() {
 		//
 		uintptr_t start = vmcs->process.address; 
 		uintptr_t end = start + vmcs->process.size;
 
 		if ((vmcs->pc < start) || (vmcs->pc >= end)) {
-			// NOTE: native functions reside in ucrt_table. when the elf is loaded .got/.plt will be linked with native functions
-			
-			void* pc_ptr = (void*)vmcs->pc;
-			auto it = ucrt_table.find(pc_ptr);
+			auto it = ucrt_table.find((void*)vmcs->pc);
 
-			if (it == native_func_table.end()) {
+			// NOTE: Native functions will be resolved to ucrt_table during vm_init. When the elf is loaded .got/.plt will be linked with native functions and resolved/called from here.
+			if (it == ucrt_table.end()) {
 				vmcs->halt = 1;
 				vmcs->reason = vm_invalid_pc;
-				return false;
+				return;
 			}
 
 			native_wrapper& nat = it->second;
+			rvm64::context::save_vm_context();
+
 			switch (nat.type) {
 				case native_func::FUNC_OPEN: {
-												 const char *pathname = nullptr; int flags = 0, mode = 0;
+												 char *pathname = nullptr; int flags = 0, mode = 0;
 
-												 reg_read(const char*, pathname, regenum::a0);
+												 reg_read(char*, pathname, regenum::a0);
 												 reg_read(int, flags, regenum::a1);
 												 reg_read(int, mode, regenum::a2);
 
@@ -214,7 +240,6 @@ namespace rvm64::rvni {
 												   break;
 											   }
 				default: {
-							 printf("WARN: Unknown native function type: %d\n", nat.type);
 							 vmcs->halt = 1;
 							 vmcs->reason = vm_invalid_pc;
 							 break;
@@ -222,7 +247,11 @@ namespace rvm64::rvni {
 			}
 		}				
 
-		return false;
+		rvm64::context::restore_vm_context();
+		uintptr_t ret = 0;
+
+		reg_read(uintptr_t, ret, regenum::ra);
+		vmcs->pc = ret;
 	}
 }
 #endif // RVNI_H

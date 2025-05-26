@@ -450,7 +450,7 @@ namespace rvm64::operation {
 
 			reg_write(uintptr_t, _rd, vmcs->pc + 4);
 			vmcs->pc = address;
-
+			vmcs->step = false;
 		}
 
 		__function void rv_ecall() {
