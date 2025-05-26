@@ -170,11 +170,39 @@ namespace rvm64 {
 		fn();																		\
 	} while(0)
 
+struct thunk {
+	void* target; // The real Windows function
+	uint64_t (*wrapper)(void* fn, vm_registers_t* regs); // Always generic_thunk
+};
+
+std::unordered_map<void*, thunk*> thunk_table;
+
+typedef uint64_t (*win_func_t)(...);
+uint64_t call_windows_function(void* func, vm_registers_t* regs) {
+    win_func_t winfn = (win_func_t)func;
+
+    uint64_t a0 = regs->x[10];
+    uint64_t a1 = regs->x[11];
+    uint64_t a2 = regs->x[12];
+    uint64_t a3 = regs->x[13];
+    uint64_t a4 = regs->x[14];
+    uint64_t a5 = regs->x[15];
+    uint64_t a6 = regs->x[16];
+    uint64_t a7 = regs->x[17];
+
+    return winfn(a0, a1, a2, a3, a4, a5, a6, a7);
+}
+
+uint64_t generic_thunk(void* fn, vm_registers_t* regs) {
+	return call_windows_function(fn, regs);
+}
+
 enum vm_reason {
 	vm_ok,
 	vm_illegal_op,
 	vm_access_violation,
 	vm_unaligned_op,
+	vm_invalid_pc,
 	vm_return_address_corruption,
 	vm_stack_overflow,
 	vm_undefined,

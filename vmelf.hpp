@@ -135,16 +135,6 @@ namespace rvm64::elf {
         return true;
     }
 
-	struct thunk {
-		void* target; // The real Windows function
-		uint64_t (*wrapper)(void* fn, vm_registers_t* regs); // Always generic_thunk
-	};
-
-	std::unordered_map<void*, thunk*> thunk_table;
-
-	uint64_t generic_thunk(void* fn, vm_registers_t* regs) {
-		return call_windows_function(fn, regs);
-	}
 
 	void* windows_thunk_resolver(const char* name) {
 		static HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
