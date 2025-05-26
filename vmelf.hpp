@@ -132,7 +132,7 @@ namespace rvm64::elf {
         return true;
     }
 
-	bool patch_elf64_imports(void* windows_thunk_resolver(const char* name)) {
+	bool patch_elf64_imports(void) {
 		e_ehdr* ehdr = (e_ehdr*)vmcs->process.address;
 
 		if (ehdr->e_type != ET_EXEC && ehdr->e_type != ET_DYN) {
