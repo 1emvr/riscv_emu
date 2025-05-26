@@ -179,7 +179,7 @@ std::unordered_map<void*, thunk*> thunk_table;
 
 typedef uint64_t (*win_func_t)(...);
 
-// NOTE: This is not going to work correctly if the function signature does not match. Arguments/ return values will be screwed up.
+// NOTE: This is not going to work correctly if the function signature does not match. Arguments/ return values will be screwed up/stack corruption/misalignment.
 uint64_t call_windows_function(void* func) {
     win_func_t winfn = (win_func_t)func;
 
