@@ -120,7 +120,7 @@ namespace rvm64::rvni {
 			}
 
 			native_wrapper& nat = it->second;
-			rvm64::context::save_vm_context();
+			rvm64::context::save_vm_context(); // guard against unexpected behavior
 
 			switch (nat.type) {
 				case native_func::FUNC_OPEN: {
