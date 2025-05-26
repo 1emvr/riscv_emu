@@ -9,15 +9,45 @@
 #include "vmcrypt.hpp"
 
 namespace rvm64 {
+	__function bool vm_trap_host_call() {
+		uintptr_t start = vmcs->process.address; 
+		uintptr_t end = start + vmcs->process.size;
+
+		if ((vmcs->pc < start) || (vmcs->pc >= end)) {
+			auto it = thunk_table.find((void*)vmcs->pc);
+
+			if (it != thunk_table.end()) {
+				rvm64::context::save_vm_context();
+
+				thunk *t = it->second;
+				uint64_t result = t->wrapper(t->target, &vmcs->vregs);
+
+				rvm64::context::restore_vm_context();
+
+				reg_write(uint64_t, regenum::a0, result);
+				vmcs->pc = vmcs->vregs[regenum::ra];
+
+				return true;
+			}				
+		}
+		return false;
+	}
+
     __function void vm_entry(void) {
         while (!vmcs->halt) {
 
             int32_t opcode = *(int32_t*) vmcs->pc;
             rvm64::decoder::vm_decode(opcode);
 
-            if (vmcs->step) {
-                vmcs->pc += 4; // step while-not j/b-instruction
-            }
+			if (!vmcs->step) {
+				if (!vm_trap_host_call()) {
+					vmcs->halt = 1;
+					vmcs->reason = vm_invalid_pc;
+					continue;
+				}
+			}
+
+			vmcs->pc += 4; // step while-not j/b-instruction
         }
     }
 

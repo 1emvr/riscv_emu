@@ -12,8 +12,11 @@
 #include <windows.h>
 #include <cstdio>
 #include <cstdint>
+#include <unordered_map>
 
 #include "vmmain.hpp"
+
+
 typedef struct {
     uint8_t  e_ident[EI_NIDENT]; // ELF magic, class, data, etc.
     uint16_t e_type;
@@ -132,6 +135,36 @@ namespace rvm64::elf {
         return true;
     }
 
+	struct thunk {
+		void* target; // The real Windows function
+		uint64_t (*wrapper)(void* fn, vm_registers_t* regs); // Always generic_thunk
+	};
+
+	std::unordered_map<void*, thunk*> thunk_table;
+
+	uint64_t generic_thunk(void* fn, vm_registers_t* regs) {
+		return call_windows_function(fn, regs);
+	}
+
+	void* windows_thunk_resolver(const char* name) {
+		static HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
+		if (!ucrt) {
+			return nullptr;
+		}
+
+		// NOTE: add more linux-specific functions we can't handle correctly
+		if (strcmp(name, "open") == 0) name = "_open";
+		if (strcmp(name, "read") == 0) name = "_read";
+		if (strcmp(name, "write") == 0) name = "_write";
+
+		void* proc = GetProcAddress(ucrt, name);
+		if (!proc) {
+			printf("Missing thunk for %s\n", name);
+		}
+
+		return proc;
+	}
+
 	bool patch_elf64_imports(void) {
 		e_ehdr* ehdr = (e_ehdr*)vmcs->process.address;
 
@@ -190,16 +223,24 @@ namespace rvm64::elf {
 			uint32_t r_type  = ELF64_R_TYPE(rel_entries[i].r_info);
 
 			const char* sym_name = strtab + symtab[sym_idx].st_name;
-			void* win_func = windows_thunk_resolver(sym_name);
+			void* win_func = rvm64::elf::windows_thunk_resolver(sym_name);
 
 			if (!win_func) {
 				printf("WARN: unresolved import: %s\n", sym_name);
 				continue;
 			}
+			
+			// NOTE: dangling pointers here.
+			// NOTE: patching .got/.plt with win32 wrapper
+			thunk* t = new thunk {
+				.target = win_func,
+				.wrapper = generic_thunk
+			};
 
 			void** reloc_addr = (void**)((uint8_t*)vmcs->process.address + rel_entries[i].r_offset);
+			*reloc_addr = (void*)t->wrapper; // PATCH
 
-			*reloc_addr = win_func; // PATCH
+			thunk_table[*reloc_addr] = t;
 		}
 
 		return true;
