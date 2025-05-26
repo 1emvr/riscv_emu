@@ -8,7 +8,7 @@
 #include "vmmain.hpp"
 #include "vmelf.hpp"
 
-bool read_program_from_packet() {
+_function bool read_program_from_packet() {
 	BOOL success = false;
 	NTSTATUS status = 0;
 

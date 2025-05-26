@@ -3,7 +3,7 @@
 #include "vmmain.hpp"
 
 namespace rvm64::context {
-    __function void vm_context_init() {
+    _function void vm_context_init() {
         // Fake implant context
         ctx = (hexane*) VirtualAlloc(nullptr, sizeof(ctx), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
@@ -20,31 +20,27 @@ namespace rvm64::context {
         ctx->win32.NtWaitForSingleObject = (decltype(WaitForSingleObject) *) GetProcAddress(GetModuleHandle("kernel32.dll"), "WaitForSingleObject");
     }
 
-    __function void save_host_context() {
+    _function void save_host_context() {
         if (!NT_SUCCESS(vmcs->reason = ctx->win32.NtGetContextThread(NtCurrentThread(), &vmcs->host_context))) {
             vmcs->halt = 1;
-	    vmcs->reason = vm_undefined;
         }
     }
 
-    __function void restore_host_context() {
+    _function void restore_host_context() {
         if (!NT_SUCCESS(vmcs->reason = ctx->win32.NtSetContextThread(NtCurrentThread(), &vmcs->host_context))) {
             vmcs->halt = 1;
-	    vmcs->reason = vm_undefined;
         }
     }
 
-    __function void save_vm_context() {
+    _function void save_vm_context() {
         if (!NT_SUCCESS(vmcs->reason = ctx->win32.NtGetContextThread(NtCurrentThread(), &vmcs->vm_context))) {
             vmcs->halt = 1;
-	    vmcs->reason = vm_undefined;
         }
     }
 
-    __function void restore_vm_context() {
+    _function void restore_vm_context() {
         if (!NT_SUCCESS(vmcs->reason = ctx->win32.NtSetContextThread(NtCurrentThread(), &vmcs->vm_context))) {
             vmcs->halt = 1;
-	    vmcs->reason = vm_undefined;
         }
     }
 };

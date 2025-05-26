@@ -32,11 +32,11 @@ typedef struct __hexane {
 #define PTR_SIZE 4
 #endif
 
-#define __extern   extern "C"
-#define __function //__attribute__((section(".text$B")))
-#define __rdata    __attribute__((section(".rdata")))
-#define __data     __attribute__((section(".data")))
-#define __used     __attribute__((used))
+#define _extern   extern "C"
+#define _function //__attribute__((section(".text$B")))
+#define _rdata    __attribute__((section(".rdata")))
+#define _data     __attribute__((section(".data")))
+#define _used     __attribute__((used))
 
 #define NT_SUCCESS(status)      ((status) >= 0)
 #define NtCurrentProcess()      ((HANDLE) (LONG_PTR) -1)
@@ -78,16 +78,16 @@ typedef struct {
     uint32_t step;
 } vmcs_t;
 
-__data hexane *ctx = nullptr;
-__data vmcs_t *vmcs = nullptr;
-__data HANDLE vmcs_mutex = 0;
+_data hexane *ctx = nullptr;
+_data vmcs_t *vmcs = nullptr;
+_data HANDLE vmcs_mutex = 0;
 
-__data uintptr_t __stack_cookie = { };
-__rdata const uintptr_t __key = 0;
+_data uintptr_t __stack_cookie = { };
+_rdata const uintptr_t __key = 0;
 
 namespace rvm64 {
-    __function void vm_entry();
-    __function int64_t vm_main();
+    _function void vm_entry();
+    _function int64_t vm_main();
 };
 
 #define mem_read(T, retval, addr)                                               	\

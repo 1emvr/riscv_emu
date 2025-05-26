@@ -42,7 +42,7 @@ Shared Resources:
     */
 
 namespace rvm64::memory {
-    __function void vm_init() {
+    _function void vm_init() {
         rvm64::context::vm_context_init();
 
         vmcs->handler = (uintptr_t)rvm64::operation::__handler;
@@ -67,7 +67,7 @@ namespace rvm64::memory {
         }
     }
 
-    __function void vm_end() {
+    _function void vm_end() {
         if (!NT_SUCCESS(vmcs->reason = ctx->win32.NtFreeVirtualMemory(
 					NtCurrentProcess(), (LPVOID*)&vmcs->process.address, &vmcs->process.size, MEM_RELEASE))) 
 	{

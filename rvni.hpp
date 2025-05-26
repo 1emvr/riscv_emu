@@ -28,9 +28,9 @@ namespace rvm64::rvni {
 		};
 	};
 
-	__data std::unordered_map<void*, native_wrapper> ucrt_table; // NOTE: might cause compiler exception (unsure)
+	_data std::unordered_map<void*, native_wrapper> ucrt_table; // NOTE: might cause compiler exception (unsure)
 
-	void* windows_thunk_resolver(const char* sym_name) {
+	_function void* windows_thunk_resolver(const char* sym_name) {
 		static HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
 		if (!ucrt) {
 			vmcs->halt = 1;
@@ -55,7 +55,7 @@ namespace rvm64::rvni {
 		return proc;
 	}
 
-	__function void resolve_ucrt_imports() {
+	_function void resolve_ucrt_imports() {
 		HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
 
 		if (!ucrt) {
@@ -104,7 +104,7 @@ namespace rvm64::rvni {
 		}
 	}
 
-	__function void vm_trap_exit() {
+	_function void vm_trap_exit() {
 		// NOTE: Native functions will be resolved to ucrt_table during vm_init. When the elf is loaded .got/.plt will be linked with native functions and resolved/called from here.
 		//
 		uintptr_t start = vmcs->process.address; 

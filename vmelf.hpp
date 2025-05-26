@@ -68,7 +68,7 @@ typedef struct {
 } e_dyn;
 
 namespace rvm64::elf {
-    bool load_elf64_image(void) {
+    _function bool load_elf64_image(void) {
         if (!vmcs->program.address || !vmcs->process.address) {
             return false;
         }
@@ -135,7 +135,7 @@ namespace rvm64::elf {
         return true;
     }
 
-	bool patch_elf64_imports(void) {
+	_function bool patch_elf64_imports(void) {
 		e_ehdr* ehdr = (e_ehdr*)vmcs->process.address;
 
 		if (ehdr->e_type != ET_EXEC && ehdr->e_type != ET_DYN) {
