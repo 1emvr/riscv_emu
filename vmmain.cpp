@@ -10,7 +10,7 @@
 
 namespace rvm64 {
 
-    __function void vm_entry(void) {
+    _function void vm_entry(void) {
 		rvm64::rvni::resolve_ucrt_imports();
 
         while (!vmcs->halt) {
@@ -26,7 +26,7 @@ namespace rvm64 {
         }
     }
 
-    __function int64_t vm_main(void) {
+    _function int64_t vm_main(void) {
         vmcs_t vm_instance = { };
         vmcs= &vm_instance;
 

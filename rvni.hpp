@@ -123,7 +123,7 @@ namespace rvm64::rvni {
 			rvm64::context::save_vm_context(); // guard against unexpected behavior
 
 			switch (nat.type) {
-				case native_func::FUNC_OPEN: {
+				case native_wrapper::FUNC_OPEN: {
 												 char *pathname = nullptr; int flags = 0, mode = 0;
 
 												 reg_read(char*, pathname, regenum::a0);
@@ -134,7 +134,7 @@ namespace rvm64::rvni {
 												 reg_write(int, regenum::a0, result);
 												 break;
 											 }
-				case native_func::FUNC_READ: {
+				case native_wrapper::FUNC_READ: {
 												 int fd = 0; void *buf = nullptr; unsigned int count = 0;
 
 												 reg_read(int, fd, regenum::a0);
@@ -145,7 +145,7 @@ namespace rvm64::rvni {
 												 reg_write(int, regenum::a0, result);
 												 break;
 											 }
-				case native_func::FUNC_WRITE: {
+				case native_wrapper::FUNC_WRITE: {
 												  int fd = 0; void* buf = nullptr; unsigned int count = 0;
 
 												  reg_read(int, fd, regenum::a0);
@@ -156,7 +156,7 @@ namespace rvm64::rvni {
 												  reg_write(int, regenum::a0, result);
 												  break;
 											  }
-				case native_func::FUNC_CLOSE: {
+				case native_wrapper::FUNC_CLOSE: {
 												  int fd = 0;
 												  reg_read(int, fd, regenum::a0);
 
@@ -164,7 +164,7 @@ namespace rvm64::rvni {
 												  reg_write(int, regenum::a0, result);
 												  break;
 											  }
-				case native_func::FUNC_LSEEK: {
+				case native_wrapper::FUNC_LSEEK: {
 												  int fd = 0; long offset = 0; int whence = 0; 
 
 												  reg_read(int, fd, regenum::a0);
@@ -175,7 +175,7 @@ namespace rvm64::rvni {
 												  reg_write(long, regenum::a0, result);
 												  break;
 											  }
-				case native_func::FUNC_STAT64: {
+				case native_wrapper::FUNC_STAT64: {
 												   const char *pathname = nullptr; void *statbuf = 0; 
 
 												   reg_read(const char*, pathname, regenum::a0);
@@ -185,7 +185,7 @@ namespace rvm64::rvni {
 												   reg_write(int, regenum::a0, result);
 												   break;
 											   }
-				case native_func::FUNC_MALLOC: {
+				case native_wrapper::FUNC_MALLOC: {
 												   size_t size = 0; 
 												   reg_read(size_t, size, regenum::a0);
 
@@ -193,13 +193,13 @@ namespace rvm64::rvni {
 												   reg_write(uintptr_t, regenum::a0, (uintptr_t)result);
 												   break;
 											   }
-				case native_func::FUNC_FREE: {
+				case native_wrapper::FUNC_FREE: {
 												 void *ptr = nullptr;
 												 reg_read(void*, ptr, regenum::a0);
 												 nat.free(ptr);
 												 break;
 											 }
-				case native_func::FUNC_MEMCPY: {
+				case native_wrapper::FUNC_MEMCPY: {
 												   void *dest = nullptr; void *src = nullptr; size_t n = 0;
 
 												   reg_read(void*, dest, regenum::a0);
@@ -210,7 +210,7 @@ namespace rvm64::rvni {
 												   reg_write(uintptr_t, regenum::a0, (uintptr_t)result);
 												   break;
 											   }
-				case native_func::FUNC_MEMSET: {
+				case native_wrapper::FUNC_MEMSET: {
 												   void *dest = nullptr; int value = 0; size_t n = 0; 
 
 												   reg_read(void*, dest, regenum::a0);
@@ -221,7 +221,7 @@ namespace rvm64::rvni {
 												   reg_write(uint64_t, regenum::a0, (uint64_t)result);
 												   break;
 											   }
-				case native_func::FUNC_STRLEN: {
+				case native_wrapper::FUNC_STRLEN: {
 												   char *s = nullptr; 
 												   reg_read(char *s, s, regenum::a0);
 
@@ -229,7 +229,7 @@ namespace rvm64::rvni {
 												   reg_write(size_t, regenum::a0, result);
 												   break;
 											   }
-				case native_func::FUNC_STRCPY: {
+				case native_wrapper::FUNC_STRCPY: {
 												   char *dest = nullptr; char *src = nullptr; 
 
 												   reg_read(char*, dest, regenum::a0);
