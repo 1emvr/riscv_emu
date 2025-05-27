@@ -68,6 +68,7 @@ typedef struct {
     } d_un;
 } e_dyn;
 
+// TODO: get rid of this shit. add someone else's implementation if needed.
 namespace rvm64::elf {
     _function bool load_elf64_image(void) {
         if (!vmcs->program.address || !vmcs->process.address) {
@@ -205,7 +206,7 @@ namespace rvm64::elf {
 			}
 			
 			// NOTE: patching .got/.plt with win32 wrapper
-			void** reloc_addr = (void**)((uint8_t*)vmcs->process.address + rel_entries[i].r_offset);
+			LPVOID* reloc_addr = (LPVOID*)((uint8_t*) vmcs->process.address + rel_entries[i].r_offset);
 			*reloc_addr = win_func; // PATCH
 		}
 
