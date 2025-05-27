@@ -42,37 +42,37 @@ Shared Resources:
     */
 
 namespace rvm64::memory {
-    _function void vm_init() {
-        rvm64::context::vm_context_init();
+	_function void vm_init() {
+		rvm64::context::vm_context_init();
 
-        vmcs->handler = (uintptr_t)rvm64::operation::__handler;
-        vmcs->dkey = __key; // lol idk...
+		vmcs->handler = (uintptr_t)rvm64::operation::__handler;
+		vmcs->dkey = __key; // lol idk...
 
-        vmcs->process.size = PROCESS_MAX_CAPACITY;
+		vmcs->process.size = PROCESS_MAX_CAPACITY;
 
-	if (vmcs->program.size > vmcs->process.size) {
-		vmcs->halt = 1;
-		vmcs->reason = vm_stack_overflow;
-		return;
+		if (vmcs->program.size > vmcs->process.size) {
+			vmcs->halt = 1;
+			vmcs->reason = vm_stack_overflow;
+			return;
+		}
+
+		vmcs->load_rsv_valid = false;
+		vmcs->load_rsv_addr = 0LL;
+
+		if (!NT_SUCCESS(vmcs->reason = ctx->win32.NtAllocateVirtualMemory(
+						NtCurrentProcess(), (LPVOID*) &vmcs->process.address, 0, 
+						&vmcs->process.size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE))) 
+		{
+			vmcs->halt = 1;
+		}
 	}
 
-        vmcs->load_rsv_valid = false;
-        vmcs->load_rsv_addr = 0LL;
-
-	if (!NT_SUCCESS(vmcs->reason = ctx->win32.NtAllocateVirtualMemory(
-					NtCurrentProcess(), (void**)&vmcs->process.address, 0, 
-					&vmcs->process.size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE))) 
-	{
-            vmcs->halt = 1;
-        }
-    }
-
-    _function void vm_end() {
-        if (!NT_SUCCESS(vmcs->reason = ctx->win32.NtFreeVirtualMemory(
-					NtCurrentProcess(), (LPVOID*)&vmcs->process.address, &vmcs->process.size, MEM_RELEASE))) 
-	{
-            vmcs->halt = 1;
-        }
-    }
+	_function void vm_end() {
+		if (!NT_SUCCESS(vmcs->reason = ctx->win32.NtFreeVirtualMemory(
+						NtCurrentProcess(), (LPVOID*)&vmcs->process.address, &vmcs->process.size, MEM_RELEASE))) 
+		{
+			vmcs->halt = 1;
+		}
+	}
 };
 #endif // VMMEM_H

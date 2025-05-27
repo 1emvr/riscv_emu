@@ -123,127 +123,140 @@ namespace rvm64::rvni {
 			rvm64::context::save_vm_context(); // guard against unexpected behavior
 
 			switch (nat.type) {
-				case native_wrapper::FUNC_OPEN: {
-												 char *pathname = nullptr; int flags = 0, mode = 0;
+				case native_wrapper::FUNC_OPEN: 
+					{
+						char *pathname = nullptr; int flags = 0, mode = 0;
 
-												 reg_read(char*, pathname, regenum::a0);
-												 reg_read(int, flags, regenum::a1);
-												 reg_read(int, mode, regenum::a2);
+						reg_read(char*, pathname, regenum::a0);
+						reg_read(int, flags, regenum::a1);
+						reg_read(int, mode, regenum::a2);
 
-												 int result = nat.open(pathname, flags, mode);
-												 reg_write(int, regenum::a0, result);
-												 break;
-											 }
-				case native_wrapper::FUNC_READ: {
-												 int fd = 0; void *buf = nullptr; unsigned int count = 0;
+						int result = nat.open(pathname, flags, mode);
+						reg_write(int, regenum::a0, result);
+						break;
+					}
+				case native_wrapper::FUNC_READ: 
+					{
+						int fd = 0; void *buf = nullptr; unsigned int count = 0;
 
-												 reg_read(int, fd, regenum::a0);
-												 reg_read(void*, buf, regenum::a1);
-												 reg_read(unsigned int, count, regenum::a2);
+						reg_read(int, fd, regenum::a0);
+						reg_read(void*, buf, regenum::a1);
+						reg_read(unsigned int, count, regenum::a2);
 
-												 int result = nat.read(fd, buf, count);
-												 reg_write(int, regenum::a0, result);
-												 break;
-											 }
-				case native_wrapper::FUNC_WRITE: {
-												  int fd = 0; void* buf = nullptr; unsigned int count = 0;
+						int result = nat.read(fd, buf, count);
+						reg_write(int, regenum::a0, result);
+						break;
+					}
+				case native_wrapper::FUNC_WRITE: 
+					{
+						int fd = 0; void* buf = nullptr; unsigned int count = 0;
 
-												  reg_read(int, fd, regenum::a0);
-												  reg_read(void*, buf, regenum::a1);
-												  reg_read(unsigned int, count, regenum::a2);
+						reg_read(int, fd, regenum::a0);
+						reg_read(void*, buf, regenum::a1);
+						reg_read(unsigned int, count, regenum::a2);
 
-												  int result = nat.write(fd, buf, count);
-												  reg_write(int, regenum::a0, result);
-												  break;
-											  }
-				case native_wrapper::FUNC_CLOSE: {
-												  int fd = 0;
-												  reg_read(int, fd, regenum::a0);
+						int result = nat.write(fd, buf, count);
+						reg_write(int, regenum::a0, result);
+						break;
+					}
+				case native_wrapper::FUNC_CLOSE: 
+					{
+						int fd = 0;
+						reg_read(int, fd, regenum::a0);
 
-												  int result = nat.close(fd);
-												  reg_write(int, regenum::a0, result);
-												  break;
-											  }
-				case native_wrapper::FUNC_LSEEK: {
-												  int fd = 0; long offset = 0; int whence = 0; 
+						int result = nat.close(fd);
+						reg_write(int, regenum::a0, result);
+						break;
+					}
+				case native_wrapper::FUNC_LSEEK: 
+					{
+						int fd = 0; long offset = 0; int whence = 0; 
 
-												  reg_read(int, fd, regenum::a0);
-												  reg_read(long, offset, regenum::a1);
-												  reg_read(int, whence, regenum::a2);
+						reg_read(int, fd, regenum::a0);
+						reg_read(long, offset, regenum::a1);
+						reg_read(int, whence, regenum::a2);
 
-												  long result = nat.lseek(fd, offset, whence);
-												  reg_write(long, regenum::a0, result);
-												  break;
-											  }
-				case native_wrapper::FUNC_STAT64: {
-												   const char *pathname = nullptr; void *statbuf = 0; 
+						long result = nat.lseek(fd, offset, whence);
+						reg_write(long, regenum::a0, result);
+						break;
+					}
+				case native_wrapper::FUNC_STAT64: 
+					{
+						const char *pathname = nullptr; void *statbuf = 0; 
 
-												   reg_read(const char*, pathname, regenum::a0);
-												   reg_read(void*, statbuf, regenum::a1);
+						reg_read(const char*, pathname, regenum::a0);
+						reg_read(void*, statbuf, regenum::a1);
 
-												   int result = nat.stat64(pathname, statbuf);
-												   reg_write(int, regenum::a0, result);
-												   break;
-											   }
-				case native_wrapper::FUNC_MALLOC: {
-												   size_t size = 0; 
-												   reg_read(size_t, size, regenum::a0);
+						int result = nat.stat64(pathname, statbuf);
+						reg_write(int, regenum::a0, result);
+						break;
+					}
+				case native_wrapper::FUNC_MALLOC: 
+					{
+						size_t size = 0; 
+						reg_read(size_t, size, regenum::a0);
 
-												   void* result = nat.malloc(size);
-												   reg_write(uintptr_t, regenum::a0, (uintptr_t)result);
-												   break;
-											   }
-				case native_wrapper::FUNC_FREE: {
-												 void *ptr = nullptr;
-												 reg_read(void*, ptr, regenum::a0);
-												 nat.free(ptr);
-												 break;
-											 }
-				case native_wrapper::FUNC_MEMCPY: {
-												   void *dest = nullptr; void *src = nullptr; size_t n = 0;
+						void* result = nat.malloc(size);
+						reg_write(uintptr_t, regenum::a0, (uintptr_t)result);
+						break;
+					}
+				case native_wrapper::FUNC_FREE: 
+					{
+						void *ptr = nullptr;
+						reg_read(void*, ptr, regenum::a0);
+						nat.free(ptr);
+						break;
+					}
+				case native_wrapper::FUNC_MEMCPY: 
+					{
+						void *dest = nullptr; void *src = nullptr; size_t n = 0;
 
-												   reg_read(void*, dest, regenum::a0);
-												   reg_read(void*, src, regenum::a1);
-												   reg_read(size_t, n, regenum::a2);
+						reg_read(void*, dest, regenum::a0);
+						reg_read(void*, src, regenum::a1);
+						reg_read(size_t, n, regenum::a2);
 
-												   void* result = nat.memcpy(dest, src, n);
-												   reg_write(uintptr_t, regenum::a0, (uintptr_t)result);
-												   break;
-											   }
-				case native_wrapper::FUNC_MEMSET: {
-												   void *dest = nullptr; int value = 0; size_t n = 0; 
+						void* result = nat.memcpy(dest, src, n);
+						reg_write(uintptr_t, regenum::a0, (uintptr_t)result);
+						break;
+					}
+				case native_wrapper::FUNC_MEMSET: 
+					{
+						void *dest = nullptr; int value = 0; size_t n = 0; 
 
-												   reg_read(void*, dest, regenum::a0);
-												   reg_read(int, value, regenum::a1);
-												   reg_read(size_t, n, regenum::a2);
+						reg_read(void*, dest, regenum::a0);
+						reg_read(int, value, regenum::a1);
+						reg_read(size_t, n, regenum::a2);
 
-												   void* result = nat.memset(dest, value, n);
-												   reg_write(uint64_t, regenum::a0, (uint64_t)result);
-												   break;
-											   }
-				case native_wrapper::FUNC_STRLEN: {
-												   char *s = nullptr; 
-												   reg_read(char *s, s, regenum::a0);
+						void* result = nat.memset(dest, value, n);
+						reg_write(uint64_t, regenum::a0, (uint64_t)result);
+						break;
+					}
+				case native_wrapper::FUNC_STRLEN: 
+					{
+						char *s = nullptr; 
+						reg_read(char *s, s, regenum::a0);
 
-												   size_t result = nat.strlen(s);
-												   reg_write(size_t, regenum::a0, result);
-												   break;
-											   }
-				case native_wrapper::FUNC_STRCPY: {
-												   char *dest = nullptr; char *src = nullptr; 
+						size_t result = nat.strlen(s);
+						reg_write(size_t, regenum::a0, result);
+						break;
+					}
+				case native_wrapper::FUNC_STRCPY: 
+					{
+						char *dest = nullptr; char *src = nullptr; 
 
-												   reg_read(char*, dest, regenum::a0);
-												   reg_read(char*, src, regenum::a1);
+						reg_read(char*, dest, regenum::a0);
+						reg_read(char*, src, regenum::a1);
 
-												   char* result = nat.strcpy(dest, src);
-												   reg_write(uintptr_t, regenum::a0, (uintptr_t)result);
-												   break;
-											   }
-				default: {
-							 vmcs->halt = 1;
-							 vmcs->reason = vm_invalid_pc;
-							 break;
-						 }
+						char* result = nat.strcpy(dest, src);
+						reg_write(uintptr_t, regenum::a0, (uintptr_t)result);
+						break;
+					}
+				default: 
+					{
+						vmcs->halt = 1;
+						vmcs->reason = vm_invalid_pc;
+						break;
+					}
 			}
 		}				
 

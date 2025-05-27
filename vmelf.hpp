@@ -171,16 +171,19 @@ namespace rvm64::elf {
 				case DT_JMPREL: 	relplt_vaddr = dyn->d_un.d_ptr; break;
 				case DT_PLTRELSZ: 	relplt_size = dyn->d_un.d_val;  break;
 				case DT_PLTREL:
-								  if (dyn->d_un.d_val != DT_REL) {
-									  printf("ERROR: Only DT_REL supported in PLT relocations.\n");
-									  return false;
-								  }
-								  break;
+									{
+										if (dyn->d_un.d_val != DT_REL) {
+											printf("ERROR: Only DT_REL supported in PLT relocations.\n");
+											return false;
+										}
+										break;
+									}
 			}
 		}
 
-		if (!symtab_vaddr || !strtab_vaddr || !relplt_vaddr || !relplt_size)
+		if (!symtab_vaddr || !strtab_vaddr || !relplt_vaddr || !relplt_size) {
 			return false;
+		}
 
 		e_rel* rel_entries = (e_rel*)((uint8_t*)vmcs->process.address + relplt_vaddr);
 		e_sym* symtab = (e_sym*)((uint8_t*)vmcs->process.address + symtab_vaddr);

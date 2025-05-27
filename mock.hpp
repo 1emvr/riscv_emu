@@ -45,20 +45,8 @@ _function bool read_program_from_packet() {
 		goto defer;
 	}
 
-	bool success = rvm64::elf::load_elf64_image();
-	if (!success) {
-		vmcs->halt = 1;
-		vmcs->reason = vm_undefined;
-		goto defer;
-	}
-
-	success = rvm64::elf::patch_elf64_imports();
-	if (!success) {
-		vmcs->halt = 1;
-		vmcs->reason = vm_undefined;
-		goto defer;
-	}
-	// TODO: patch .got/.plt
+	rvm64::elf::load_elf64_image();
+	rvm64::elf::patch_elf64_imports();
 
 defer:
 	if (vmcs->program.address) {
