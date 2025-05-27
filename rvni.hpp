@@ -1,6 +1,7 @@
 #ifndef RVNI_H
 #define RVNI_H
-#include "vmmain.h"
+#include "vmmain.hpp"
+#include "vmctx.hpp"
 
 namespace rvm64::rvni {
 	struct native_wrapper {
@@ -234,7 +235,7 @@ namespace rvm64::rvni {
 				case native_wrapper::FUNC_STRLEN: 
 					{
 						char *s = nullptr; 
-						reg_read(char *s, s, regenum::a0);
+						reg_read(char*, s, regenum::a0);
 
 						size_t result = nat.strlen(s);
 						reg_write(size_t, regenum::a0, result);

@@ -286,7 +286,7 @@ namespace rvm64::operation {
 			reg_read(int32_t, v1, _rs1);
 			if ((shamt >> 5) != 0) {
 				vmcs->halt = 1;
-				vmcs->reason = illegal_op;
+				vmcs->reason = vm_illegal_op;
 				return;
 			}
 
@@ -303,7 +303,7 @@ namespace rvm64::operation {
 			reg_read(int32_t, v1, _rs1);
 			if ((shamt >> 5) != 0) {
 				vmcs->halt = 1;
-				vmcs->reason = illegal_op;
+				vmcs->reason = vm_illegal_op;
 				return;
 			}
 
@@ -318,9 +318,10 @@ namespace rvm64::operation {
 			scr_read(uint32_t, shamt, imm);
 
 			reg_read(int32_t, v1, _rs1);
+
 			if ((shamt >> 5) != 0) {
 				vmcs->halt = 1;
-				vmcs->reason = illegal_op;
+				vmcs->reason = vm_illegal_op;
 				return;
 			}
 
@@ -1765,6 +1766,6 @@ namespace rvm64::operation {
 		// UTYPE/JTYPE
 		crypt::encrypt_ptr((uintptr_t) utype::rv_lui), crypt::encrypt_ptr((uintptr_t) utype::rv_auipc),
 		crypt::encrypt_ptr((uintptr_t) jtype::rv_jal)
-	}
+	};
 }
 #endif // VMOPS_H

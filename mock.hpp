@@ -10,7 +10,7 @@
 
 _function bool read_program_from_packet() {
 	BOOL success = false;
-	NTSTATUS status = 0;
+	DWORD bytes_read = 0;
 
 	HANDLE hfile = ctx->win32.NtCreateFile("./test.o", 
 			GENERIC_READ, FILE_SHARE_READ, NULL, 
@@ -22,23 +22,22 @@ _function bool read_program_from_packet() {
 		goto defer;
 	}
 
-	vmcs->reason = ctx->win32.NtGetFileSize(hfile, &vmcs->program.size);
+	vmcs->reason = ctx->win32.NtGetFileSize(hfile, (LPDWORD) &vmcs->program.size);
 
-	if (status == INVALID_FILE_SIZE || size == 0) {
+	if (vmcs->reason == INVALID_FILE_SIZE || vmcs->program.size == 0) {
 		vmcs->halt = 1;
 		goto defer;
 	}
 
 	if (!NT_SUCCESS(vmcs->reason = ctx->win32.NtAllocateVirtualMemory(
-					NtCurrentProcess(), (LPVOID)&vmcs->program.address, 0, 
+					NtCurrentProcess(), (LPVOID*) &vmcs->program.address, 0, 
 					&vmcs->program.size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE))) {
 		vmcs->halt = 1;
 		goto defer;
 	}
 
-	DWORD bytesRead = 0;
-	if (!ctx->win32.NtReadFile(hfile, vmcs->program.address, vmcs->program.size, &bytesRead, NULL) || 
-			bytesRead != size) {
+	if (!ctx->win32.NtReadFile(hfile, (LPVOID)vmcs->program.address, vmcs->program.size, &bytes_read, NULL) || 
+			bytes_read != vmcs->program.size) {
 
 		vmcs->halt = 1;
 		vmcs->reason = vm_undefined;
@@ -50,7 +49,7 @@ _function bool read_program_from_packet() {
 
 defer:
 	if (vmcs->program.address) {
-		ctx->win32.NtFreeVirtualMemory(NtCurrentProcess(), (LPVOID)&vmcs->program.address, &vmcs->program.size, MEM_RELEASE);
+		ctx->win32.NtFreeVirtualMemory(NtCurrentProcess(), (LPVOID*) &vmcs->program.address, &vmcs->program.size, MEM_RELEASE);
 	}
 
 	vmcs->program.address = 0;

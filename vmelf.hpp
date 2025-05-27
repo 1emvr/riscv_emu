@@ -15,6 +15,7 @@
 #include <unordered_map>
 
 #include "vmmain.hpp"
+#include "rvni.hpp"
 
 
 typedef struct {

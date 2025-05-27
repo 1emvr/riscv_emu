@@ -7,6 +7,7 @@
 #include "vmmem.hpp"
 #include "vmcode.hpp"
 #include "vmcrypt.hpp"
+#include "rvni.hpp"
 
 namespace rvm64 {
 
