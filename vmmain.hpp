@@ -111,89 +111,110 @@ typedef struct {
 #define EXPONENT_MASK           0x7FF0000000000000ULL
 #define FRACTION_MASK           0x000FFFFFFFFFFFFFULL
 
-#define mem_read(T, retval, addr)                                               	\
-	do {						                                                	\
-		if ((addr) % sizeof(T) != 0) {												\
-			vmcs->halt = 1;															\
-			vmcs->reason = vm_unaligned_op;											\
-			return;																	\
-		}																			\
-		if ((addr) < vmcs->process.address || 										\
-				(addr) > vmcs->process.address + PROCESS_MAX_CAPACITY) {			\
-			vmcs->halt = 1;															\
-			vmcs->reason = vm_access_violation;										\
-			return;																	\
-		}																			\
-		retval = *(T*) (vmcs->process.address + ((addr) - vmcs->process.address));	\
-	} while (0)
+template <typename T>
+_function __stdcall void mem_read(T& retval, uintptr_t addr) {
+	if ((addr) % sizeof(T) != 0) {                                            
+		vmcs->csr.m_cause = load_address_misaligned;                          
+		vmcs->csr.m_epc = vmcs->pc;                                           
+		vmcs->csr.m_tval = (addr);                                            
+		return;                                                               
+	}                                                                         
+	if ((addr) < vmcs->process.address ||                                     
+			(addr) >= vmcs->process.address + vmcs->process.size) {              
 
-#define mem_write(T, addr, value)                                               	\
-	do {											        						\
-		if ((addr) % sizeof(T) != 0) {												\
-			vmcs->halt = 1;															\
-			vmcs->reason = vm_unaligned_op;											\
-			return;																	\
-		}																			\
-		if ((addr) < vmcs->process.address ||  										\
-				(addr) > vmcs->process.address + PROCESS_MAX_CAPACITY) {			\
-			vmcs->halt = 1;															\
-			vmcs->reason = vm_access_violation;										\
-			return;																	\
-		}																			\
-		*(T*) (vmcs->process.address + ((addr) - vmcs->process.address)) = (value); \
-	} while (0)
+		vmcs->csr.m_cause = load_access_fault;                                
+		vmcs->csr.m_epc = vmcs->pc;                                           
+		vmcs->csr.m_tval = (addr);                                            
+		return;                                                               
+	}                                                                         
 
-#define reg_read(T, dst, src)														\
-	do {																			\
-		if ((src) > regenum::t6) {													\
-			vmcs->halt = 1;															\
-			vmcs->reason = vm_access_violation;										\
-			return;																	\
-		}																			\
-		dst = (T)vmcs->vregs[(src)];												\
-	} while(0)
+	retval = *(T *)(vmcs->process.address + ((addr) - vmcs->process.address));
+}
 
-#define reg_write(T, dst, src)														\
-	do {                                                    						\
-		if ((dst) == regenum::zr || (dst) > regenum::t6) {							\
-			vmcs->halt = 1;															\
-			vmcs->reason = vm_access_violation;										\
-			return;                                         						\
-		}                                                   						\
-		vmcs->vregs[(dst)] = (T)src;												\
-	} while (0)
+template <typename T>
+_function __stdcall mem_write(uintptr_t addr, T value) {
+	if ((addr) % sizeof(T) != 0) {                                            
+		vmcs->csr.m_cause = store_AMO_address_misaligned;                     
+		vmcs->csr.m_epc = vmcs->pc;                                           
+		vmcs->csr.m_tval = (addr);                                            
+		return;                                                               
+	}                                                                         
+	if ((addr) < vmcs->process.address ||                                     
+			(addr) >= vmcs->process.address + vmcs->process.size) {              
 
-#define scr_read(T, dst, src)														\
-	do {																			\
-		if (src > screnum::imm) {													\
-			vmcs->halt = 1;															\
-			vmcs->reason = vm_access_violation;										\
-			return;                                         						\
-		}																			\
-		dst = (T)vmcs->vscratch[(src)];												\
-	} while (0)
+		vmcs->csr.m_cause = store_amo_access_fault;                           
+		vmcs->csr.m_epc = vmcs->pc;                                           
+		vmcs->csr.m_tval = (addr);                                            
+		return;                                                               
+	}                                                                         
 
-#define scr_write(T, dst, src)														\
-	do {																			\
-		if (dst > screnum::imm) {													\
-			vmcs->halt = 1;															\
-			vmcs->reason = vm_access_violation;										\
-			return;                                         						\
-		}																			\
-		vmcs->vscratch[(dst)] = (T)src;												\
-	} while (0)
+	*(T *)(vmcs->process.address + ((addr) - vmcs->process.address)) = value; 
+}
 
-#define unwrap_opcall(idx)															\
-	do {																			\
-		auto a = ((uintptr_t*)vmcs->handler)[idx];									\
-		auto b = rvm64::crypt::decrypt_ptr((uintptr_t)a);							\
-		void (*fn)() = (void (*)())(b);												\
-		fn();																		\
-	} while(0)
+template <typename T>
+_function __stdcall void reg_read(T& dst, int reg_idx) {
+	if ((reg_idx) > regenum::t6) {                                                
+		vmcs->csr.m_cause = instruction_access_fault;                         
+		vmcs->csr.m_epc = vmcs->pc;                                           
+		vmcs->csr.m_tval = (reg_idx);                                             
+		return;                                                               
+	}                                                                         
 
-_data hexane *ctx = nullptr;
-_data vmcs_t *vmcs = nullptr;
-_data HANDLE vmcs_mutex = 0;
+	dst = (T)vmcs->vregs[(reg_idx)];                                              
+}
+
+template <typename T>
+_function __stdcall void reg_write(int reg_idx, T src) {
+	if ((reg_idx) == regenum::zr || (reg_idx) > regenum::t6) {                        
+		vmcs->csr.m_cause = instruction_access_fault;                         
+		vmcs->csr.m_epc = vmcs->pc;                                           
+		vmcs->csr.m_tval = (reg_idx);                                             
+		return;                                                               
+	}                                                                         
+
+	vmcs->vregs[(reg_idx)] = (T)(src);                                            
+}
+
+template <typename T>
+_function __stdcall void scr_read(T& dst, int scr_idx) {
+	if ((scr_idx) > screnum::imm) {                                               
+		vmcs->csr.m_cause = instruction_access_fault;                         
+		vmcs->csr.m_epc = vmcs->pc;                                           
+		vmcs->csr.m_tval = (scr_idx);                                             
+		return;                                                               
+	}                                                                         
+
+	dst = (T)vmcs->vscratch[(scr_idx)];                                           
+}
+
+template <typename T>
+_function __stdcall void scr_write(int scr_idx, T src) {                                                    
+	if ((scr_idx) > screnum::imm) {                                               
+		vmcs->csr.m_cause = instruction_access_fault;                         
+		vmcs->csr.m_epc = vmcs->pc;                                           
+		vmcs->csr.m_tval = (scr_idx);                                             
+		return;                                                               
+	}                                                                         
+
+	vmcs->vscratch[(scr_idx)] = (T)(src);                                         
+}
+
+_function _stdcall void unwrap_opcall(int hdl_idx) {                                                        
+	if ((hdl_idx) >= sizeof(__handler) / sizeof(__handler[0])) {                                             
+		vmcs->csr.m_cause = illegal_instruction;                              
+		vmcs->csr.m_epc = vmcs->pc;                                           
+		vmcs->csr.m_tval = (hdl_idx);                                             
+		return;                                                               
+	}                                                                         
+	auto a = ((uintptr_t*)vmcs->handler)[hdl_idx];                                
+	auto b = rvm64::crypt::decrypt_ptr((uintptr_t)a);                         
+	void (*fn)() = (void (*)())(b);                                           
+	fn();                                                                     
+}
+
+_data hexane *ctx;
+_data vmcs_t *vmcs;
+_data HANDLE vmcs_mutex;
 
 _data uintptr_t __stack_cookie = 0;
 _rdata const uintptr_t __key = 0;
