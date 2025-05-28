@@ -201,7 +201,6 @@ namespace rvm64::decoder {
 						case 0b1010011: 
 							{
         						uint8_t func7 = (opcode >> 24) & 0x7F;
-								uint8_t fcvt_mask = (opcode >> 20) & 0x1F;
 
 								switch(func7) {
 									case 0b0000001: unwrap_opcall(_rv_fadd_d); break;
@@ -210,21 +209,23 @@ namespace rvm64::decoder {
 									case 0b0001101: unwrap_opcall(_rv_fdiv_d); break;
 									case 0b0101101: unwrap_opcall(_rv_fsqrt_d); break;
 									case 0b1111001: unwrap_opcall(_rv_fmv_d_x); break;
-													// NOTE: these fcvt functions are probably not R-type. Double check.
 									case 0b0100000: 
 													{
+														uint8_t fcvt_mask = (opcode >> 20) & 0x1F;
 														switch(fcvt_mask) {
 															case 0b00001: unwrap_opcall(_rv_fcvt_s_d); break;
 														}
 													}
 									case 0b0100001: 
 													{
+														uint8_t fcvt_mask = (opcode >> 20) & 0x1F;
 														switch(fcvt_mask) {
 															case 0b00000: unwrap_opcall(_rv_fcvt_d_s); break;
 														}
 													}
 									case 0b1100001: 
 													{
+														uint8_t fcvt_mask = (opcode >> 20) & 0x1F;
 														switch(fcvt_mask) {
 															case 0b00000: unwrap_opcall(_rv_fcvt_w_d); break;
 															case 0b00001: unwrap_opcall(_rv_fcvt_wu_d); break;
@@ -232,12 +233,12 @@ namespace rvm64::decoder {
 													}
 									case 0b1101001: 
 													{
+														uint8_t fcvt_mask = (opcode >> 20) & 0x1F;
 														switch(fcvt_mask) {
 															case 0b00000: unwrap_opcall(_rv_fcvt_d_w); break;
 															case 0b00001: unwrap_opcall(_rv_fcvt_d_wu); break;
 														}
 													}
-													// NOTE:
 									case 0b0010001: 
 													{
 														switch(func3) {
