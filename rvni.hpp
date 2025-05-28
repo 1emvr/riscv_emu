@@ -149,7 +149,6 @@ namespace rvm64::rvni {
 			}
 
 			native_wrapper& nat = it->second;
-			rvm64::context::save_vm_context(); // NOTE: guard against unexpected behavior by saving registers bc unsure
 
 			switch (nat.type) {
 				case native_wrapper::FUNC_OPEN: 
@@ -289,10 +288,9 @@ namespace rvm64::rvni {
 			}
 		}				
 
-		rvm64::context::restore_vm_context(); // NOTE: restore native registers
 		uintptr_t ret = 0;
-
 		reg_read(uintptr_t, ret, regenum::ra);
+
 		vmcs->pc = ret; // NOTE: step to old_pc + 4
 	}
 }
