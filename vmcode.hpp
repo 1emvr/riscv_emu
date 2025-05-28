@@ -458,9 +458,10 @@ namespace rvm64::decoder {
 						case 0b1101111: { unwrap_opcall(_rv_jal); break; }
 					}
 				}
-                // R4 TYPE
+
 			case r4type: 
 				{
+					// NOTE: likely used for floating point operations
 				}
         }
     }
