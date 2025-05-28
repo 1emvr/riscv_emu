@@ -91,17 +91,9 @@ typedef struct {
     } d_un;
 } elf64_dyn;
 
-typedef uint64_t elf64_addr;   // Unsigned program address
-typedef uint64_t elf64_off;    // Unsigned file offset
-typedef uint16_t elf64_half;   // Unsigned medium integer
-typedef uint32_t elf64_word;   // Unsigned integer
-typedef int32_t  elf64_sword;  // Signed integer
-typedef uint64_t elf64_xword;  // Unsigned long integer
-typedef int64_t  elf64_sxword; // Signed long integer
-
 #define ELF64_R_SYM(info)    	((info) >> 32)   // Extract symbol index from relocation info
 #define ELF64_R_TYPE(info)   	((info) & 0xFFFFFFFF)   // Extract relocation type from relocation info
-#define ELF64_R_INFO(S, T) 		((((elf64_xword)(S)) << 32) + (T))  // Construct relocation info from symbol index and type
+#define ELF64_R_INFO(S, T) 		((((uint64_t)(S)) << 32) + (T))  // Construct relocation info from symbol index and type
 																
 #define ELF64_ST_BIND(info)   	((info) >> 4)
 #define ELF64_ST_TYPE(info)   	((info) & 0xF)
@@ -148,16 +140,16 @@ typedef int64_t  elf64_sxword; // Signed long integer
 
 
 namespace rvm64::elf {
-	_function bool patch_elf64_imports() {
-		auto* ehdr (elf64_ehdr*)(vmcs->process.address);
+	_function bool patch_elf64_imports(void *process) {
+		auto* ehdr (elf64_ehdr*)(process);
 
 		if (ehdr->e_type != ET_EXEC && ehdr->e_type != ET_DYN) {
 			return false;
 		}
 
-		auto* phdrs = (e_phdr*) ((uint8_t*)(vmcs->process.address) + ehdr->e_phoff); // NOTE: find the elf "program headers"
-		elf64_addr dyn_vaddr = 0;
-		elf64_xword dyn_size = 0;
+		auto* phdrs = (e_phdr*) ((uint8_t*)(process) + ehdr->e_phoff); // NOTE: find the elf "program headers"
+		uint64_t dyn_vaddr = 0;
+		uint64_t dyn_size = 0;
 
 		for (int i = 0; i < ehdr->e_phnum; ++i) { 
 			if (phdrs[i].p_type == PT_DYNAMIC) {
@@ -170,9 +162,9 @@ namespace rvm64::elf {
 			return false;
 		}
 
-		auto* dyn_entries = (elf64_dyn*) ((uint8_t*)vmcs->process.address + dyn_vaddr); // NOTE: find the "elf import table" (??)
-		elf64_addr symtab_vaddr = 0, strtab_vaddr = 0, rela_plt_vaddr = 0;
-		elf64_xword rela_plt_size = 0, syment_size = 0;
+		auto* dyn_entries = (elf64_dyn*) ((uint8_t*)process + dyn_vaddr); // NOTE: find the "elf import table" (??)
+		uint64_t symtab_vaddr = 0, strtab_vaddr = 0, rela_plt_vaddr = 0;
+		uint64_t rela_plt_size = 0, syment_size = 0;
 
 		for (elf64_dyn* dyn = dyn_entries; dyn->d_tag != DT_NULL; ++dyn) { // NOTE: resolve string/symbol/relative tables (?)
 			switch (dyn->d_tag) {
@@ -196,30 +188,31 @@ namespace rvm64::elf {
 			return false;
 		}
 
-		auto* rela_entries = (elf64_rela*) ((uint8_t*)vmcs->process.address + rela_plt_vaddr);
-		auto* symtab = (elf64_sym*) ((uint8_t*)vmcs->process.address + symtab_vaddr);
-		const char* strtab = (const char*) ((uint8_t*)vmcs->process.address + strtab_vaddr);
+		// NOTE: I do not understand ELF linking/relocation
+		auto* rela_entries = (elf64_rela*) ((uint8_t*)process + rela_plt_vaddr);
+		auto* symtab = (elf64_sym*) ((uint8_t*)process + symtab_vaddr);
+		const char* strtab = (const char*) ((uint8_t*)process + strtab_vaddr);
 		size_t rela_count = rela_plt_size / sizeof(elf64_rela);
 
 		for (size_t i = 0; i < rela_count; ++i) {
 			uint32_t sym_idx = ELF64_R_SYM(rela_entries[i].r_info);
 			uint32_t r_type = ELF64_R_TYPE(rela_entries[i].r_info);
 
-			elf64_addr* reloc_addr = (elf64_addr*) ((uint8_t*)vmcs->process.address + rela_entries[i].r_offset);
-			const char* sym_name = strtab + symtab[sym_idx].st_name;
+			uint64_t *reloc_addr = (uint64_t*) ((uint8_t*)process + rela_entries[i].r_offset);
+			const char *sym_name = strtab + symtab[sym_idx].st_name;
 
 			if (r_type != R_RISCV_JUMP_SLOT && r_type != R_RISCV_CALL_PLT) {
 				printf("WARN: Unsupported relocation type: %u\n", r_type);
 				continue;
 			}
 
-			void* win_func = rvm64::rvni::windows_thunk_resolver(sym_name);
+			void *win_func = rvm64::rvni::windows_thunk_resolver(sym_name);
 			if (!win_func) {
 				printf("WARN: unresolved import: %s\n", sym_name);
 				continue;
 			}
 
-			*reloc_addr = (elf64_addr)(win_func);
+			*reloc_addr = (uint64_t)(win_func);
 		}
 
 		return true;
