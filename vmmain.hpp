@@ -49,8 +49,13 @@ typedef struct __hexane {
 #define EXPONENT_MASK           0x7FF0000000000000ULL
 #define FRACTION_MASK           0x000FFFFFFFFFFFFFULL
 
+typedef struct {
+	uintptr_t start;
+	uintptr_t end;
+} vm_range_t;
 
 typedef struct {
+	vm_range_t vm_plt;
 	uintptr_t address;
 	uintptr_t base_vaddr;
 	uintptr_t entry;

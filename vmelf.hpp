@@ -140,7 +140,7 @@ typedef struct {
 
 
 namespace rvm64::elf {
-	_function bool patch_elf64_imports(void *process) {
+	_function bool patch_elf64_imports(void *process, vm_range_t *plt) {
 		auto* ehdr (elf64_ehdr*)(process);
 
 		if (ehdr->e_type != ET_EXEC && ehdr->e_type != ET_DYN) {
@@ -213,6 +213,17 @@ namespace rvm64::elf {
 			}
 
 			*reloc_addr = (uint64_t)(win_func);
+		}
+
+		// TODO: find the section headers and resolve .plt offsets
+		for (int i = 0; i < ehdr->e_shnum; ++i) {
+			const auto& shdr = ehdr->shaxxxxxxxxxxxxxx[i]; 
+
+			if (shdr.sh_type == SHT_PROGBITS && strcmp(strtab + shdr.sh_name, ".plt") == 0) {
+				plt->start = shdr.sh_addr;
+				plt->end   = shdr.sh_addr + shdr.sh_size;
+				break;
+			}
 		}
 
 		return true;

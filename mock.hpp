@@ -37,9 +37,10 @@ namespace mock {
 			goto defer;
 		}
 
+		// NOTE: process loading
 		if (!rvm64::memory::vm_mem_init(vmcs->data.size + VM_PROCESS_PADDING) ||
 				!rvm64::elf::load_elf64_image((void*)vmcs->data.address, vmcs->data.size) ||
-				!rvm64::elf::patch_elf64_imports((void*)vmcs->process.address)) {
+				!rvm64::elf::patch_elf64_imports((void*)vmcs->process.address, &vmcs->vm_plt)) {
 
 			vmcs->halt = 1;
 			vmcs->reason = vm_undefined;
