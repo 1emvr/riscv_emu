@@ -63,12 +63,6 @@ typedef struct {
     uint32_t step;
 } vmcs_t;
 
-#ifdef __x86_64__
-#define PTR_SIZE 8
-#else
-#define PTR_SIZE 4
-#endif
-
 #define _extern   extern "C"
 #define _function //__attribute__((section(".text$B")))
 #define _rdata    __attribute__((section(".rdata")))
