@@ -92,7 +92,7 @@ typedef struct {
 } elf64_dyn;
 
 #define ELF64_R_SYM(info)    	((info) >> 32)   // Extract symbol index from relocation info
-#define ELF64_R_TYPE(info)   	((info) & 0xFFFFFFFF)   // Extract relocation type from relocation info
+#define ELF64_rel_type(info)   	((info) & 0xFFFFFFFF)   // Extract relocation type from relocation info
 #define ELF64_R_INFO(S, T) 		((((uint64_t)(S)) << 32) + (T))  // Construct relocation info from symbol index and type
 																
 #define ELF64_ST_BIND(info)   	((info) >> 4)
@@ -196,13 +196,13 @@ namespace rvm64::elf {
 
 		for (size_t i = 0; i < rela_count; ++i) {
 			uint32_t sym_idx = ELF64_R_SYM(rela_entries[i].r_info);
-			uint32_t r_type = ELF64_R_TYPE(rela_entries[i].r_info);
+			uint32_t rel_type = ELF64_rel_type(rela_entries[i].r_info);
 
 			uint64_t *reloc_addr = (uint64_t*) ((uint8_t*)process + rela_entries[i].r_offset);
 			const char *sym_name = strtab + symtab[sym_idx].st_name;
 
-			if (r_type != R_RISCV_JUMP_SLOT && r_type != R_RISCV_CALL_PLT) {
-				printf("WARN: Unsupported relocation type: %u\n", r_type);
+			if (rel_type != R_RISCV_JUMP_SLOT && rel_type != R_RISCV_CALL_PLT) {
+				printf("WARN: unsupported relocation type: %u\n", rel_type);
 				continue;
 			}
 
@@ -215,9 +215,17 @@ namespace rvm64::elf {
 			*reloc_addr = (uint64_t)(win_func);
 		}
 
+		auto* shdrs = (elf64_shdr*)((uint8_t*)process + ehdr->e_shoff);
+		const char* strtab = nullptr;
+
+		if (ehdr->e_shstrndx != SHN_UNDEF) {
+			auto& strtab_hdr = shdrs[ehdr->e_shstrndx];
+			strtab = (const char*)((uint8_t*)process + strtab_hdr.sh_offset);
+		}
+
 		// TODO: find the section headers and resolve .plt offsets
 		for (int i = 0; i < ehdr->e_shnum; ++i) {
-			const auto& shdr = ehdr->shaxxxxxxxxxxxxxx[i]; 
+			const auto& shdr = ehdr->unknown_xxxxxxxxx[i]; 
 
 			if (shdr.sh_type == SHT_PROGBITS && strcmp(strtab + shdr.sh_name, ".plt") == 0) {
 				plt->start = shdr.sh_addr;
