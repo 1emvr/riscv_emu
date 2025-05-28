@@ -34,7 +34,7 @@ namespace rvm64::rvni {
 		};
 	};
 
-	_data std::unordered_map<void*, native_wrapper> ucrt_table; // NOTE: might cause compiler exception (unsure)
+	_data std::unordered_map<void*, native_wrapper> ucrt_native_table; // NOTE: might cause compiler exception (unsure)
 																
 	struct ucrt_alias {
 		const char* original;
@@ -74,7 +74,7 @@ namespace rvm64::rvni {
 		return proc;
 	}
 
-	// NOTE: setup the ucrt_table during vm_init 
+	// NOTE: setup the ucrt_native_table during vm_init 
 	_function void resolve_ucrt_imports() {
 		HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
 
@@ -130,16 +130,23 @@ namespace rvm64::rvni {
 												  }
 			}
 
-			ucrt_table[native] = wrap;
+			ucrt_native_table[native] = wrap;
 		}
 	}
 
-	// NOTE: traps auipc -> jalr calls
+	// NOTE: traps auipc -> jalr calls and prepares native address for a call
 	_function void vm_trap_exit() {
-		if ((vmcs->pc >= vmcs->plt.start) && (vmcs->pc < vmcs->plt.end)) {
-			auto it = ucrt_table.find((void*)vmcs->pc); // TODO: vmcs->pc points to the .plt but ucrt_tables are native function addresses
 
-			if (it == ucrt_table.end()) {
+		/* 
+		 switch(vmcs->vm_exit.reason) {
+			case VM_NATIVE:
+			case VM_WHATEVER:
+		 }
+		*/
+		if ((vmcs->pc >= vmcs->plt.start) && (vmcs->pc < vmcs->plt.end)) {
+			auto it = ucrt_native_table.find((void*)vmcs->pc); 
+
+			if (it == ucrt_native_table.end()) {
 				vmcs->halt = 1;
 				vmcs->reason = vm_invalid_pc;
 				return;

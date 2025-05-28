@@ -140,6 +140,8 @@ typedef struct {
 
 
 namespace rvm64::elf {
+	// TODO: find a way
+	// NOTE: patches the Elf's .got with native functions
 	_function bool patch_elf64_imports(void *process, vm_range_t *plt) {
 		auto* ehdr (elf64_ehdr*)(process);
 
