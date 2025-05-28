@@ -8,7 +8,7 @@ namespace rvm64::crypt {
         return ptr ^ __key;
     }
 
-    _function uintptr_t decrypt_ptr(uintptr_t ptr) {
+    __function uintptr_t decrypt_ptr(uintptr_t ptr) {
         return ptr ^ __key;
     }
 };

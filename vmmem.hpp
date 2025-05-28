@@ -6,7 +6,7 @@
 #include "vmops.hpp"
 
 namespace rvm64::memory {
-	_function bool vm_mem_init(size_t process_size) {
+	__native bool vm_mem_init(size_t process_size) {
 		vmcs->process.size = process_size;
 
 		if (!NT_SUCCESS(vmcs->reason = ctx->win32.NtAllocateVirtualMemory(NtCurrentProcess(), (LPVOID*) &vmcs->process.address, 
@@ -15,7 +15,7 @@ namespace rvm64::memory {
 		}
 	}
 
-	_function void vm_end() {
+	__native void vm_end() {
 		vmcs->reason = ctx->win32.NtFreeVirtualMemory(NtCurrentProcess(), (LPVOID*)&vmcs->process.address, &vmcs->process.size, MEM_RELEASE);
 	}
 };

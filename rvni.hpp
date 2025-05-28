@@ -7,9 +7,8 @@
 
 namespace rvm64::rvni {
 	struct native_wrapper {
-		void* address;  
+		void *address;  
 
-		// NOTE: function type index
 		enum typecaster {
 			PLT_OPEN, PLT_READ, PLT_WRITE, PLT_CLOSE,
 			PLT_LSEEK, PLT_STAT64, PLT_MALLOC, PLT_FREE,
@@ -17,7 +16,6 @@ namespace rvm64::rvni {
 			PLT_UNKNOWN
 		} type;
 
-		// NOTE: function definitions available for casting
 		union {
 			int (*open)(const char*, int, int);
 			int (*read)(int, void*, unsigned int);
@@ -34,21 +32,20 @@ namespace rvm64::rvni {
 		};
 	};
 
-	_data std::unordered_map<void*, native_wrapper> ucrt_native_table; // NOTE: might cause compiler exception (unsure)
+	__data std::unordered_map<void*, native_wrapper> ucrt_native_table; // NOTE: might cause compiler exception (unsure)
 																
 	struct ucrt_alias {
 		const char* original;
 		const char* alias;
 	};
 
-	_data const ucrt_alias alias_table[] = {
+	__data const ucrt_alias alias_table[] = {
 		{ "open",  "_open"  }, { "read",  "_read"  }, { "write", "_write" },
 		{ "close", "_close" }, { "exit",  "_exit"  },
 	};
 
 
-	// NOTE: used to patch loaded elf .got/.plt with native ucrt functions (pseudo dynamic linker)
-	_function void* windows_thunk_resolver(const char* sym_name) {
+	__native void* windows_thunk_resolver(const char* sym_name) {
 		static HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
 		if (!ucrt) {
 			vmcs->halt = 1;
@@ -56,7 +53,6 @@ namespace rvm64::rvni {
 			return nullptr;
 		}
 
-		// NOTE: change common names that are aliased under ucrt
 		for (size_t i = 0; i < sizeof(alias_table) / sizeof(alias_table[0]); ++i) {
 			if (strcmp(sym_name, alias_table[i].original) == 0) {
 				sym_name = alias_table[i].alias;
@@ -74,8 +70,7 @@ namespace rvm64::rvni {
 		return proc;
 	}
 
-	// NOTE: setup the ucrt_native_table during vm_init 
-	_function void resolve_ucrt_imports() {
+	__native void resolve_ucrt_imports() {
 		HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
 
 		if (!ucrt) {
@@ -134,8 +129,7 @@ namespace rvm64::rvni {
 		}
 	}
 
-	// NOTE: traps auipc -> jalr and prepares native address for a call
-	_function void vm_trap_exit() {
+	__native void vm_trap_exit() {
 
 		/* 
 		 switch(vmcs->vm_exit.reason) {

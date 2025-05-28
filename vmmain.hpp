@@ -94,11 +94,12 @@ typedef struct {
     uint32_t step;
 } vmcs_t;
 
-#define _extern   extern "C"
-#define _function //__attribute__((section(".text$B")))
-#define _rdata    __attribute__((section(".rdata")))
-#define _data     __attribute__((section(".data")))
-#define _used     __attribute__((used))
+#define __native //__attribute__((section(".text$B")))
+#define __vmcall //__attribute__((section(".text$B"))) __attribute__((calling_convention("custom")))
+
+#define __rdata    	__attribute__((section(".rdata")))
+#define __data     	__attribute__((section(".data")))
+#define __extern   	extern "C"
 
 #define NT_SUCCESS(status)      ((status) >= 0)
 #define NtCurrentProcess()      ((HANDLE) (LONG_PTR) -1)
@@ -112,7 +113,7 @@ typedef struct {
 #define FRACTION_MASK           0x000FFFFFFFFFFFFFULL
 
 template <typename T>
-_function __stdcall void mem_read(T& retval, uintptr_t addr) {
+__vmcall void mem_read(T& retval, uintptr_t addr) {
 	if ((addr) % sizeof(T) != 0) {                                            
 		vmcs->csr.m_cause = load_address_misaligned;                          
 		vmcs->csr.m_epc = vmcs->pc;                                           
@@ -132,7 +133,7 @@ _function __stdcall void mem_read(T& retval, uintptr_t addr) {
 }
 
 template <typename T>
-_function __stdcall mem_write(uintptr_t addr, T value) {
+__vmcall mem_write(uintptr_t addr, T value) {
 	if ((addr) % sizeof(T) != 0) {                                            
 		vmcs->csr.m_cause = store_AMO_address_misaligned;                     
 		vmcs->csr.m_epc = vmcs->pc;                                           
@@ -152,7 +153,7 @@ _function __stdcall mem_write(uintptr_t addr, T value) {
 }
 
 template <typename T>
-_function __stdcall void reg_read(T& dst, int reg_idx) {
+__vmcall void reg_read(T& dst, int reg_idx) {
 	if ((reg_idx) > regenum::t6) {                                                
 		vmcs->csr.m_cause = instruction_access_fault;                         
 		vmcs->csr.m_epc = vmcs->pc;                                           
@@ -164,7 +165,7 @@ _function __stdcall void reg_read(T& dst, int reg_idx) {
 }
 
 template <typename T>
-_function __stdcall void reg_write(int reg_idx, T src) {
+__vmcall void reg_write(int reg_idx, T src) {
 	if ((reg_idx) == regenum::zr || (reg_idx) > regenum::t6) {                        
 		vmcs->csr.m_cause = instruction_access_fault;                         
 		vmcs->csr.m_epc = vmcs->pc;                                           
@@ -176,7 +177,7 @@ _function __stdcall void reg_write(int reg_idx, T src) {
 }
 
 template <typename T>
-_function __stdcall void scr_read(T& dst, int scr_idx) {
+__vmcall void scr_read(T& dst, int scr_idx) {
 	if ((scr_idx) > screnum::imm) {                                               
 		vmcs->csr.m_cause = instruction_access_fault;                         
 		vmcs->csr.m_epc = vmcs->pc;                                           
@@ -188,7 +189,7 @@ _function __stdcall void scr_read(T& dst, int scr_idx) {
 }
 
 template <typename T>
-_function __stdcall void scr_write(int scr_idx, T src) {                                                    
+__vmcall void scr_write(int scr_idx, T src) {                                                    
 	if ((scr_idx) > screnum::imm) {                                               
 		vmcs->csr.m_cause = instruction_access_fault;                         
 		vmcs->csr.m_epc = vmcs->pc;                                           
@@ -199,7 +200,7 @@ _function __stdcall void scr_write(int scr_idx, T src) {
 	vmcs->vscratch[(scr_idx)] = (T)(src);                                         
 }
 
-_function _stdcall void unwrap_opcall(int hdl_idx) {                                                        
+__vmcall void unwrap_opcall(int hdl_idx) {                                                        
 	if ((hdl_idx) >= sizeof(__handler) / sizeof(__handler[0])) {                                             
 		vmcs->csr.m_cause = illegal_instruction;                              
 		vmcs->csr.m_epc = vmcs->pc;                                           
@@ -212,16 +213,16 @@ _function _stdcall void unwrap_opcall(int hdl_idx) {
 	fn();                                                                     
 }
 
-_data hexane *ctx;
-_data vmcs_t *vmcs;
-_data HANDLE vmcs_mutex;
+__data hexane *ctx;
+__data vmcs_t *vmcs;
+__data HANDLE vmcs_mutex;
 
-_data uintptr_t __stack_cookie = 0;
-_rdata const uintptr_t __key = 0;
+__data uintptr_t __stack_cookie = 0;
+__rdata const uintptr_t __key = 0;
 
 namespace rvm64 {
-    _function void vm_entry();
-    _function int64_t vm_main();
+    __vmcall void vm_entry();
+    __native int64_t vm_main();
 };
 
 enum vm_reason {

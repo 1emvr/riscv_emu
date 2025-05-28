@@ -3,7 +3,7 @@
 #include "vmmain.hpp"
 
 namespace rvm64::context {
-    _function void vm_context_init() {
+    __native void vm_context_init() {
 		vmcs->dkey = __key; 
 		vmcs->handler = (uintptr_t)rvm64::operation::__handler;
 
@@ -26,25 +26,25 @@ namespace rvm64::context {
         ctx->win32.NtWaitForSingleObject = (decltype(WaitForSingleObject) *) GetProcAddress(GetModuleHandle("kernel32.dll"), "WaitForSingleObject");
     }
 
-    _function void save_host_context() {
+    __native void save_host_context() {
         if (!NT_SUCCESS(vmcs->reason = ctx->win32.NtGetContextThread(NtCurrentThread(), &vmcs->host_context))) {
             vmcs->halt = 1;
         }
     }
 
-    _function void restore_host_context() {
+    __native void restore_host_context() {
         if (!NT_SUCCESS(vmcs->reason = ctx->win32.NtSetContextThread(NtCurrentThread(), &vmcs->host_context))) {
             vmcs->halt = 1;
         }
     }
 
-    _function void save_vm_context() {
+    __native void save_vm_context() {
         if (!NT_SUCCESS(vmcs->reason = ctx->win32.NtGetContextThread(NtCurrentThread(), &vmcs->vm_context))) {
             vmcs->halt = 1;
         }
     }
 
-    _function void restore_vm_context() {
+    __native void restore_vm_context() {
         if (!NT_SUCCESS(vmcs->reason = ctx->win32.NtSetContextThread(NtCurrentThread(), &vmcs->vm_context))) {
             vmcs->halt = 1;
         }

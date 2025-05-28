@@ -11,7 +11,7 @@
 
 namespace rvm64 {
 
-	_function void vm_entry(void) {
+	__vmcall void vm_entry(void) {
 		while (!vmcs->halt) {
 			int32_t opcode = *(int32_t*) vmcs->pc;
 
@@ -26,7 +26,7 @@ namespace rvm64 {
 		}
 	}
 
-	_function int64_t vm_main(void) {
+	__function int64_t vm_main(void) {
 		vmcs_t vm_instance = { };
 		vmcs = &vm_instance;
 
@@ -38,6 +38,7 @@ namespace rvm64 {
 				continue;
 			}
 
+			// __vmcall
 			rvm64::vm_entry();
 			break;
 		};

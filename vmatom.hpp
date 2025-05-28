@@ -3,7 +3,7 @@
 #include "vmmain.hpp"
 
 namespace rvm64::atom {
-    _function void vm_set_load_rsv(int hart_id, uintptr_t address) {
+    __function void vm_set_load_rsv(int hart_id, uintptr_t address) {
         ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
 
         vmcs->load_rsv_addr = address; // vmcs_array[hart_id]->load_rsv_addr = address;
@@ -12,7 +12,7 @@ namespace rvm64::atom {
         ctx->win32.NtReleaseMutex(vmcs_mutex);
     }
 
-    _function void vm_clear_load_rsv(int hart_id) {
+    __function void vm_clear_load_rsv(int hart_id) {
         ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
 
         vmcs->load_rsv_addr = 0LL; // vmcs_array[hart_id]->load_rsv_addr = 0LL;
@@ -21,7 +21,7 @@ namespace rvm64::atom {
         ctx->win32.NtReleaseMutex(vmcs_mutex);
     }
 
-    _function bool vm_check_load_rsv(int hart_id, uintptr_t address) {
+    __function bool vm_check_load_rsv(int hart_id, uintptr_t address) {
         int valid = 0;
 
         ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);

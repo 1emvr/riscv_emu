@@ -9,7 +9,7 @@
 #include "vmelf.hpp"
 
 namespace mock {
-	_function bool read_program_from_packet() {
+	__function bool read_program_from_packet() {
 		BOOL success = false;
 		DWORD bytes_read = 0;
 
@@ -17,7 +17,7 @@ namespace mock {
 				OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
 		if (hfile == INVALID_HANDLE_VALUE) { // NOTE: since not reading from the netowrk, this can only pass/fail - exit immediately
-											 vmcs->mepc = vmcs->pc;
+			vmcs->mepc = vmcs->pc;
 			vmcs->reason = vm_undefined;
 			vmcs->halt = 1;
 			goto defer;

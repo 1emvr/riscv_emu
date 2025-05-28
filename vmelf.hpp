@@ -140,9 +140,7 @@ typedef struct {
 
 
 namespace rvm64::elf {
-	// TODO: find a way
-	// NOTE: patches the Elf's .got with native functions
-	_function bool patch_elf64_imports(void *process, vm_range_t *plt) {
+	__native bool patch_elf64_imports(void *process, vm_range_t *plt) {
 		auto* ehdr (elf64_ehdr*)(process);
 
 		if (ehdr->e_type != ET_EXEC && ehdr->e_type != ET_DYN) {
@@ -190,7 +188,6 @@ namespace rvm64::elf {
 			return false;
 		}
 
-		// NOTE: I do not understand ELF linking/relocation
 		auto* rela_entries = (elf64_rela*) ((uint8_t*)process + rela_plt_vaddr);
 		auto* symtab = (elf64_sym*) ((uint8_t*)process + symtab_vaddr);
 		const char* strtab = (const char*) ((uint8_t*)process + strtab_vaddr);
@@ -239,7 +236,7 @@ namespace rvm64::elf {
 		return true;
 	}
 
-	_function bool load_elf64_image(void* image_data, size_t image_size) {
+	__native bool load_elf64_image(void* image_data, size_t image_size) {
 		elf64_ehdr* ehdr = (elf64_ehdr*)(image_data);
 
 		if (ehdr->e_ident[0] != 0x7F || 
