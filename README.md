@@ -1,5 +1,5 @@
 # rvm64
-virtual machine for emulating risc-v code in Windows environments.
+very simple virtual machine for emulating risc-v code in Windows environments.
 
 ### Testing Phase
 ## Usage:
