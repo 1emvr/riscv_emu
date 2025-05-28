@@ -90,6 +90,7 @@ namespace rvm64::decoder {
         return sign_extend(val, 21);
     }
 
+	// NOTE: unrwap_opcall likely uses ~4 registers
 	// NOTE: in __vmcall, this will spill to the stack like crazy. consider using normal __stdcall.
     _function void vm_decode(uint32_t opcode) {
         uint8_t decoded = 0;
