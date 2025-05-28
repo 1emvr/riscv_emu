@@ -58,6 +58,7 @@ typedef struct {
     volatile uintptr_t load_rsv_addr;
     volatile int load_rsv_valid;
 
+	// NOTE: replace this with CSR structure
     uint32_t halt;
     uint32_t reason;
     uint32_t step;
