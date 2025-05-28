@@ -134,7 +134,7 @@ namespace rvm64::rvni {
 		}
 	}
 
-	// NOTE: traps auipc -> jalr calls and prepares native address for a call
+	// NOTE: traps auipc -> jalr and prepares native address for a call
 	_function void vm_trap_exit() {
 
 		/* 
