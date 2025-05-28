@@ -11,10 +11,10 @@ namespace rvm64::rvni {
 
 		// NOTE: function type index
 		enum typecaster {
-			FUNC_OPEN, FUNC_READ, FUNC_WRITE, FUNC_CLOSE,
-			FUNC_LSEEK, FUNC_STAT64, FUNC_MALLOC, FUNC_FREE,
-			FUNC_MEMCPY, FUNC_MEMSET, FUNC_STRLEN, FUNC_STRCPY,
-			FUNC_UNKNOWN
+			PLT_OPEN, PLT_READ, PLT_WRITE, PLT_CLOSE,
+			PLT_LSEEK, PLT_STAT64, PLT_MALLOC, PLT_FREE,
+			PLT_MEMCPY, PLT_MEMSET, PLT_STRLEN, PLT_STRCPY,
+			PLT_UNKNOWN
 		} type;
 
 		// NOTE: function definitions available for casting
@@ -90,9 +90,9 @@ namespace rvm64::rvni {
 			const char* name;
 			native_wrapper::typecaster type;
 		} funcs[] = {
-			{"_open", native_wrapper::FUNC_OPEN}, {"_read", native_wrapper::FUNC_READ}, {"_write", native_wrapper::FUNC_WRITE}, {"_close", native_wrapper::FUNC_CLOSE},
-			{"_lseek", native_wrapper::FUNC_LSEEK}, {"_stat64", native_wrapper::FUNC_STAT64}, {"malloc", native_wrapper::FUNC_MALLOC}, {"free", native_wrapper::FUNC_FREE},
-			{"memcpy", native_wrapper::FUNC_MEMCPY}, {"memset", native_wrapper::FUNC_MEMSET}, {"strlen", native_wrapper::FUNC_STRLEN}, {"strcpy", native_wrapper::FUNC_STRCPY},
+			{"_open", native_wrapper::PLT_OPEN}, {"_read", native_wrapper::PLT_READ}, {"_write", native_wrapper::PLT_WRITE}, {"_close", native_wrapper::PLT_CLOSE},
+			{"_lseek", native_wrapper::PLT_LSEEK}, {"_stat64", native_wrapper::PLT_STAT64}, {"malloc", native_wrapper::PLT_MALLOC}, {"free", native_wrapper::PLT_FREE},
+			{"memcpy", native_wrapper::PLT_MEMCPY}, {"memset", native_wrapper::PLT_MEMSET}, {"strlen", native_wrapper::PLT_STRLEN}, {"strcpy", native_wrapper::PLT_STRCPY},
 		};
 
 		for (auto& f : funcs) {
@@ -109,20 +109,25 @@ namespace rvm64::rvni {
 			wrap.address = native;
 			wrap.type = f.type;
 
-			switch (f.type) {
-				case native_wrapper::FUNC_OPEN:    wrap.open = (decltype(wrap.open))native; break;
-				case native_wrapper::FUNC_READ:    wrap.read = (decltype(wrap.read))native; break;
-				case native_wrapper::FUNC_WRITE:   wrap.write = (decltype(wrap.write))native; break;
-				case native_wrapper::FUNC_CLOSE:   wrap.close = (decltype(wrap.close))native; break;
-				case native_wrapper::FUNC_LSEEK:   wrap.lseek = (decltype(wrap.lseek))native; break;
-				case native_wrapper::FUNC_STAT64:  wrap.stat64 = (decltype(wrap.stat64))native; break;
-				case native_wrapper::FUNC_MALLOC:  wrap.malloc = (decltype(wrap.malloc))native; break;
-				case native_wrapper::FUNC_FREE:    wrap.free = (decltype(wrap.free))native; break;
-				case native_wrapper::FUNC_MEMCPY:  wrap.memcpy = (decltype(wrap.memcpy))native; break;
-				case native_wrapper::FUNC_MEMSET:  wrap.memset = (decltype(wrap.memset))native; break;
-				case native_wrapper::FUNC_STRLEN:  wrap.strlen = (decltype(wrap.strlen))native; break;
-				case native_wrapper::FUNC_STRCPY:  wrap.strcpy = (decltype(wrap.strcpy))native; break;
-				default:                       break;
+			switch (wrap.type) {
+				case native_wrapper::PLT_OPEN:    wrap.open = (decltype(wrap.open))native; break;
+				case native_wrapper::PLT_READ:    wrap.read = (decltype(wrap.read))native; break;
+				case native_wrapper::PLT_WRITE:   wrap.write = (decltype(wrap.write))native; break;
+				case native_wrapper::PLT_CLOSE:   wrap.close = (decltype(wrap.close))native; break;
+				case native_wrapper::PLT_LSEEK:   wrap.lseek = (decltype(wrap.lseek))native; break;
+				case native_wrapper::PLT_STAT64:  wrap.stat64 = (decltype(wrap.stat64))native; break;
+				case native_wrapper::PLT_MALLOC:  wrap.malloc = (decltype(wrap.malloc))native; break;
+				case native_wrapper::PLT_FREE:    wrap.free = (decltype(wrap.free))native; break;
+				case native_wrapper::PLT_MEMCPY:  wrap.memcpy = (decltype(wrap.memcpy))native; break;
+				case native_wrapper::PLT_MEMSET:  wrap.memset = (decltype(wrap.memset))native; break;
+				case native_wrapper::PLT_STRLEN:  wrap.strlen = (decltype(wrap.strlen))native; break;
+				case native_wrapper::PLT_STRCPY:  wrap.strcpy = (decltype(wrap.strcpy))native; break;
+				default:                       
+												  {
+													  vmcs->halt = 1;
+													  vmcs->reason = vm_undefined;
+													  return;
+												  }
 			}
 
 			ucrt_table[native] = wrap;
@@ -130,11 +135,6 @@ namespace rvm64::rvni {
 	}
 
 	// NOTE: traps auipc -> jalr calls
-	/*
-	  	auipc t0, %pcrel_hi(symbol)
-		jalr t1, %pcrel_lo(symbol)(t0)
-	 */
-
 	_function void vm_trap_exit() {
 		if ((vmcs->pc < vmcs->plt.start) || (vmcs->pc >= vmcs->plt.end)) {
 			auto it = ucrt_table.find((void*)vmcs->pc);
@@ -145,10 +145,10 @@ namespace rvm64::rvni {
 				return;
 			}
 
-			native_wrapper& nat = it->second;
+			native_wrapper& plt = it->second;
 
-			switch (nat.type) {
-				case native_wrapper::FUNC_OPEN: 
+			switch (plt.type) {
+				case native_wrapper::PLT_OPEN: 
 					{
 						char *pathname = nullptr; int flags = 0, mode = 0;
 
@@ -156,11 +156,11 @@ namespace rvm64::rvni {
 						reg_read(int, flags, regenum::a1);
 						reg_read(int, mode, regenum::a2);
 
-						int result = nat.open(pathname, flags, mode);
+						int result = plt.open(pathname, flags, mode);
 						reg_write(int, regenum::a0, result);
 						break;
 					}
-				case native_wrapper::FUNC_READ: 
+				case native_wrapper::PLT_READ: 
 					{
 						int fd = 0; void *buf = nullptr; unsigned int count = 0;
 
@@ -168,11 +168,11 @@ namespace rvm64::rvni {
 						reg_read(void*, buf, regenum::a1);
 						reg_read(unsigned int, count, regenum::a2);
 
-						int result = nat.read(fd, buf, count);
+						int result = plt.read(fd, buf, count);
 						reg_write(int, regenum::a0, result);
 						break;
 					}
-				case native_wrapper::FUNC_WRITE: 
+				case native_wrapper::PLT_WRITE: 
 					{
 						int fd = 0; void* buf = nullptr; unsigned int count = 0;
 
@@ -180,20 +180,20 @@ namespace rvm64::rvni {
 						reg_read(void*, buf, regenum::a1);
 						reg_read(unsigned int, count, regenum::a2);
 
-						int result = nat.write(fd, buf, count);
+						int result = plt.write(fd, buf, count);
 						reg_write(int, regenum::a0, result);
 						break;
 					}
-				case native_wrapper::FUNC_CLOSE: 
+				case native_wrapper::PLT_CLOSE: 
 					{
 						int fd = 0;
 						reg_read(int, fd, regenum::a0);
 
-						int result = nat.close(fd);
+						int result = plt.close(fd);
 						reg_write(int, regenum::a0, result);
 						break;
 					}
-				case native_wrapper::FUNC_LSEEK: 
+				case native_wrapper::PLT_LSEEK: 
 					{
 						int fd = 0; long offset = 0; int whence = 0; 
 
@@ -201,38 +201,38 @@ namespace rvm64::rvni {
 						reg_read(long, offset, regenum::a1);
 						reg_read(int, whence, regenum::a2);
 
-						long result = nat.lseek(fd, offset, whence);
+						long result = plt.lseek(fd, offset, whence);
 						reg_write(long, regenum::a0, result);
 						break;
 					}
-				case native_wrapper::FUNC_STAT64: 
+				case native_wrapper::PLT_STAT64: 
 					{
 						const char *pathname = nullptr; void *statbuf = 0; 
 
 						reg_read(const char*, pathname, regenum::a0);
 						reg_read(void*, statbuf, regenum::a1);
 
-						int result = nat.stat64(pathname, statbuf);
+						int result = plt.stat64(pathname, statbuf);
 						reg_write(int, regenum::a0, result);
 						break;
 					}
-				case native_wrapper::FUNC_MALLOC: 
+				case native_wrapper::PLT_MALLOC: 
 					{
 						size_t size = 0; 
 						reg_read(size_t, size, regenum::a0);
 
-						void* result = nat.malloc(size);
+						void* result = plt.malloc(size);
 						reg_write(uintptr_t, regenum::a0, (uintptr_t)result);
 						break;
 					}
-				case native_wrapper::FUNC_FREE: 
+				case native_wrapper::PLT_FREE: 
 					{
 						void *ptr = nullptr;
 						reg_read(void*, ptr, regenum::a0);
-						nat.free(ptr);
+						plt.free(ptr);
 						break;
 					}
-				case native_wrapper::FUNC_MEMCPY: 
+				case native_wrapper::PLT_MEMCPY: 
 					{
 						void *dest = nullptr; void *src = nullptr; size_t n = 0;
 
@@ -240,11 +240,11 @@ namespace rvm64::rvni {
 						reg_read(void*, src, regenum::a1);
 						reg_read(size_t, n, regenum::a2);
 
-						void* result = nat.memcpy(dest, src, n);
+						void* result = plt.memcpy(dest, src, n);
 						reg_write(uintptr_t, regenum::a0, (uintptr_t)result);
 						break;
 					}
-				case native_wrapper::FUNC_MEMSET: 
+				case native_wrapper::PLT_MEMSET: 
 					{
 						void *dest = nullptr; int value = 0; size_t n = 0; 
 
@@ -252,27 +252,27 @@ namespace rvm64::rvni {
 						reg_read(int, value, regenum::a1);
 						reg_read(size_t, n, regenum::a2);
 
-						void* result = nat.memset(dest, value, n);
+						void* result = plt.memset(dest, value, n);
 						reg_write(uint64_t, regenum::a0, (uint64_t)result);
 						break;
 					}
-				case native_wrapper::FUNC_STRLEN: 
+				case native_wrapper::PLT_STRLEN: 
 					{
 						char *s = nullptr; 
 						reg_read(char*, s, regenum::a0);
 
-						size_t result = nat.strlen(s);
+						size_t result = plt.strlen(s);
 						reg_write(size_t, regenum::a0, result);
 						break;
 					}
-				case native_wrapper::FUNC_STRCPY: 
+				case native_wrapper::PLT_STRCPY: 
 					{
 						char *dest = nullptr; char *src = nullptr; 
 
 						reg_read(char*, dest, regenum::a0);
 						reg_read(char*, src, regenum::a1);
 
-						char* result = nat.strcpy(dest, src);
+						char* result = plt.strcpy(dest, src);
 						reg_write(uintptr_t, regenum::a0, (uintptr_t)result);
 						break;
 					}
@@ -290,9 +290,9 @@ namespace rvm64::rvni {
 		}				
 
 		uintptr_t ret = 0;
-		reg_read(uintptr_t, ret, regenum::ra);
 
-		vmcs->pc = ret; // NOTE: step to old_pc + 4
+		reg_read(uintptr_t, ret, regenum::ra);
+		vmcs->pc = ret; 
 	}
 }
 #endif // RVNI_H
