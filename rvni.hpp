@@ -137,7 +137,7 @@ namespace rvm64::rvni {
 	// NOTE: traps auipc -> jalr calls
 	_function void vm_trap_exit() {
 		if ((vmcs->pc >= vmcs->plt.start) && (vmcs->pc < vmcs->plt.end)) {
-			auto it = ucrt_table.find((void*)vmcs->pc); // TODO: vmcs->pc points to the .plt. ucrt_tables are native function addresses
+			auto it = ucrt_table.find((void*)vmcs->pc); // TODO: vmcs->pc points to the .plt but ucrt_tables are native function addresses
 
 			if (it == ucrt_table.end()) {
 				vmcs->halt = 1;
