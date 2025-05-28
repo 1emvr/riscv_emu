@@ -7,6 +7,29 @@ typedef NTSTATUS(NTAPI* NtGetContextThread_t)(HANDLE ThreadHandle, PCONTEXT Thre
 typedef NTSTATUS(NTAPI* NtSetContextThread_t)(HANDLE ThreadHandle, PCONTEXT ThreadContext);
 typedef PVOID(NTAPI* RtlAllocateHeap_t)(HANDLE HeapHandle, ULONG Flags, SIZE_T Size);
 
+enum causenum {
+	instruction_address_misaligned = 0xf00,
+	instruction_access_fault = 0xf01,
+	illegal_instruction = 0xf02,
+	breakpoint = 0xf03,
+	load_address_misaligned = 0xf04,
+	load_access_fault = 0xf05,
+	store_amo_address_misaligned = 0xf06,
+	store_amo_access_fault = 0xf07,
+	environment_call_u_mode = 0xf08,
+	environment_call_s_mode = 0xf09,
+	supervisor_software_interrupt = 0xf11,
+	machine_software_interrupt = 0xf13,
+	supervisor_timer_interrupt = 0xf15,
+	machine_timer_interrupt = 0xf17,
+	supervisor_external_interrupt = 0xf19,
+	environment_call_m_mode = 0xf011,
+	instruction_page_fault = 0xf012,
+	load_page_fault = 0xf013,
+	store_amo_page_fault = 0xf015,
+	machine_external_interrupt = 0xf111,
+};
+
 typedef struct __hexane {
     void *heap;
     struct {
@@ -59,6 +82,13 @@ typedef struct {
     volatile int load_rsv_valid;
 
 	// NOTE: replace this with CSR structure
+	struct {
+		uintptr_t m_epc;
+		uintptr_t m_cause;
+		uintptr_t m_status;
+		uintptr_t m_tval;
+	} csr;
+
     uint32_t halt;
     uint32_t reason;
     uint32_t step;
