@@ -116,6 +116,7 @@ namespace rvm64::decoder {
 					switch(opcode7) {
 						case 0b0010011: 
 							{
+								// NOTE: imm_i is scoped this way because of the few functions that want shamt instead.
 								switch(func3) {
 									case 0b000: { scr_write(int32_t, imm, imm_i(opcode)); unwrap_opcall(_rv_addi); break; }
 									case 0b010: { scr_write(int32_t, imm, imm_i(opcode)); unwrap_opcall(_rv_slti); break; }
