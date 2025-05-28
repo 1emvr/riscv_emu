@@ -136,10 +136,7 @@ namespace rvm64::rvni {
 	 */
 
 	_function void vm_trap_exit() {
-		uintptr_t start = vmcs->process.address; 
-		uintptr_t end = start + vmcs->process.size;
-
-		if ((vmcs->pc < start) || (vmcs->pc >= end)) {
+		if ((vmcs->pc < vmcs->plt.start) || (vmcs->pc >= vmcs->plt.end)) {
 			auto it = ucrt_table.find((void*)vmcs->pc);
 
 			if (it == ucrt_table.end()) {
@@ -283,9 +280,13 @@ namespace rvm64::rvni {
 					{
 						vmcs->halt = 1;
 						vmcs->reason = vm_invalid_pc;
-						break;
+						return;
 					}
 			}
+		} else {
+			vmcs->halt = 1;
+			vmcs->reason = vm_invalid_pc;
+			return;
 		}				
 
 		uintptr_t ret = 0;
