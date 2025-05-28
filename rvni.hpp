@@ -157,7 +157,7 @@ namespace rvm64::rvni {
 			switch (plt.type) {
 				case native_wrapper::PLT_OPEN: 
 					{
-						char *pathname = nullptr; int flags = 0, mode = 0;
+						char *pathname; int flags = 0, mode = 0;
 
 						reg_read(char*, pathname, regenum::a0);
 						reg_read(int, flags, regenum::a1);
@@ -169,7 +169,7 @@ namespace rvm64::rvni {
 					}
 				case native_wrapper::PLT_READ: 
 					{
-						int fd = 0; void *buf = nullptr; unsigned int count = 0;
+						int fd = 0; void *buf; unsigned int count = 0;
 
 						reg_read(int, fd, regenum::a0);
 						reg_read(void*, buf, regenum::a1);
@@ -181,7 +181,7 @@ namespace rvm64::rvni {
 					}
 				case native_wrapper::PLT_WRITE: 
 					{
-						int fd = 0; void* buf = nullptr; unsigned int count = 0;
+						int fd = 0; void *buf; unsigned int count = 0;
 
 						reg_read(int, fd, regenum::a0);
 						reg_read(void*, buf, regenum::a1);
@@ -214,7 +214,7 @@ namespace rvm64::rvni {
 					}
 				case native_wrapper::PLT_STAT64: 
 					{
-						const char *pathname = nullptr; void *statbuf = 0; 
+						const char *pathname; void *statbuf; 
 
 						reg_read(const char*, pathname, regenum::a0);
 						reg_read(void*, statbuf, regenum::a1);
@@ -234,14 +234,14 @@ namespace rvm64::rvni {
 					}
 				case native_wrapper::PLT_FREE: 
 					{
-						void *ptr = nullptr;
+						void *ptr;
 						reg_read(void*, ptr, regenum::a0);
 						plt.free(ptr);
 						break;
 					}
 				case native_wrapper::PLT_MEMCPY: 
 					{
-						void *dest = nullptr; void *src = nullptr; size_t n = 0;
+						void *dest, *src; size_t n = 0;
 
 						reg_read(void*, dest, regenum::a0);
 						reg_read(void*, src, regenum::a1);
@@ -253,7 +253,7 @@ namespace rvm64::rvni {
 					}
 				case native_wrapper::PLT_MEMSET: 
 					{
-						void *dest = nullptr; int value = 0; size_t n = 0; 
+						void *dest; int value = 0; size_t n = 0; 
 
 						reg_read(void*, dest, regenum::a0);
 						reg_read(int, value, regenum::a1);
@@ -265,7 +265,7 @@ namespace rvm64::rvni {
 					}
 				case native_wrapper::PLT_STRLEN: 
 					{
-						char *s = nullptr; 
+						char *s; 
 						reg_read(char*, s, regenum::a0);
 
 						size_t result = plt.strlen(s);
@@ -274,7 +274,7 @@ namespace rvm64::rvni {
 					}
 				case native_wrapper::PLT_STRCPY: 
 					{
-						char *dest = nullptr; char *src = nullptr; 
+						char *dest, *src; 
 
 						reg_read(char*, dest, regenum::a0);
 						reg_read(char*, src, regenum::a1);
