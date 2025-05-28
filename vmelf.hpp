@@ -223,7 +223,7 @@ namespace rvm64::elf {
 			strtab = (const char*)((uint8_t*)process + strtab_hdr.sh_offset);
 		}
 
-		// TODO: find the section headers and resolve .plt offsets
+		// TODO: find the section headers and resolve .plt offsets for vm_trap_exit
 		for (int i = 0; i < ehdr->e_shnum; ++i) {
 			const auto& shdr = ehdr->unknown_xxxxxxxxx[i]; 
 
