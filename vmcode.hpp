@@ -60,7 +60,7 @@ namespace rvm64::decoder {
         { 0b0100111, stype  }, { 0b1100011, btype  }, { 0b0010111, utype  }, { 0b0110111, utype  }, { 0b1101111, jtype  },
     };
 
-    constexpr int32_t sign_extend(int32_t val, int bits) {
+    inline int32_t sign_extend(int32_t val, int bits) {
         int shift = 32 - bits;
         return (val << shift) >> shift;
     }
@@ -70,8 +70,8 @@ namespace rvm64::decoder {
     }
 
     // NOTE: annoying as fuck to read. just let GPT do the math and say fuck it.
-    inline int32_t imm_u(uint32_t opcode) { return opcode & 0xFFFFF000; }
-    inline int32_t imm_i(uint32_t opcode) { return (int32_t)opcode >> 20; }
+    inline int32_t imm_u(uint32_t opcode) { return (int32_t)opcode & 0xFFFFF000; }
+    inline int32_t imm_i(uint32_t opcode) { return (int32_t)sign_extend((opcode >> 20), 12); }
     inline int32_t imm_s(uint32_t opcode) { return sign_extend(((opcode >> 25) << 5) | ((opcode >> 7) & 0x1F), 12); }
 
     inline int32_t imm_b(uint32_t opcode) {

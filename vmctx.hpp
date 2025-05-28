@@ -4,6 +4,12 @@
 
 namespace rvm64::context {
     _function void vm_context_init() {
+		vmcs->dkey = __key; 
+		vmcs->handler = (uintptr_t)rvm64::operation::__handler;
+
+		vmcs->load_rsv_valid = false;
+		vmcs->load_rsv_addr = 0LL;
+
         // Fake implant context
         ctx = (hexane*) VirtualAlloc(nullptr, sizeof(ctx), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 

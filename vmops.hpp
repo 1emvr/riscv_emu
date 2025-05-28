@@ -439,6 +439,12 @@ namespace rvm64::operation {
 		}
 
 		_function void rv_jalr() {
+			/*
+				auipc    t0, %pcrel_hi(func)     # t0 = pc + upper 20 bits of func address
+    			jalr     ra, t0, %pcrel_lo(func) # jump to t0 + lower 12 bits of func, ra = pc+4
+    			# execution continues here after func returns
+			*/
+
 			uint8_t _rd = 0, _rs1 = 0; int32_t _imm = 0; uintptr_t address = 0;
 
 			scr_read(uint8_t, _rd, rd);
@@ -447,7 +453,7 @@ namespace rvm64::operation {
 
 			reg_read(uintptr_t, address, _rs1);
 			address += (intptr_t)_imm;
-			address &= ~1;
+			address &= ~((intptr_t)1);
 
 			reg_write(uintptr_t, _rd, vmcs->pc + 4);
 			vmcs->pc = address;
@@ -1513,13 +1519,15 @@ namespace rvm64::operation {
 
 		_function void rv_auipc() {
 			/*
-			   Description
-			   Build pc-relative addresses and uses the U-type format. AUIPC forms a 32-bit offset from the 20-bit U-immediate,
-			   filling in the lowest 12 bits with zeros, adds this offset to the pc, then places the result in register _rd.
+				auipc    t0, %pcrel_hi(func)     # t0 = pc + upper 20 bits of func address
+    			jalr     ra, t0, %pcrel_lo(func) # jump to t0 + lower 12 bits of func, ra = pc+4
+    			# execution continues here after func returns
+			*/
+			uint8_t _rd = 0; int32_t _imm = 0; 
 
-			   Implementation
-			   x[_rd] = pc + sext(immediate[31:12] << 12)
-			   */
+			scr_read(uint8_t, _rd, rd);
+			scr_read(int32_t, _imm, imm);
+			write_reg(int32_t, _rd, (int64_t)vmcs->pc + _imm);
 		}
 	}
 

@@ -43,7 +43,7 @@ typedef struct __hexane {
 #define NtCurrentThread()       ((HANDLE) (LONG_PTR) -2)
 
 #define VM_NATIVE_STACK_ALLOC   0x210
-#define PROCESS_MAX_CAPACITY    (1024 * 256)
+#define VM_PROCESS_PADDING      (1024 * 256)
 #define VSTACK_MAX_CAPACITY     (1024 * 1024)
 
 #define EXPONENT_MASK           0x7FF0000000000000ULL
@@ -51,18 +51,21 @@ typedef struct __hexane {
 
 
 typedef struct {
-    uintptr_t address;
-    size_t size;
+	uintptr_t address;
+	uintptr_t base_vaddr;
+	uintptr_t entry;
+	size_t vsize;
+	size_t size;
 } vm_memory_t;
 
 typedef struct {
     CONTEXT host_context;
     CONTEXT vm_context;
 
-    vm_memory_t program;
+    vm_memory_t data;
     vm_memory_t process;
-    uint32_t pc;
 
+    uintptr_t pc;
     uintptr_t handler;
     uintptr_t dkey;
 

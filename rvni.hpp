@@ -1,11 +1,15 @@
 #ifndef RVNI_H
 #define RVNI_H
+#include <unordered_map>
+
 #include "vmmain.hpp"
 #include "vmctx.hpp"
 
 namespace rvm64::rvni {
 	struct native_wrapper {
-		void* raw_ptr;  
+		void* address;  
+
+		// NOTE: function type index
 		enum typecaster {
 			FUNC_OPEN, FUNC_READ, FUNC_WRITE, FUNC_CLOSE,
 			FUNC_LSEEK, FUNC_STAT64, FUNC_MALLOC, FUNC_FREE,
@@ -13,6 +17,7 @@ namespace rvm64::rvni {
 			FUNC_UNKNOWN
 		} type;
 
+		// NOTE: function definitions available for casting
 		union {
 			int (*open)(const char*, int, int);
 			int (*read)(int, void*, unsigned int);
@@ -30,7 +35,19 @@ namespace rvm64::rvni {
 	};
 
 	_data std::unordered_map<void*, native_wrapper> ucrt_table; // NOTE: might cause compiler exception (unsure)
+																
+	struct ucrt_alias {
+		const char* original;
+		const char* alias;
+	};
 
+	_data const ucrt_alias alias_table[] = {
+		{ "open",  "_open"  }, { "read",  "_read"  }, { "write", "_write" },
+		{ "close", "_close" }, { "exit",  "_exit"  },
+	};
+
+
+	// NOTE: used to patch loaded elf .got/.plt with native ucrt functions (pseudo dynamic linker)
 	_function void* windows_thunk_resolver(const char* sym_name) {
 		static HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
 		if (!ucrt) {
@@ -39,12 +56,13 @@ namespace rvm64::rvni {
 			return nullptr;
 		}
 
-		// Alias table
-		if (strcmp(sym_name, "open") == 0) sym_name = "_open";
-		if (strcmp(sym_name, "read") == 0) sym_name = "_read";
-		if (strcmp(sym_name, "write") == 0) sym_name = "_write";
-		if (strcmp(sym_name, "close") == 0) sym_name = "_close";
-		if (strcmp(sym_name, "exit") == 0) sym_name = "_exit";
+		// NOTE: change common names that are aliased under ucrt
+		for (size_t i = 0; i < sizeof(alias_table) / sizeof(alias_table[0]); ++i) {
+			if (strcmp(sym_name, alias_table[i].original) == 0) {
+				sym_name = alias_table[i].alias;
+				break;
+			}
+		}
 
 		void* proc = (void*)GetProcAddress(ucrt, sym_name);
 		if (!proc) {
@@ -56,10 +74,13 @@ namespace rvm64::rvni {
 		return proc;
 	}
 
+	// NOTE: setup the ucrt_table during vm_init 
 	_function void resolve_ucrt_imports() {
 		HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
 
 		if (!ucrt) {
+			printf("ERR: could not load ucrtbase.dll\n");
+
 			vmcs->halt = 1;
 			vmcs->reason = vm_undefined;
 			return;
@@ -75,39 +96,46 @@ namespace rvm64::rvni {
 		};
 
 		for (auto& f : funcs) {
-			void* link = (void*)GetProcAddress(ucrt, f.name);
-			if (!link) {
-				printf("WARN: could not resolve %s\n", f.name);
-				continue;
+			void* native = (void*)GetProcAddress(ucrt, f.name);
+			if (!native) {
+				printf("ERR: could not resolve %s\n", f.name);
+
+				vmcs->halt = 1;
+				vmcs->reason = vm_undefined;
+				return;
 			}
 
 			native_wrapper wrap;
-			wrap.raw_ptr = link;
+			wrap.address = native;
 			wrap.type = f.type;
 
 			switch (f.type) {
-				case native_wrapper::FUNC_OPEN:    wrap.open = (decltype(wrap.open))link; break;
-				case native_wrapper::FUNC_READ:    wrap.read = (decltype(wrap.read))link; break;
-				case native_wrapper::FUNC_WRITE:   wrap.write = (decltype(wrap.write))link; break;
-				case native_wrapper::FUNC_CLOSE:   wrap.close = (decltype(wrap.close))link; break;
-				case native_wrapper::FUNC_LSEEK:   wrap.lseek = (decltype(wrap.lseek))link; break;
-				case native_wrapper::FUNC_STAT64:  wrap.stat64 = (decltype(wrap.stat64))link; break;
-				case native_wrapper::FUNC_MALLOC:  wrap.malloc = (decltype(wrap.malloc))link; break;
-				case native_wrapper::FUNC_FREE:    wrap.free = (decltype(wrap.free))link; break;
-				case native_wrapper::FUNC_MEMCPY:  wrap.memcpy = (decltype(wrap.memcpy))link; break;
-				case native_wrapper::FUNC_MEMSET:  wrap.memset = (decltype(wrap.memset))link; break;
-				case native_wrapper::FUNC_STRLEN:  wrap.strlen = (decltype(wrap.strlen))link; break;
-				case native_wrapper::FUNC_STRCPY:  wrap.strcpy = (decltype(wrap.strcpy))link; break;
+				case native_wrapper::FUNC_OPEN:    wrap.open = (decltype(wrap.open))native; break;
+				case native_wrapper::FUNC_READ:    wrap.read = (decltype(wrap.read))native; break;
+				case native_wrapper::FUNC_WRITE:   wrap.write = (decltype(wrap.write))native; break;
+				case native_wrapper::FUNC_CLOSE:   wrap.close = (decltype(wrap.close))native; break;
+				case native_wrapper::FUNC_LSEEK:   wrap.lseek = (decltype(wrap.lseek))native; break;
+				case native_wrapper::FUNC_STAT64:  wrap.stat64 = (decltype(wrap.stat64))native; break;
+				case native_wrapper::FUNC_MALLOC:  wrap.malloc = (decltype(wrap.malloc))native; break;
+				case native_wrapper::FUNC_FREE:    wrap.free = (decltype(wrap.free))native; break;
+				case native_wrapper::FUNC_MEMCPY:  wrap.memcpy = (decltype(wrap.memcpy))native; break;
+				case native_wrapper::FUNC_MEMSET:  wrap.memset = (decltype(wrap.memset))native; break;
+				case native_wrapper::FUNC_STRLEN:  wrap.strlen = (decltype(wrap.strlen))native; break;
+				case native_wrapper::FUNC_STRCPY:  wrap.strcpy = (decltype(wrap.strcpy))native; break;
 				default:                       break;
 			}
 
-			ucrt_table[link] = wrap;
+			ucrt_table[native] = wrap;
 		}
 	}
 
+	// NOTE: traps auipc -> jalr calls
+	/*
+	  	auipc t0, %pcrel_hi(symbol)
+		jalr t1, %pcrel_lo(symbol)(t0)
+	 */
+
 	_function void vm_trap_exit() {
-		// NOTE: Native functions will be resolved to ucrt_table during vm_init. When the elf is loaded .got/.plt will be linked with native functions and resolved/called from here.
-		//
 		uintptr_t start = vmcs->process.address; 
 		uintptr_t end = start + vmcs->process.size;
 
@@ -121,7 +149,7 @@ namespace rvm64::rvni {
 			}
 
 			native_wrapper& nat = it->second;
-			rvm64::context::save_vm_context(); // guard against unexpected behavior
+			rvm64::context::save_vm_context(); // NOTE: guard against unexpected behavior by saving registers bc unsure
 
 			switch (nat.type) {
 				case native_wrapper::FUNC_OPEN: 
@@ -261,11 +289,11 @@ namespace rvm64::rvni {
 			}
 		}				
 
-		rvm64::context::restore_vm_context();
+		rvm64::context::restore_vm_context(); // NOTE: restore native registers
 		uintptr_t ret = 0;
 
 		reg_read(uintptr_t, ret, regenum::ra);
-		vmcs->pc = ret;
+		vmcs->pc = ret; // NOTE: step to old_pc + 4
 	}
 }
 #endif // RVNI_H

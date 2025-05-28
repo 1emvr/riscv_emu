@@ -8,51 +8,54 @@
 #include "vmmain.hpp"
 #include "vmelf.hpp"
 
-_function bool read_program_from_packet() {
-	BOOL success = false;
-	DWORD bytes_read = 0;
+namespace mock {
+	_function bool read_program_from_packet() {
+		BOOL success = false;
+		DWORD bytes_read = 0;
 
-	HANDLE hfile = ctx->win32.NtCreateFile("./test.o", 
-			GENERIC_READ, FILE_SHARE_READ, NULL, 
-			OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		HANDLE hfile = ctx->win32.NtCreateFile("./test.o", GENERIC_READ, FILE_SHARE_READ, NULL, 
+				OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
-	if (hfile == INVALID_HANDLE_VALUE) {
-		vmcs->reason = vm_undefined;
-		vmcs->halt = 1;
-		goto defer;
-	}
+		if (hfile == INVALID_HANDLE_VALUE) { // NOTE: since not reading from the netowrk, this can only pass/fail - exit immediately
+			vmcs->reason = vm_undefined;
+			vmcs->halt = 1;
+			goto defer;
+		}
 
-	vmcs->reason = ctx->win32.NtGetFileSize(hfile, (LPDWORD) &vmcs->program.size);
+		vmcs->reason = ctx->win32.NtGetFileSize(hfile, (LPDWORD) &vmcs->data.size);
 
-	if (vmcs->reason == INVALID_FILE_SIZE || vmcs->program.size == 0) {
-		vmcs->halt = 1;
-		goto defer;
-	}
+		if (vmcs->reason == INVALID_FILE_SIZE || vmcs->data.size == 0) {
+			vmcs->halt = 1;
+			goto defer;
+		}
 
-	if (!NT_SUCCESS(vmcs->reason = ctx->win32.NtAllocateVirtualMemory(
-					NtCurrentProcess(), (LPVOID*) &vmcs->program.address, 0, 
-					&vmcs->program.size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE))) {
-		vmcs->halt = 1;
-		goto defer;
-	}
+		if (!ctx->win32.NtReadFile(hfile, (LPVOID)vmcs->data.address, vmcs->data.size, &bytes_read, NULL) || 
+				bytes_read != vmcs->data.size) {
 
-	if (!ctx->win32.NtReadFile(hfile, (LPVOID)vmcs->program.address, vmcs->program.size, &bytes_read, NULL) || 
-			bytes_read != vmcs->program.size) {
+			vmcs->halt = 1;
+			vmcs->reason = vm_undefined;
+			goto defer;
+		}
 
-		vmcs->halt = 1;
-		vmcs->reason = vm_undefined;
-		goto defer;
-	}
+		if (!rvm64::memory::vm_mem_init(vmcs->data.size + VM_PROCESS_PADDING) ||
+				!rvm64::elf::load_elf64_image((void*)vmcs->data.address, vmcs->data.size) ||
+				!rvm64::elf::patch_elf64_imports()) {
 
-	rvm64::elf::load_elf64_image();
-	rvm64::elf::patch_elf64_imports();
+			vmcs->halt = 1;
+			vmcs->reason = vm_undefined;
+			goto defer;
+		}
 
 defer:
-	if (vmcs->program.address) {
-		ctx->win32.NtFreeVirtualMemory(NtCurrentProcess(), (LPVOID*) &vmcs->program.address, &vmcs->program.size, MEM_RELEASE);
+		if (hfile) {
+			CloseHandle((HANDLE)hfile);
+		}
+		if (vmcs->data.address) {
+			ctx->win32.NtFreeVirtualMemory(NtCurrentProcess(), (LPVOID*) &vmcs->data.address, &vmcs->data.size, MEM_RELEASE);
+			vmcs->data.address = 0;
+			vmcs->data.size = 0;
+		}
+		return success;
 	}
-
-	vmcs->program.address = 0;
-	return success;
-}
+};
 #endif // MOCK_H

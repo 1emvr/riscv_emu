@@ -11,39 +11,39 @@
 
 namespace rvm64 {
 
-    _function void vm_entry(void) {
-		rvm64::rvni::resolve_ucrt_imports();
+	_function void vm_entry(void) {
+		while (!vmcs->halt) {
+			int32_t opcode = *(int32_t*) vmcs->pc;
 
-        while (!vmcs->halt) {
-            int32_t opcode = *(int32_t*) vmcs->pc;
-            rvm64::decoder::vm_decode(opcode);
+			rvm64::decoder::vm_decode(opcode);
 
 			if (!vmcs->step) {
-				rvm64::rvni::vm_trap_exit();
+				rvm64::rvni::vm_trap_exit(); // NOTE: VM_EXIT steps pc by 4
 				continue;
 			}
 
-			vmcs->pc += 4; // step while-not j/b-instruction
-        }
-    }
+			vmcs->pc += 4; 
+		}
+	}
 
-    _function int64_t vm_main(void) {
-        vmcs_t vm_instance = { };
-        vmcs= &vm_instance;
+	_function int64_t vm_main(void) {
+		vmcs_t vm_instance = { };
+		vmcs = &vm_instance;
 
-        rvm64::memory::vm_init(); // initialize the process space. Make sure "read_program" checks boundaries (process->size >= program->size).
-				  
-        while(!vmcs->halt) {
-            if (!read_program_from_packet()) { // continue reading until successful
-                continue;
-            }
-        };
+		rvm64::context::vm_context_init();
+		rvm64::rvni::resolve_ucrt_imports(); // TODO: move outside of rvm64
 
-        rvm64::vm_entry();
-        rvm64::memory::vm_end();
+		while(!vmcs->halt) { // NOTE: continue until program packet is read or halt
+			if (!mock::read_program_from_packet()) { 
+				continue;
+			}
 
-        return vmcs->reason;
-    }
+			rvm64::vm_entry();
+			break;
+		};
+
+		return (int64_t)vmcs->reason;
+	}
 };
 
 int main() {

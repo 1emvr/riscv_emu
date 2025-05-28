@@ -1,22 +1,45 @@
 #ifndef VMELF_H
 #define VMELF_H
-
-#define ELF64_R_SYM(i) ((i) >> 32)
-#define ELF64_R_TYPE(i) ((uint32_t)(i))
-
-#define EI_NIDENT 16
-#define PT_LOAD 1
-#define ET_EXEC 2
-#define ET_DYN  3
-
 #include <windows.h>
 #include <cstdio>
 #include <cstdint>
-#include <unordered_map>
 
 #include "vmmain.hpp"
 #include "rvni.hpp"
 
+
+#define EI_MAG0     0   // 0x7F
+#define EI_MAG1     1   // 'E'
+#define EI_MAG2     2   // 'L'
+#define EI_MAG3     3   // 'F'
+#define EI_CLASS    4   // File class
+#define EI_DATA     5   // Data encoding
+#define EI_VERSION  6   // File version
+#define EI_OSABI    7   // OS/ABI identification
+#define EI_ABIVERSION 8 // ABI version
+#define EI_PAD      9   // Start of padding bytes (up to 16)
+#define EI_NIDENT   16  // Size of e_ident[]
+
+#define ELFCLASS32 1
+#define ELFCLASS64 2
+
+#define ET_NONE    0 // No file type
+#define ET_REL     1 // Relocatable file
+#define ET_EXEC    2 // Executable file
+#define ET_DYN     3 // Shared object file
+#define ET_CORE    4 // Core file
+
+#define EM_NONE    0
+#define EM_RISCV   243 // RISC-V target
+
+#define PT_NULL    0
+#define PT_LOAD    1
+#define PT_DYNAMIC 2
+#define PT_INTERP  3
+#define PT_NOTE    4
+#define PT_SHLIB   5
+#define PT_PHDR    6
+#define PT_TLS     7
 
 typedef struct {
     uint8_t  e_ident[EI_NIDENT]; // ELF magic, class, data, etc.
@@ -33,7 +56,7 @@ typedef struct {
     uint16_t e_shentsize;
     uint16_t e_shnum;
     uint16_t e_shstrndx;
-} e_ehdr;
+} elf64_ehdr;
 
 typedef struct {
     uint32_t p_type;
@@ -44,12 +67,12 @@ typedef struct {
     uint64_t p_filesz;   // Bytes in file
     uint64_t p_memsz;    // Bytes in memory
     uint64_t p_align;
-} e_phdr;
+} elf64_phdr;
 
 typedef struct {
     uint64_t r_offset;
     uint64_t r_info;
-} e_rel;
+} elf64_rel;
 
 typedef struct {
     uint32_t st_name;
@@ -58,7 +81,7 @@ typedef struct {
     uint16_t st_shndx;
     uint64_t st_value;
     uint64_t st_size;
-} e_sym;
+} elf64_sym;
 
 typedef struct {
     int64_t d_tag;
@@ -66,90 +89,77 @@ typedef struct {
         uint64_t d_val;
         uint64_t d_ptr;
     } d_un;
-} e_dyn;
+} elf64_dyn;
 
-// TODO: get rid of this shit. add someone else's implementation if needed.
+typedef uint64_t elf64_addr;   // Unsigned program address
+typedef uint64_t elf64_off;    // Unsigned file offset
+typedef uint16_t elf64_half;   // Unsigned medium integer
+typedef uint32_t elf64_word;   // Unsigned integer
+typedef int32_t  elf64_sword;  // Signed integer
+typedef uint64_t elf64_xword;  // Unsigned long integer
+typedef int64_t  elf64_sxword; // Signed long integer
+
+#define ELF64_R_SYM(info)    	((info) >> 32)   // Extract symbol index from relocation info
+#define ELF64_R_TYPE(info)   	((info) & 0xFFFFFFFF)   // Extract relocation type from relocation info
+#define ELF64_R_INFO(S, T) 		((((elf64_xword)(S)) << 32) + (T))  // Construct relocation info from symbol index and type
+																
+#define ELF64_ST_BIND(info)   	((info) >> 4)
+#define ELF64_ST_TYPE(info)   	((info) & 0xF)
+#define ELF64_ST_INFO(B, T) 	(((B) << 4) + ((T) & 0xF))
+
+#define R_RISCV_NONE          	0
+#define R_RISCV_32             	1   // Direct 32-bit
+#define R_RISCV_64             	2   // Direct 64-bit
+#define R_RISCV_RELATIVE       	3   // Adjust by program base
+#define R_RISCV_COPY           	4   // Copy symbol at runtime
+#define R_RISCV_JUMP_SLOT      	5   // Create PLT entry
+#define R_RISCV_TLS_DTPMOD32   	6
+#define R_RISCV_TLS_DTPMOD64   	7
+#define R_RISCV_TLS_DTPREL32   	8
+#define R_RISCV_TLS_DTPREL64   	9
+#define R_RISCV_TLS_TPREL32   	10
+#define R_RISCV_TLS_TPREL64   	11
+#define R_RISCV_BRANCH        	16   // PC-relative branch
+#define R_RISCV_JAL           	17   // PC-relative jump (J-type)
+#define R_RISCV_CALL          	18   // Call (with register save)
+#define R_RISCV_CALL_PLT      	19   // PLT call
+#define R_RISCV_GOT_HI20      	20   // High 20 bits of GOT address
+#define R_RISCV_TLS_GOT_HI20  	21
+#define R_RISCV_TLS_GD_HI20   	22
+#define R_RISCV_PCREL_HI20    	23   // High 20 bits PC-relative
+#define R_RISCV_PCREL_LO12_I  	24   // Low 12 bits for I-type
+#define R_RISCV_PCREL_LO12_S  	25   // Low 12 bits for S-type
+#define R_RISCV_HI20          	26   // High 20 bits of absolute address
+#define R_RISCV_LO12_I        	27   // Low 12 bits of absolute address (I-type)
+#define R_RISCV_LO12_S        	28   // Low 12 bits of absolute address (S-type)
+#define R_RISCV_TPREL_HI20    	29
+#define R_RISCV_TPREL_LO12_I  	30
+#define R_RISCV_TPREL_LO12_S  	31
+#define R_RISCV_RELAX         	51   // Instruction can be relaxed
+#define R_RISCV_ALIGN         	52   // Alignment hint
+
+#ifndef MIN
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#endif
+
+#ifndef MAX
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#endif
+
+
 namespace rvm64::elf {
-    _function bool load_elf64_image(void) {
-        if (!vmcs->program.address || !vmcs->process.address) {
-            return false;
-        }
-
-        e_ehdr* e_head = (e_ehdr*)vmcs->program.address;
-        if (!(e_head->e_ident[0] == 0x7F &&
-              e_head->e_ident[1] == 'E' &&
-              e_head->e_ident[2] == 'L' &&
-              e_head->e_ident[3] == 'F'))
-        {
-            return false;
-        }
-
-        if (e_head->e_type != ET_EXEC) {
-            return false;
-        }
-
-        e_phdr* p_heads = (e_phdr*)(vmcs->program.address + e_head->e_phoff);
-        uint64_t base_vaddr = UINT64_MAX; // TODO: consider changing this to UINTPTR_MAX
-
-        for (int i = 0; i < e_head->e_phnum; i++) {
-            if (p_heads[i].p_type == PT_LOAD && p_heads[i].p_filesz > 0) {
-                if (p_heads[i].p_vaddr < base_vaddr) {
-                    base_vaddr = p_heads[i].p_vaddr;
-                }
-            }
-        }
-
-        if (base_vaddr == UINT64_MAX) {
-            return false;
-        }
-
-        for (int i = 0; i < e_head->e_phnum; i++) {
-            e_phdr *ph = &p_heads[i];
-
-            if (ph->p_vaddr < base_vaddr) { // NOTE: do we really need to check this twice?
-                return false;
-            }
-
-            uint64_t offset = ph->p_vaddr - base_vaddr;
-            if (ph->p_type != PT_LOAD) {
-                continue;
-            }
-
-            if (offset + ph->p_memsz > vmcs->process.size) {
-                printf("ERROR: Segment out of bounds: offset 0x%llx memsz 0x%llx > vmcs->process.address size 0x%zx - Consider increasing vram.\n", offset, ph->p_memsz, vmcs->process.size);
-
-				vmcs->halt = 1;
-				vmcs->reason = vm_stack_overflow;
-                return false;
-            }
-
-            void *src = (void*) (vmcs->program.address + ph->p_offset);
-            void *dst = (void*) (vmcs->process.address + offset);
-
-            memcpy(dst, src, ph->p_filesz);
-
-            if (ph->p_memsz > ph->p_filesz) {
-                memset((uint8_t*) (dst + ph->p_filesz), 0, ph->p_memsz - ph->p_filesz);
-            }
-        }
-
-        vmcs->pc = vmcs->process.address + (e_head->e_entry - base_vaddr);
-        return true;
-    }
-
-	_function bool patch_elf64_imports(void) {
-		e_ehdr* ehdr = (e_ehdr*)vmcs->process.address;
+	_function bool patch_elf64_imports() {
+		auto* ehdr (elf64_ehdr*)(vmcs->process.address);
 
 		if (ehdr->e_type != ET_EXEC && ehdr->e_type != ET_DYN) {
 			return false;
 		}
 
-		e_phdr* phdrs = (e_phdr*)((uint8_t*)vmcs->process.address + ehdr->e_phoff);
+		auto* phdrs = (e_phdr*) ((uint8_t*)(vmcs->process.address) + ehdr->e_phoff); // NOTE: find the elf "program headers"
+		elf64_addr dyn_vaddr = 0;
+		elf64_xword dyn_size = 0;
 
-		uint64_t dyn_vaddr = 0;
-		size_t dyn_size = 0;
-
-		for (int i = 0; i < ehdr->e_phnum; i++) {
+		for (int i = 0; i < ehdr->e_phnum; ++i) { 
 			if (phdrs[i].p_type == PT_DYNAMIC) {
 				dyn_vaddr = phdrs[i].p_vaddr;
 				dyn_size = phdrs[i].p_memsz;
@@ -160,56 +170,117 @@ namespace rvm64::elf {
 			return false;
 		}
 
-		e_dyn* dyn_entries = (e_dyn*)((uint8_t*)vmcs->process.address + dyn_vaddr);
+		auto* dyn_entries = (elf64_dyn*) ((uint8_t*)vmcs->process.address + dyn_vaddr); // NOTE: find the "elf import table" (??)
+		elf64_addr symtab_vaddr = 0, strtab_vaddr = 0, rela_plt_vaddr = 0;
+		elf64_xword rela_plt_size = 0, syment_size = 0;
 
-		uint64_t symtab_vaddr = 0, strtab_vaddr = 0, relplt_vaddr = 0;
-		size_t relplt_size = 0, syment_size = 0;
-
-		for (e_dyn* dyn = dyn_entries; dyn->d_tag != DT_NULL; dyn++) {
+		for (elf64_dyn* dyn = dyn_entries; dyn->d_tag != DT_NULL; ++dyn) { // NOTE: resolve string/symbol/relative tables (?)
 			switch (dyn->d_tag) {
-				case DT_SYMTAB: 	symtab_vaddr = dyn->d_un.d_ptr; break;
-				case DT_STRTAB: 	strtab_vaddr = dyn->d_un.d_ptr; break;
-				case DT_SYMENT: 	syment_size = dyn->d_un.d_val;  break;
-				case DT_JMPREL: 	relplt_vaddr = dyn->d_un.d_ptr; break;
-				case DT_PLTRELSZ: 	relplt_size = dyn->d_un.d_val;  break;
+				case DT_SYMTAB:   symtab_vaddr = dyn->d_un.d_ptr; break;
+				case DT_STRTAB:   strtab_vaddr = dyn->d_un.d_ptr; break;
+				case DT_SYMENT:   syment_size = dyn->d_un.d_val;  break;
+				case DT_JMPREL:   rela_plt_vaddr = dyn->d_un.d_ptr; break;
+				case DT_PLTRELSZ: rela_plt_size = dyn->d_un.d_val; break;
 				case DT_PLTREL:
-									{
-										if (dyn->d_un.d_val != DT_REL) {
-											printf("ERROR: Only DT_REL supported in PLT relocations.\n");
-											return false;
-										}
-										break;
-									}
+					{
+						if (dyn->d_un.d_val != DT_RELA) {
+							printf("ERROR: Only DT_RELA supported for PLT relocations.\n");
+							return false;
+						}
+						break;
+					}
 			}
 		}
 
-		if (!symtab_vaddr || !strtab_vaddr || !relplt_vaddr || !relplt_size) {
+		if (!symtab_vaddr || !strtab_vaddr || !rela_plt_vaddr || !rela_plt_size) { 
 			return false;
 		}
 
-		e_rel* rel_entries = (e_rel*)((uint8_t*)vmcs->process.address + relplt_vaddr);
-		e_sym* symtab = (e_sym*)((uint8_t*)vmcs->process.address + symtab_vaddr);
+		auto* rela_entries = (elf64_rela*) ((uint8_t*)vmcs->process.address + rela_plt_vaddr);
+		auto* symtab = (elf64_sym*) ((uint8_t*)vmcs->process.address + symtab_vaddr);
+		const char* strtab = (const char*) ((uint8_t*)vmcs->process.address + strtab_vaddr);
+		size_t rela_count = rela_plt_size / sizeof(elf64_rela);
 
-		const char* strtab = (const char*)((uint8_t*)vmcs->process.address + strtab_vaddr);
-		size_t rel_count = relplt_size / sizeof(e_rel);
+		for (size_t i = 0; i < rela_count; ++i) {
+			uint32_t sym_idx = ELF64_R_SYM(rela_entries[i].r_info);
+			uint32_t r_type = ELF64_R_TYPE(rela_entries[i].r_info);
 
-		for (size_t i = 0; i < rel_count; i++) {
-			uint32_t sym_idx = ELF64_R_SYM(rel_entries[i].r_info);
-			uint32_t r_type  = ELF64_R_TYPE(rel_entries[i].r_info);
-
+			elf64_addr* reloc_addr = (elf64_addr*) ((uint8_t*)vmcs->process.address + rela_entries[i].r_offset);
 			const char* sym_name = strtab + symtab[sym_idx].st_name;
-			void* win_func = rvm64::rvni::windows_thunk_resolver(sym_name);
 
+			if (r_type != R_RISCV_JUMP_SLOT && r_type != R_RISCV_CALL_PLT) {
+				printf("WARN: Unsupported relocation type: %u\n", r_type);
+				continue;
+			}
+
+			void* win_func = rvm64::rvni::windows_thunk_resolver(sym_name);
 			if (!win_func) {
 				printf("WARN: unresolved import: %s\n", sym_name);
 				continue;
 			}
-			
-			// NOTE: patching .got/.plt with win32 wrapper
-			LPVOID* reloc_addr = (LPVOID*)((uint8_t*) vmcs->process.address + rel_entries[i].r_offset);
-			*reloc_addr = win_func; // PATCH
+
+			*reloc_addr = (elf64_addr)(win_func);
 		}
 
+		return true;
+	}
+
+	_function bool load_elf64_image(void* image_data, size_t image_size) {
+		elf64_ehdr* ehdr = (elf64_ehdr*)(image_data);
+
+		if (ehdr->e_ident[0] != 0x7F || 
+				ehdr->e_ident[1] != 'E' || 
+				ehdr->e_ident[2] != 'L' || 
+				ehdr->e_ident[3] != 'F') {
+
+			printf("ERROR: Invalid ELF magic.\n");
+			return false;
+		}
+
+		if (ehdr->e_ident[EI_CLASS] != ELFCLASS64 || ehdr->e_machine != EM_RISCV) {
+			printf("ERROR: Unsupported ELF format or architecture.\n");
+			return false;
+		}
+
+		e_phdr* phdrs = (elf64_phdr*) ((uint8_t*)image_data + ehdr->e_phoff);
+		uint64_t base = UINT64_MAX;
+		uint64_t limit = 0;
+
+		for (int i = 0; i < ehdr->e_phnum; ++i) {
+			if (phdrs[i].p_type == PT_LOAD) {
+				base = MIN(base, phdrs[i].p_vaddr); // NOTE: find the process address space
+				limit = MAX(limit, phdrs[i].p_vaddr + phdrs[i].p_memsz);
+			}
+		}
+
+		if (base == UINT64_MAX || limit <= base) {
+			printf("ERROR: No loadable segments found.\n");
+			return false;
+		}
+
+		size_t image_size = limit - base;
+
+		// NOTE: map segments
+		for (int i = 0; i < ehdr->e_phnum; ++i) {
+			if (phdrs[i].p_type != PT_LOAD) {
+				continue;
+			}
+
+			void* dest = (uint8_t*)vmcs->process.address + (phdrs[i].p_vaddr - base);
+			void* src = (uint8_t*)image_data + phdrs[i].p_offset;
+
+			memcpy(dest, src, phdrs[i].p_filesz);
+
+			if (phdrs[i].p_memsz > phdrs[i].p_filesz) {
+				memset((uint8_t*)dest + phdrs[i].p_filesz, 0, phdrs[i].p_memsz - phdrs[i].p_filesz);
+			}
+		}
+
+		vmcs->process.vsize = image_size;
+		vmcs->process.base_vaddr = base;
+		vmcs->process.entry = (uintptr_t)vmcs->process.address + (ehdr->e_entry - base);
+
+		vmcs->pc = vmcs->process.entry;
 		return true;
 	}
 };
