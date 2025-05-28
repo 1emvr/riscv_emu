@@ -26,29 +26,6 @@ typedef struct __hexane {
     } win32;
 } hexane;
 
-#ifdef __x86_64__
-#define PTR_SIZE 8
-#else
-#define PTR_SIZE 4
-#endif
-
-#define _extern   extern "C"
-#define _function //__attribute__((section(".text$B")))
-#define _rdata    __attribute__((section(".rdata")))
-#define _data     __attribute__((section(".data")))
-#define _used     __attribute__((used))
-
-#define NT_SUCCESS(status)      ((status) >= 0)
-#define NtCurrentProcess()      ((HANDLE) (LONG_PTR) -1)
-#define NtCurrentThread()       ((HANDLE) (LONG_PTR) -2)
-
-#define VM_NATIVE_STACK_ALLOC   0x210
-#define VM_PROCESS_PADDING      (1024 * 256)
-#define VSTACK_MAX_CAPACITY     (1024 * 1024)
-
-#define EXPONENT_MASK           0x7FF0000000000000ULL
-#define FRACTION_MASK           0x000FFFFFFFFFFFFFULL
-
 typedef struct {
 	uintptr_t start;
 	uintptr_t end;
@@ -86,17 +63,28 @@ typedef struct {
     uint32_t step;
 } vmcs_t;
 
-_data hexane *ctx = nullptr;
-_data vmcs_t *vmcs = nullptr;
-_data HANDLE vmcs_mutex = 0;
+#ifdef __x86_64__
+#define PTR_SIZE 8
+#else
+#define PTR_SIZE 4
+#endif
 
-_data uintptr_t __stack_cookie = { };
-_rdata const uintptr_t __key = 0;
+#define _extern   extern "C"
+#define _function //__attribute__((section(".text$B")))
+#define _rdata    __attribute__((section(".rdata")))
+#define _data     __attribute__((section(".data")))
+#define _used     __attribute__((used))
 
-namespace rvm64 {
-    _function void vm_entry();
-    _function int64_t vm_main();
-};
+#define NT_SUCCESS(status)      ((status) >= 0)
+#define NtCurrentProcess()      ((HANDLE) (LONG_PTR) -1)
+#define NtCurrentThread()       ((HANDLE) (LONG_PTR) -2)
+
+#define VM_NATIVE_STACK_ALLOC   0x210
+#define VM_PROCESS_PADDING      (1024 * 256)
+#define VSTACK_MAX_CAPACITY     (1024 * 1024)
+
+#define EXPONENT_MASK           0x7FF0000000000000ULL
+#define FRACTION_MASK           0x000FFFFFFFFFFFFFULL
 
 #define mem_read(T, retval, addr)                                               	\
 	do {						                                                	\
@@ -152,7 +140,7 @@ namespace rvm64 {
 
 #define scr_read(T, dst, src)														\
 	do {																			\
-		if (src > skrenum::imm) {													\
+		if (src > screnum::imm) {													\
 			vmcs->halt = 1;															\
 			vmcs->reason = vm_access_violation;										\
 			return;                                         						\
@@ -162,7 +150,7 @@ namespace rvm64 {
 
 #define scr_write(T, dst, src)														\
 	do {																			\
-		if (dst > skrenum::imm) {													\
+		if (dst > screnum::imm) {													\
 			vmcs->halt = 1;															\
 			vmcs->reason = vm_access_violation;										\
 			return;                                         						\
@@ -178,6 +166,18 @@ namespace rvm64 {
 		fn();																		\
 	} while(0)
 
+_data hexane *ctx = nullptr;
+_data vmcs_t *vmcs = nullptr;
+_data HANDLE vmcs_mutex = 0;
+
+_data uintptr_t __stack_cookie = 0;
+_rdata const uintptr_t __key = 0;
+
+namespace rvm64 {
+    _function void vm_entry();
+    _function int64_t vm_main();
+};
+
 enum vm_reason {
 	vm_ok,
 	vm_illegal_op,
@@ -191,7 +191,7 @@ enum vm_reason {
 	vm_debug_break,
 };
 
-enum skrenum {
+enum screnum {
     rd, rs1, rs2, rs3, imm,
 };
 
@@ -204,7 +204,7 @@ enum regenum {
 };
 
 enum typenum {
-	rtype = 1, r4type, itype, stype, btype, utype, jtype, ftype,
+	rtype = 1, r4type, itype, stype, btype, utype, jtype,
 };
 
 #endif //VMCS_H
