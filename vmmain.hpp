@@ -41,12 +41,6 @@ typedef struct {
 } vm_memory_t;
 
 typedef struct {
-    CONTEXT host_context;
-    CONTEXT vm_context;
-
-    vm_memory_t data;
-    vm_memory_t process;
-
     uintptr_t pc;
     uintptr_t handler;
     uintptr_t dkey;
@@ -54,6 +48,12 @@ typedef struct {
     uintptr_t vscratch[32];
     uintptr_t vregs[32];
     uintptr_t vstack[VSTACK_MAX_CAPACITY];
+
+    CONTEXT host_context;
+    CONTEXT vm_context;
+
+    vm_memory_t data;
+    vm_memory_t process;
 
     volatile uintptr_t load_rsv_addr;
     volatile int load_rsv_valid;
