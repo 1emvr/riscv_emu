@@ -22,7 +22,6 @@ namespace rvm64::operation {
 		return (exponent == 0x7FF) && (fraction != 0);
 	}
 
-	// i-type
 	namespace itype {
 		__vmcall void rv_lrw() {
 			uint8_t _rd = 0, _rs1 = 0; uintptr_t address = 0; int32_t value = 0;
@@ -570,7 +569,6 @@ namespace rvm64::operation {
 		}
 	}
 
-	// r-type
 	namespace rtype {
 		__vmcall void rv_scw() {
 			uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; uintptr_t address = 0; int32_t value = 0;
