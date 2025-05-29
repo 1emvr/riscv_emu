@@ -13,7 +13,7 @@ namespace rvm64::operation {
 		uint64_t u;
 	} converter;
 
-	bool is_nan(double x) {
+	__vmcall bool is_nan(double x) {
 		converter.d = x;
 
 		uint64_t exponent = (converter.u & EXPONENT_MASK) >> 52;
@@ -33,8 +33,10 @@ namespace rvm64::operation {
 			reg_read(uintptr_t, address, _rs1);
 
 			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+
 			mem_read(int32_t, value, address);
 			reg_write(int32_t, _rd, value);
+
 			ctx->win32.NtReleaseMutex(vmcs_mutex);
 		}
 
@@ -47,8 +49,10 @@ namespace rvm64::operation {
 			reg_read(uintptr_t, address, _rs1);
 
 			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+
 			mem_read(int64_t, value, address);
 			reg_write(int64_t, _rd, value);
+
 			ctx->win32.NtReleaseMutex(vmcs_mutex);
 		}
 
@@ -122,7 +126,7 @@ namespace rvm64::operation {
 			reg_write(double, _rd, v1);
 		}
 
-		// NOTE: maybe an I_TYPE
+		// NOTE: maybe not even real...
 		__vmcall void rv_fclass_d() {
 			uint8_t _rd = 0, _rs1 = 0; double v1 = 0;
 
@@ -430,6 +434,7 @@ namespace rvm64::operation {
 			// TODO
 		}
 
+		// NOTE: fence instructions aren't needed rn.
 		__vmcall void rv_fence() {
 			// TODO
 		}
@@ -439,12 +444,6 @@ namespace rvm64::operation {
 		}
 
 		__vmcall void rv_jalr() {
-			/*
-				auipc    t0, %pcrel_hi(func)     # t0 = pc + upper 20 bits of func address
-    			jalr     ra, t0, %pcrel_lo(func) # jump to t0 + lower 12 bits of func, ra = pc+4
-    			# execution continues here after func returns
-			*/
-
 			uint8_t _rd = 0, _rs1 = 0; int32_t _imm = 0; uintptr_t address = 0;
 
 			scr_read(uint8_t, _rd, rd);
@@ -461,7 +460,7 @@ namespace rvm64::operation {
 		}
 
 		__vmcall void rv_ecall() {
-			// TODO
+			// TODO: block all system calls.
 			/*
 			   Description
 			   Make a request to the supporting execution environment.
@@ -480,11 +479,12 @@ namespace rvm64::operation {
 
 			   Save register and program state
 			   */
-			rvm64::context::save_vm_context();
+			// rvm64::context::save_vm_context();
 			// rvm64::context::decode_syscall();
 			// rvm64::context::setup_arguments();
 			// rvm64::context::vm_exit();
-			rvm64::context::restore_vm_context();
+			// rvm64::context::restore_vm_context();
+
 		}
 
 		__vmcall void rv_ebreak() {
@@ -499,6 +499,7 @@ namespace rvm64::operation {
 			__debugbreak();
 		}
 
+		// NOTE: csr operations aren't needed rn.
 		__vmcall void rv_csrrw() {
 			/*
 			   Description
@@ -583,8 +584,10 @@ namespace rvm64::operation {
 
 			if (rvm64::atom::vm_check_load_rsv(0, address)) {
 				rvm64::atom::vm_set_load_rsv(0, address);
+
 				mem_write(int32_t, address, value);
 				reg_write(int32_t, _rd, 0);
+
 				rvm64::atom::vm_clear_load_rsv(0);
 			} else {
 				reg_write(int32_t, _rd, 1);
@@ -603,8 +606,10 @@ namespace rvm64::operation {
 
 			if (!rvm64::atom::vm_check_load_rsv(0, address)) {
 				rvm64::atom::vm_set_load_rsv(0, address);
+
 				mem_write(int64_t, address, value);
 				reg_write(int64_t, _rd, 0);
+
 				rvm64::atom::vm_clear_load_rsv(0);
 			} else {
 				reg_write(int64_t, _rd, 1);
@@ -1199,9 +1204,11 @@ namespace rvm64::operation {
 			reg_read(int64_t, v2, _rs2);
 
 			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+
 			mem_read(int64_t, v1, address);
 			mem_write(int64_t, address, v2);
 			reg_write(int64_t, _rd, v1);
+
 			ctx->win32.NtReleaseMutex(vmcs_mutex);
 		}
 
@@ -1216,9 +1223,11 @@ namespace rvm64::operation {
 			reg_read(int64_t, v2, _rs2);
 
 			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+
 			mem_read(int64_t, v1, address);
 			mem_write(int64_t, address, (v1 + v2));
 			reg_write(int64_t, _rd, v1);
+
 			ctx->win32.NtReleaseMutex(vmcs_mutex);
 		}
 
@@ -1233,9 +1242,11 @@ namespace rvm64::operation {
 			reg_read(int64_t, v2, _rs2);
 
 			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+
 			mem_read(int64_t, v1, address);
 			mem_write(int64_t, address, (v1 ^ v2));
 			reg_write(int64_t, _rd, v1);
+
 			ctx->win32.NtReleaseMutex(vmcs_mutex);
 		}
 
@@ -1250,9 +1261,11 @@ namespace rvm64::operation {
 			reg_read(int64_t, v2, _rs2);
 
 			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+
 			mem_read(int64_t, v1, address);
 			mem_write(int64_t, address, (v1 & v2));
 			reg_write(int64_t, _rd, v1);
+
 			ctx->win32.NtReleaseMutex(vmcs_mutex);
 		}
 
@@ -1267,9 +1280,11 @@ namespace rvm64::operation {
 			reg_read(int64_t, v2, _rs2);
 
 			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+
 			mem_read(int64_t, v1, address);
 			mem_write(int64_t, address, (v1 | v2));
 			reg_write(int64_t, _rd, v1);
+
 			ctx->win32.NtReleaseMutex(vmcs_mutex);
 		}
 
@@ -1284,9 +1299,11 @@ namespace rvm64::operation {
 			reg_read(uint64_t, v2, _rs2);
 
 			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+
 			mem_read(int64_t, v1, address);
 			mem_write(int64_t, address, (v1 < v2 ? v1 : v2));
 			reg_write(uint64_t, _rd, v1);
+
 			ctx->win32.NtReleaseMutex(vmcs_mutex);
 		}
 
@@ -1301,9 +1318,11 @@ namespace rvm64::operation {
 			reg_read(int64_t, v2, _rs2);
 
 			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+
 			mem_read(int64_t, v1, address);
 			mem_write(int64_t, address, (v1 < v2 ? v2 : v1));
 			reg_write(int64_t, _rd, v1);
+
 			ctx->win32.NtReleaseMutex(vmcs_mutex);
 		}
 
@@ -1318,9 +1337,11 @@ namespace rvm64::operation {
 			reg_read(uint64_t, _rs2, v2);
 
 			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+
 			mem_read(uint64_t, v1, address);
 			mem_write(uint64_t, address, (v1 < v2 ? v1 : v2));
 			reg_write(uint64_t, _rd, v1);
+
 			ctx->win32.NtReleaseMutex(vmcs_mutex);
 		}
 
@@ -1335,9 +1356,11 @@ namespace rvm64::operation {
 			reg_read(uint64_t, v2, _rs2);
 
 			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+
 			mem_read(uint64_t, v1, address);
 			mem_write(uint64_t, address, (v1 < v2 ? v2 : v1));
 			reg_write(uint64_t, _rd, v1);
+
 			ctx->win32.NtReleaseMutex(vmcs_mutex);
 		}
 
@@ -1352,9 +1375,11 @@ namespace rvm64::operation {
 			reg_read(int32_t, v2, _rs2);
 
 			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+
 			mem_read(int32_t, v1, address);
 			mem_write(int32_t, address, v2);
 			reg_write(int32_t, _rd, v1);
+
 			ctx->win32.NtReleaseMutex(vmcs_mutex);
 		}
 
@@ -1369,9 +1394,11 @@ namespace rvm64::operation {
 			reg_read(int32_t, v2, _rs2);
 
 			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+
 			mem_read(int32_t, v1, address);
 			mem_write(int32_t, address, (v1 + v2));
 			reg_write(int32_t, _rd, v1);
+
 			ctx->win32.NtReleaseMutex(vmcs_mutex);
 		}
 
@@ -1386,9 +1413,11 @@ namespace rvm64::operation {
 			reg_read(int32_t, v2, _rs2);
 
 			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+
 			mem_read(int32_t, v1, address);
 			mem_write(int32_t, address, (v1 ^ v2));
 			reg_write(int32_t, _rd, v1);
+
 			ctx->win32.NtReleaseMutex(vmcs_mutex);
 		}
 
@@ -1403,9 +1432,11 @@ namespace rvm64::operation {
 			reg_read(int32_t, v2, _rs2);
 
 			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+			
 			mem_read(int32_t, v1, address);
 			mem_write(int32_t, address, (v1 & v2));
 			reg_write(int32_t, _rd, v1);
+
 			ctx->win32.NtReleaseMutex(vmcs_mutex);
 		}
 
@@ -1420,9 +1451,11 @@ namespace rvm64::operation {
 			reg_read(int32_t, v2, _rs2);
 
 			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+
 			mem_read(int32_t, v1, address);
 			mem_write(int32_t, address, (v1 | v2));
 			reg_write(int32_t, _rd, v1);
+
 			ctx->win32.NtReleaseMutex(vmcs_mutex);
 		}
 
@@ -1437,9 +1470,11 @@ namespace rvm64::operation {
 			reg_read(int32_t, v2, _rs2);
 
 			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+
 			mem_read(int32_t, v1, address);
 			mem_write(int32_t, address, (v1 < v2 ? v1 : v2));
 			reg_write(int32_t, _rd, v1);
+
 			ctx->win32.NtReleaseMutex(vmcs_mutex);
 		}
 
@@ -1454,9 +1489,11 @@ namespace rvm64::operation {
 			reg_read(int32_t, v2, _rs2);
 
 			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+
 			mem_read(int32_t, v1, address);
 			mem_write(int32_t, address, (v1 < v2 ? v2 : v1));
 			reg_write(int32_t, _rd, v1);
+
 			ctx->win32.NtReleaseMutex(vmcs_mutex);
 		}
 
@@ -1471,9 +1508,11 @@ namespace rvm64::operation {
 			reg_read(uint32_t, v2, _rs2);
 
 			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+
 			mem_read(uint32_t, v1, address);
 			mem_write(uint32_t, address, (v1 < v2 ? v1 : v2));
 			reg_write(uint32_t, _rd, v1);
+
 			ctx->win32.NtReleaseMutex(vmcs_mutex);
 		}
 
@@ -1488,57 +1527,48 @@ namespace rvm64::operation {
 			reg_read(uint32_t, v2, _rs2);
 
 			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+
 			mem_read(uint32_t, v1, address);
 			mem_write(uint32_t, address, (v1 < v2 ? v2 : v1));
 			reg_write(uint32_t, _rd, v1);
+
 			ctx->win32.NtReleaseMutex(vmcs_mutex);
 		}
 	}
 
 	namespace utype {
 		__vmcall void rv_lui() {
-			/*
-			   Description
-			   Build 32-bit constants and uses the U-type format. LUI places the U-immediate value in the top 20 bits of the destination register _rd,
-			   filling in the lowest 12 bits with zeros.
+			uint8_t _rd = 0; int32_t _imm = 0;
 
-			   Implementation
-			   x[_rd] = sext(immediate[31:12] << 12)
-			   */
+			scr_read(uint32_t, _rd, rd);
+			scr_read(int32_t, _imm, imm);
+			reg_write(int32_t, _rd, _imm);
 		}
 
 		__vmcall void rv_auipc() {
-			/*
-				auipc    t0, %pcrel_hi(func)     # t0 = pc + upper 20 bits of func address
-    			jalr     ra, t0, %pcrel_lo(func) # jump to t0 + lower 12 bits of func, ra = pc+4
-    			# execution continues here after func returns
-			*/
 			uint8_t _rd = 0; int32_t _imm = 0; 
 
 			scr_read(uint8_t, _rd, rd);
 			scr_read(int32_t, _imm, imm);
-			write_reg(int32_t, _rd, (int64_t)vmcs->pc + _imm);
+			reg_write(int32_t, _rd, (int64_t)vmcs->pc + _imm);
 		}
 	}
 
 	namespace jtype {
 		__vmcall void rv_jal() {
-			/*
-			   Description
-			   Jump to address and place return address in _rd.
+			uint8_t _rd = 0; intptr_t offset = 0;
 
-			   Implementation
-			   x[_rd] = pc+4; pc += sext()
-			   */
+			scr_read(uint8_t, _rd, rd);
+			scr_read(intptr_t, offset, imm);
+
+			reg_write(uintptr_t, _rd, vmcs->pc + 4);
+			vmcs->pc += offset;
+			// vmcs->step = false;
 		}
 	}
 
 	namespace btype {
 		__vmcall void rv_beq() {
-			/*
-			   Description
-			   Take the branch if registers _rs1 and _rs2 are equal.
-			   */
 			uint8_t _rs1 = 0, _rs2 = 0; int32_t v1 = 0, v2 = 0; intptr_t offset = 0;
 
 			scr_read(uint8_t, _rs1, rs1);
@@ -1555,13 +1585,6 @@ namespace rvm64::operation {
 		}
 
 		__vmcall void rv_bne() {
-			/*
-			   Description
-			   Take the branch if registers _rs1 and _rs2 are not equal.
-
-			   Implementation
-			   if (x[_rs1] != x[_rs2]) pc += sext(offset)
-			   */
 			uint8_t _rs1 = 0, _rs2 = 0; int32_t v1 = 0, v2 = 0; intptr_t offset = 0;
 
 			scr_read(uint8_t, _rs1, rs1);
@@ -1578,13 +1601,6 @@ namespace rvm64::operation {
 		}
 
 		__vmcall void rv_blt() {
-			/*
-			   Description
-			   Take the branch if registers _rs1 is less than _rs2, using signed comparison.
-
-			   Implementation
-			   if (x[_rs1] <s x[_rs2]) pc += sext(offset)
-			   */
 			uint8_t _rs1 = 0, _rs2 = 0; int32_t v1 = 0, v2 = 0; intptr_t offset = 0;
 
 			scr_read(uint8_t, _rs1, rs1);
@@ -1601,13 +1617,6 @@ namespace rvm64::operation {
 		}
 
 		__vmcall void rv_bge() {
-			/*
-			   Description
-			   Take the branch if registers _rs1 is greater than or equal to _rs2, using signed comparison.
-
-			   Implementation
-			   if (x[_rs1] >=s x[_rs2]) pc += sext(offset)
-			   */
 			uint8_t _rs1 = 0, _rs2 = 0; int32_t v1 = 0, v2 = 0; intptr_t offset = 0;
 
 			scr_read(uint8_t, _rs1, rs1);
@@ -1624,13 +1633,6 @@ namespace rvm64::operation {
 		}
 
 		__vmcall void rv_bltu() {
-			/*
-			   Description
-			   Take the branch if registers _rs1 is less than _rs2, using unsigned comparison.
-
-			   Implementation
-			   if (x[_rs1] <u x[_rs2]) pc += sext(offset)
-			   */
 			uint8_t _rs1 = 0, _rs2 = 0; uint32_t v1 = 0, v2 = 0; intptr_t offset = 0;
 
 			scr_read(uint8_t, _rs1, rs1);
@@ -1647,13 +1649,6 @@ namespace rvm64::operation {
 		}
 
 		__vmcall void rv_bgeu() {
-			/*
-			   Description
-			   Take the branch if registers _rs1 is greater than or equal to _rs2, using unsigned comparison.
-
-			   Implementation
-			   if (x[_rs1] >=u x[_rs2]) pc += sext(offset)
-			   */
 			uint8_t _rs1 = 0, _rs2 = 0; uint32_t v1 = 0, v2 = 0; intptr_t offset = 0;
 
 			scr_read(uint8_t, _rs1, rs1);
