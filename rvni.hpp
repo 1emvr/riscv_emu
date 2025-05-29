@@ -33,6 +33,11 @@ namespace rvm64::rvni {
 	};
 
 	/*
+	
+	#define malloc(x) ctx->win32.RtlAllocateHeap(ctx->heap, 0, x);
+	#define realloc(p, x) ctx->win32.RtlReallocateHeap(p, ctx->heap, 0, x);
+	#define free(x) ctx->win32.RtlFreeHeap(ctx->heap, 0, x);
+
 	namespace simple_map {
 		template<typename A, typename B>
 		struct entry {
@@ -137,7 +142,7 @@ namespace rvm64::rvni {
 	} 
 	*/
 
-	__data std::unordered_map<void*, native_wrapper> ucrt_native_table; // NOTE: might cause compiler exception (unsure)
+	__data std::unordered_map<void*, native_wrapper> ucrt_native_table; 
 																
 	struct ucrt_alias {
 		const char* original;
