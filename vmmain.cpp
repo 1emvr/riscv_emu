@@ -17,12 +17,15 @@ namespace rvm64 {
 
 			rvm64::decoder::vm_decode(opcode);
 
-			if (!vmcs->step) {
+			if (vmcs->csr.m_cause == environment_call_native) {
 				rvm64::rvni::vm_trap_exit(); 
 				continue;
 			}
+			if (vmcs->step) {
+				vmcs->pc += 4; 
+			}
 
-			vmcs->pc += 4; 
+			vmcs->step = true;
 		}
 	}
 

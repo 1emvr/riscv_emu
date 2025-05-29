@@ -454,8 +454,10 @@ namespace rvm64::operation {
 			address &= ~((intptr_t)1);
 
 			reg_write(uintptr_t, _rd, vmcs->pc + 4);
+
 			vmcs->pc = address;
 			vmcs->step = false;
+			vmcs->csr.m_cause = environment_call_native;
 		}
 
 		__vmcall void rv_ecall() {
@@ -495,6 +497,7 @@ namespace rvm64::operation {
 			   Implementation
 			   RaiseException(Breakpoint)
 			   */
+			vmcs->csr.m_cause = breakpoint;
 			__debugbreak();
 		}
 
