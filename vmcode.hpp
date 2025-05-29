@@ -100,8 +100,10 @@ namespace rvm64::decoder {
             }
         }
         if (!decoded) {
-            vmcs->halt = 1;
-            vmcs->reason = vm_illegal_op;
+			vmcs->csr.m_cause = illegal_operation;                                
+			vmcs->csr.m_epc = vmcs->pc;                                           
+			vmcs->csr.m_tval = (opcode);                                            
+			vmcs->halt = 1;
             return;
         }
 
@@ -160,12 +162,6 @@ namespace rvm64::decoder {
 									case 0b011: { scr_write(int32_t, imm, imm_i(opcode)); unwrap_opcall(_rv_ld); break;  }
 								}
 							}
-						default:
-							{
-								vmcs->halt = 1;
-								vmcs->reason = vm_illegal_op;
-								return;
-							}
 					}
 				}
 
@@ -178,7 +174,7 @@ namespace rvm64::decoder {
 					switch(opcode7) {
 						case 0b1010011: 
 							{
-        						uint8_t func7 = (opcode >> 24) & 0x7F;
+								uint8_t func7 = (opcode >> 24) & 0x7F;
 								switch(func7) {
 									case 0b0000001: { unwrap_opcall(_rv_fadd_d); break; }
 									case 0b0000101: { unwrap_opcall(_rv_fsub_d); break; }
@@ -218,7 +214,7 @@ namespace rvm64::decoder {
 													}
 									case 0b0010001: 
 													{
-        												uint8_t func3 = (opcode >> 12) & 0x7;
+														uint8_t func3 = (opcode >> 12) & 0x7;
 														switch(func3) {
 															case 0b000: { unwrap_opcall(_rv_fsgnj_d); break; }
 															case 0b001: { unwrap_opcall(_rv_fsgnjn_d); break; }
@@ -227,7 +223,7 @@ namespace rvm64::decoder {
 													}
 									case 0b0010101: 
 													{
-        												uint8_t func3 = (opcode >> 12) & 0x7;
+														uint8_t func3 = (opcode >> 12) & 0x7;
 														switch(func3) {
 															case 0b000: { unwrap_opcall(_rv_fmin_d); break; }
 															case 0b001: { unwrap_opcall(_rv_fmax_d); break; }
@@ -235,7 +231,7 @@ namespace rvm64::decoder {
 													}
 									case 0b1010001: 
 													{ 
-        												uint8_t func3 = (opcode >> 12) & 0x7;
+														uint8_t func3 = (opcode >> 12) & 0x7;
 														switch(func3) {
 															case 0b010: { unwrap_opcall(_rv_feq_d); break; }
 															case 0b001: { unwrap_opcall(_rv_flt_d); break; }
@@ -244,7 +240,7 @@ namespace rvm64::decoder {
 													}
 									case 0b1110001: 
 													{
-        												uint8_t func3 = (opcode >> 12) & 0x7;
+														uint8_t func3 = (opcode >> 12) & 0x7;
 														switch(func3) {
 															case 0b001: { unwrap_opcall(_rv_fclass_d); break; }
 														}
