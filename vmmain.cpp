@@ -18,7 +18,7 @@ namespace rvm64 {
 			rvm64::decoder::vm_decode(opcode);
 
 			if (!vmcs->step) {
-				rvm64::rvni::vm_trap_exit(); // NOTE: VM_EXIT steps pc by 4
+				rvm64::rvni::vm_trap_exit(); 
 				continue;
 			}
 
@@ -31,9 +31,9 @@ namespace rvm64 {
 		vmcs = &vm_instance;
 
 		rvm64::context::vm_context_init();
-		rvm64::rvni::resolve_ucrt_imports(); // TODO: move outside of rvm64
+		rvm64::rvni::resolve_ucrt_imports(); 
 
-		while(!vmcs->halt) { // NOTE: continue until program packet is read or halt
+		while(!vmcs->halt) { 
 			if (!mock::read_program_from_packet()) { 
 				continue;
 			}

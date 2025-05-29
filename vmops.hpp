@@ -1665,14 +1665,6 @@ namespace rvm64::operation {
 
 	namespace stype {
 		__vmcall void rv_sb() {
-			/*
-			   Format
-			   sb rs2,offset(rs1)
-			   Description
-			   Store 8-bit, values from the low bits of register rs2 to memory.
-			   Implementation
-			   M[x[rs1] + sext(offset)] = x[rs2][7:0]
-			   */
 			uint8_t _rs1 = 0, _rs2 = 0; int32_t _imm = 0; uintptr_t address = 0; uint8_t v1 = 0;
 
 			scr_read(uint8_t, _rs1, rs1);
