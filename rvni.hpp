@@ -34,9 +34,9 @@ namespace rvm64::rvni {
 
 	/*
 	
-	#define malloc(x) ctx->win32.RtlAllocateHeap(ctx->heap, 0, x);
-	#define realloc(p, x) ctx->win32.RtlReallocateHeap(p, ctx->heap, 0, x);
-	#define free(x) ctx->win32.RtlFreeHeap(ctx->heap, 0, x);
+	#define malloc(x) 		ctx->win32.RtlAllocateHeap(ctx->heap, 0, x);
+	#define realloc(p, x) 	ctx->win32.RtlReAllocateHeap(ctx->heap, 0, p, x);
+	#define free(x) 		ctx->win32.RtlFreeHeap(ctx->heap, 0, x);
 
 	namespace simple_map {
 		template<typename A, typename B>
