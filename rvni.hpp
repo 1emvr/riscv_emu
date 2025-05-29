@@ -59,12 +59,11 @@ namespace rvm64::rvni {
 
 		template <typename A, typename B>
 		void push(simple_map::unordered_map<A, B> *map, A key, B value) {
-
 			entry<A, B> *temp = (entry<A, B>*) realloc(map->entries, sizeof(entry<A, B>) * (map->capacity + 1));
+
 			if (!temp) {
 				return;
 			}
-
 			map->entries = temp;
 			map->entries[map->capacity].key = key; 
 			map->entries[map->capacity].value = value; 
@@ -117,8 +116,6 @@ namespace rvm64::rvni {
 
 	native_wrapper second() {
 		native_wrapper found = simple_map::find(ucrt_native_table, (uintptr_t)0x1234);
-		simple_map::destroy(ucrt_native_table);
-
 		return found;
 	}
 
