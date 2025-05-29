@@ -10,11 +10,9 @@
 #include "rvni.hpp"
 
 namespace rvm64 {
-	__vmcall void vm_entry(void) {
+	__vmcall void vm_entry() {
 		while (!vmcs->halt) {
-			int32_t opcode = *(int32_t*) vmcs->pc;
-
-			rvm64::decoder::vm_decode(opcode);
+			rvm64::decoder::vm_decode(*(int32_t*)vmcs->pc);
 
 			if (vmcs->csr.m_cause == environment_call_native) {
 				vm_guard_ctx(
@@ -28,7 +26,7 @@ namespace rvm64 {
 		}
 	}
 
-	__function int64_t vm_main(void) {
+	__function int64_t vm_main() {
 		vmcs_t vm_instance = { };
 		vmcs = &vm_instance;
 
@@ -40,8 +38,7 @@ namespace rvm64 {
 				continue;
 			}
 
-			// __vmcall
-			rvm64::vm_entry();
+			host_guard_ctx(rvm64::vm_entry());
 			break;
 		};
 

@@ -10,6 +10,11 @@ namespace rvm64::context {
 		vmcs->load_rsv_valid = false;
 		vmcs->load_rsv_addr = 0LL;
 
+		vmcs->csr.m_cause = 0;                                
+		vmcs->csr.m_epc = 0;                                           
+		vmcs->csr.m_tval = 0;                                            
+		vmcs->halt = 0;
+
         // Fake implant context
         ctx = (hexane*) VirtualAlloc(nullptr, sizeof(ctx), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
