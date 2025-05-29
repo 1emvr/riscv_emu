@@ -127,6 +127,8 @@ namespace rvm64::rvni {
 		simple_map::push(ucrt_native_table, (uintptr_t)new_address, new_wrapper);
 
 		auto found = second();
+		simple_map::destroy(ucrt_native_table);
+
 		if (found.address == 0) {
 			return 1;
 		}
