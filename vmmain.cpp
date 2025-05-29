@@ -15,9 +15,7 @@ namespace rvm64 {
 			rvm64::decoder::vm_decode(*(int32_t*)vmcs->pc);
 
 			if (vmcs->csr.m_cause == environment_call_native) {
-				vm_guard_ctx(
-						rvm64::rvni::vm_trap_exit());  
-
+				vm_guard_ctx(rvni::vm_trap_exit());  
 				continue;
 			}
 			if (vmcs->step) {
