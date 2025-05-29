@@ -141,9 +141,10 @@ namespace rvm64::rvni {
 			auto it = ucrt_native_table.find((void*)vmcs->pc); 
 
 			if (it == ucrt_native_table.end()) {
+				vmcs->csr.m_cause = illegal_operation;                                
+				vmcs->csr.m_epc = vmcs->pc;                                           
+				vmcs->csr.m_tval = vmcs->pc;                                            
 				vmcs->halt = 1;
-				vmcs->reason = vm_invalid_pc;
-				return;
 			}
 
 			native_wrapper& plt = it->second;
@@ -279,20 +280,24 @@ namespace rvm64::rvni {
 					}
 				default: 
 					{
+						vmcs->csr.m_cause = illegal_operation;                                
+						vmcs->csr.m_epc = vmcs->pc;                                           
+						vmcs->csr.m_tval = (plt.type);                                            
 						vmcs->halt = 1;
-						vmcs->reason = vm_invalid_pc;
-						return;
 					}
 			}
 		} else {
+			vmcs->csr.m_cause = instruction_access_fault;                                
+			vmcs->csr.m_epc = vmcs->pc;                                           
+			vmcs->csr.m_tval = vmcs->pc;                                            
 			vmcs->halt = 1;
-			vmcs->reason = vm_invalid_pc;
-			return;
 		}				
 
 		uintptr_t ret = 0;
-
 		reg_read(uintptr_t, ret, regenum::ra);
+
+		vmcs->csr.m_cause = 0;
+		vmcs->step = true;
 		vmcs->pc = ret; 
 	}
 }

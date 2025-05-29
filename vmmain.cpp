@@ -14,7 +14,6 @@ namespace rvm64 {
 	__vmcall void vm_entry(void) {
 		while (!vmcs->halt) {
 			int32_t opcode = *(int32_t*) vmcs->pc;
-
 			rvm64::decoder::vm_decode(opcode);
 
 			if (vmcs->csr.m_cause == environment_call_native) {
@@ -24,8 +23,6 @@ namespace rvm64 {
 			if (vmcs->step) {
 				vmcs->pc += 4; 
 			}
-
-			vmcs->step = true;
 		}
 	}
 
