@@ -33,59 +33,68 @@ namespace rvm64::rvni {
 	};
 
 	/*
-	__data unordered_map::table_map *ucrt_native_table;
-
-	namespace unordered_map {
+	namespace simple_map {
+		template<typename A, typename B>
 		struct entry {
-			uintptr_t address;		
-			native_wrapper wrapper;
+			A key;		
+			B value;
 		};
 
-		struct table_map {
-			entry *entries;
+		template<typename A, typename B>
+		struct unordered_map {
+			entry<A, B> *entries;
 			size_t capacity;
 		};
 
-		table_map* init() {
-			table_map *map = (table_map*)malloc(sizeof(table_map));
+		template <typename A, typename B>
+		simple_map::unordered_map<A, B>* init() {
+
+			simple_map::unordered_map<A, B> *map = 
+				(simple_map::unordered_map<A, B>*) malloc(sizeof(simple_map::unordered_map<A, B>));
+
 			map->entries = nullptr;
 			map->capacity = 0;
 			return map;
 		}
 
-		static bool end() {
-			return false;
-		}
+		template <typename A, typename B>
+		void push(simple_map::unordered_map<A, B> *map, A key, B value) {
 
-		void push(table_map *map, uintptr_t address, native_wrapper wrapper) {
-			entry *temp = (entry*) realloc(map->entries, sizeof(entry) * (map->capacity + 1));
+			entry<A, B> *temp = (entry<A, B>*) realloc(map->entries, sizeof(entry<A, B>) * (map->capacity + 1));
 			if (!temp) {
 				return;
 			}
+
 			map->entries = temp;
-			map->entries[map->capacity].address = address; 
-			map->entries[map->capacity].wrapper = wrapper; 
+			map->entries[map->capacity].key = key; 
+			map->entries[map->capacity].value = value; 
 			map->capacity += 1;
 		}
 
-		native_wrapper find(table_map *map, uintptr_t k) {
+		template <typename A, typename B>
+		B find(simple_map::unordered_map<A, B> *map, A key) {
+
 			for (size_t i = 0; i < map->capacity; i++) {
-				if (map->entries[i].address == k) {
-					return map->entries[i].wrapper;	
+				if (map->entries[i].key == key) {
+					return map->entries[i].value;	
 				}
 			}
-			return native_wrapper{ };
+			return B{ };
 		}
 
-		void pop(table_map *map, uintptr_t k) {
+		template <typename A, typename B>
+		void pop(simple_map::unordered_map<A, B> *map, A key) {
+
 			for (size_t i = 0; i < map->capacity; i++) {
-				if (map->entries[i].address == k) {
-					for (size_t j = 0; j < map->capacity - 1; j++) {
+				if (map->entries[i].key == key) {
+
+					for (size_t j = i; j < map->capacity - 1; j++) { // unlink from the list
 						map->entries[j] = map->entries[j + 1];
 					}
 					map->capacity -= 1;
-					if (map->capcity > 0) {
-						map->entries = (entry*) realloc(map->entries, sizeof(entry) * map->capacity);
+
+					if (map->capacity > 0) {
+						map->entries = (entry<A, B>*) realloc(map->entries, sizeof(entry<A, B>) * map->capacity);
 					} else {
 						free(map->entries);
 						map->entries = nullptr;
@@ -95,7 +104,8 @@ namespace rvm64::rvni {
 			}
 		}
 
-		void destroy(table_map *map) {
+		template <typename A, typename B>
+		void destroy(simple_map::unordered_map<A, B> *map) {
 			if (map) {
 				free(map->entries);
 				free(map);
@@ -103,15 +113,26 @@ namespace rvm64::rvni {
 		}
 	}
 
+	__data simple_map::unordered_map<uintptr_t, native_wrapper> *ucrt_native_table;
+
+	native_wrapper second() {
+		native_wrapper found = simple_map::find(ucrt_native_table, (uintptr_t)0x1234);
+		simple_map::destroy(ucrt_native_table);
+
+		return found;
+	}
+
 	int main() {
 		void *new_address = 0x1234;
 		native_wrapper new_wrapper = { };
 
-		ucrt_native_table = unordered_map::init();
-		unordered_map::push(&ucrt_native_table, (uintpr_t)new_address, new_wrapper);
+		ucrt_native_table = simple_map::init<uintptr_t, native_wrapper>();
+		simple_map::push(ucrt_native_table, (uintptr_t)new_address, new_wrapper);
 
-		native_wrapper found = unordered_map::find(&ucrt_native_table, (uintptr_t)0x1234);
-		unordered_map::destroy(&ucrt_native_table);
+		auto found = second();
+		if (found.address == 0) {
+			return 1;
+		}
 
 		return 0;
 	} 
