@@ -112,13 +112,16 @@ typedef struct {
 #define EXPONENT_MASK           0x7FF0000000000000ULL
 #define FRACTION_MASK           0x000FFFFFFFFFFFFFULL
 
+// TODO: move these to rvm64::memory (?)
+// NOTE: this could be a disaster for performance...
+
 template <typename T>
-__vmcall void mem_read(T& retval, uintptr_t addr) {
+__vmcall bool mem_read_check(uintptr_t addr) {
 	if ((addr) % sizeof(T) != 0) {                                            
 		vmcs->csr.m_cause = load_address_misaligned;                          
 		vmcs->csr.m_epc = vmcs->pc;                                           
 		vmcs->csr.m_tval = (addr);                                            
-		return;                                                               
+		return false;                                                               
 	}                                                                         
 	if ((addr) < vmcs->process.address ||                                     
 			(addr) >= vmcs->process.address + vmcs->process.size) {              
@@ -126,19 +129,18 @@ __vmcall void mem_read(T& retval, uintptr_t addr) {
 		vmcs->csr.m_cause = load_access_fault;                                
 		vmcs->csr.m_epc = vmcs->pc;                                           
 		vmcs->csr.m_tval = (addr);                                            
-		return;                                                               
+		return false;                                                               
 	}                                                                         
-
-	retval = *(T *)(vmcs->process.address + ((addr) - vmcs->process.address));
+	return true;
 }
 
 template <typename T>
-__vmcall mem_write(uintptr_t addr, T value) {
+__vmcall bool mem_write_check(uintptr_t addr) {
 	if ((addr) % sizeof(T) != 0) {                                            
-		vmcs->csr.m_cause = store_AMO_address_misaligned;                     
+		vmcs->csr.m_cause = store_amo_address_misaligned;                     
 		vmcs->csr.m_epc = vmcs->pc;                                           
 		vmcs->csr.m_tval = (addr);                                            
-		return;                                                               
+		return false;                                                               
 	}                                                                         
 	if ((addr) < vmcs->process.address ||                                     
 			(addr) >= vmcs->process.address + vmcs->process.size) {              
@@ -146,72 +148,128 @@ __vmcall mem_write(uintptr_t addr, T value) {
 		vmcs->csr.m_cause = store_amo_access_fault;                           
 		vmcs->csr.m_epc = vmcs->pc;                                           
 		vmcs->csr.m_tval = (addr);                                            
-		return;                                                               
+		return false;                                                               
 	}                                                                         
-
-	*(T *)(vmcs->process.address + ((addr) - vmcs->process.address)) = value; 
+	return true;
 }
 
-template <typename T>
-__vmcall void reg_read(T& dst, int reg_idx) {
+__vmcall bool reg_read_check(int reg_idx) {
 	if ((reg_idx) > regenum::t6) {                                                
 		vmcs->csr.m_cause = instruction_access_fault;                         
 		vmcs->csr.m_epc = vmcs->pc;                                           
 		vmcs->csr.m_tval = (reg_idx);                                             
-		return;                                                               
+		return false;                                                               
 	}                                                                         
-
-	dst = (T)vmcs->vregs[(reg_idx)];                                              
+	return true;
 }
 
-template <typename T>
-__vmcall void reg_write(int reg_idx, T src) {
+__vmcall bool reg_write_check(int reg_idx) {
 	if ((reg_idx) == regenum::zr || (reg_idx) > regenum::t6) {                        
 		vmcs->csr.m_cause = instruction_access_fault;                         
 		vmcs->csr.m_epc = vmcs->pc;                                           
 		vmcs->csr.m_tval = (reg_idx);                                             
-		return;                                                               
+		return false;                                                               
 	}                                                                         
-
-	vmcs->vregs[(reg_idx)] = (T)(src);                                            
+	return true;
 }
 
-template <typename T>
-__vmcall void scr_read(T& dst, int scr_idx) {
+__vmcall bool scr_read_check(int scr_idx) {
 	if ((scr_idx) > screnum::imm) {                                               
 		vmcs->csr.m_cause = instruction_access_fault;                         
 		vmcs->csr.m_epc = vmcs->pc;                                           
 		vmcs->csr.m_tval = (scr_idx);                                             
-		return;                                                               
+		return false;                                                               
 	}                                                                         
-
-	dst = (T)vmcs->vscratch[(scr_idx)];                                           
+	return true;
 }
 
-template <typename T>
-__vmcall void scr_write(int scr_idx, T src) {                                                    
+__vmcall bool scr_write_check(int scr_idx) {
 	if ((scr_idx) > screnum::imm) {                                               
 		vmcs->csr.m_cause = instruction_access_fault;                         
 		vmcs->csr.m_epc = vmcs->pc;                                           
 		vmcs->csr.m_tval = (scr_idx);                                             
-		return;                                                               
+		return false;                                                               
 	}                                                                         
-
-	vmcs->vscratch[(scr_idx)] = (T)(src);                                         
+	return true;
 }
 
-__vmcall void unwrap_opcall(int hdl_idx) {                                                        
+__vmcall bool opcode_check(int hdl_idx) {
 	if ((hdl_idx) >= sizeof(__handler) / sizeof(__handler[0])) {                                             
 		vmcs->csr.m_cause = illegal_instruction;                              
 		vmcs->csr.m_epc = vmcs->pc;                                           
 		vmcs->csr.m_tval = (hdl_idx);                                             
-		return;                                                               
+		return false;                                                               
 	}                                                                         
-	auto a = ((uintptr_t*)vmcs->handler)[hdl_idx];                                
-	auto b = rvm64::crypt::decrypt_ptr((uintptr_t)a);                         
-	void (*fn)() = (void (*)())(b);                                           
-	fn();                                                                     
+	return true;
 }
+
+#define mem_read(T, retval, addr)  													\
+	do {																			\
+		if (!mem_read_check<T>(addr)) { 											\
+			vmcs->halt = 1; 														\
+			return; 																\
+		} 																			\
+		retval = *(T *)(vmcs->process.address +  									\
+				((addr) - vmcs->process.address)); 									\
+	} while(0)
+
+#define mem_write(T, addr, value)  													\
+	do {																			\
+		if (!mem_write_check<T>(addr)) { 											\
+			vmcs->halt = 1; 														\
+			return; 																\
+		} 																			\
+		*(T *)(vmcs->process.address +  											\
+				((addr) - vmcs->process.address)) = value;  						\
+	} while(0)
+
+#define reg_read(T, dst, reg_idx) 													\
+	do { 																			\
+		if (!reg_read_check(reg_idx)) { 											\
+			vmcs->halt = 1; 														\
+			return; 																\
+		} 																			\
+		dst = (T)vmcs->vregs[(reg_idx)];                                            \
+	} while(0)
+
+#define reg_write(T, reg_idx, src) 													\
+	do { 																			\
+		if (!reg_write_check(reg_idx)) { 											\
+			vmcs->halt = 1; 														\
+			return; 																\
+		} 																			\
+		vmcs->vregs[(reg_idx)] = (T)(src);                                          \
+	} while(0)
+
+#define scr_read(T, dst, scr_idx) 													\
+	do { 																			\
+		if (!scr_read_check(scr_idx)) { 											\
+			vmcs->halt = 1; 														\
+			return; 																\
+		} 																			\
+		dst = (T)vmcs->vscratch[(scr_idx)];                                         \
+	} while(0)
+
+#define scr_write(T, scr_idx, src) 													\
+	do { 																			\
+		if (!scr_write_check(scr_idx)) { 											\
+			vmcs->halt = 1; 														\
+			return; 																\
+		} 																			\
+		vmcs->vscratch[(scr_idx)] = (T)(src);                                 		\
+	} while(0)
+
+#define unwrap_opcall(hdl_idx) 														\
+	do { 																			\
+		if (!opcall_check(hdl_idx)) { 												\
+			vmcs->halt = 1; 														\
+			return; 																\
+		} 																			\
+		auto a = ((uintptr_t*)vmcs->handler)[hdl_idx];                              \
+		auto b = rvm64::crypt::decrypt_ptr((uintptr_t)a);                         	\
+		void (*fn)() = (void (*)())(b);                                           	\
+		fn();                                                                     	\
+	} while(0)
 
 __data hexane *ctx;
 __data vmcs_t *vmcs;

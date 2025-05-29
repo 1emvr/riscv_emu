@@ -1493,16 +1493,6 @@ namespace rvm64::operation {
 			reg_write(uint32_t, _rd, v1);
 			ctx->win32.NtReleaseMutex(vmcs_mutex);
 		}
-
-		__vmcall void rv_fsqrt_d() {
-			/*
-			   Description
-			   Take the branch if registers _rs1 and _rs2 are equal.
-
-			   Implementation
-			   if (x[_rs1] == x[_rs2]) pc += sext(offset)
-			   */
-		}
 	}
 
 	namespace utype {
