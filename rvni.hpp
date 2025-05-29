@@ -77,7 +77,7 @@ namespace rvm64::rvni {
 			printf("ERR: could not load ucrtbase.dll\n");
 
 			vmcs->halt = 1;
-			vmcs->reason = vm_undefined;
+			vmcs->csr.m_cause = vm_undefined;
 			return;
 		}
 
@@ -96,7 +96,7 @@ namespace rvm64::rvni {
 				printf("ERR: could not resolve %s\n", f.name);
 
 				vmcs->halt = 1;
-				vmcs->reason = vm_undefined;
+				vmcs->csr.m_cause = vm_undefined;
 				return;
 			}
 
@@ -120,7 +120,7 @@ namespace rvm64::rvni {
 				default:                       
 												  {
 													  vmcs->halt = 1;
-													  vmcs->reason = vm_undefined;
+													  vmcs->csr.m_cause = vm_undefined;
 													  return;
 												  }
 			}
@@ -130,13 +130,7 @@ namespace rvm64::rvni {
 	}
 
 	__native void vm_trap_exit() {
-
-		/* 
-		 switch(vmcs->vm_exit.reason) {
-			case VM_NATIVE:
-			case VM_WHATEVER:
-		 }
-		*/
+		// case VM_NATIVE_CALL:
 		if ((vmcs->pc >= vmcs->plt.start) && (vmcs->pc < vmcs->plt.end)) {
 			auto it = ucrt_native_table.find((void*)vmcs->pc); 
 

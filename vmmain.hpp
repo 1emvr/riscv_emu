@@ -270,6 +270,11 @@ __vmcall bool opcode_check(int hdl_idx) {
 		fn();                                                                     	\
 	} while(0)
 
+#define vm_guard_ctx(expr) 					\
+	rvm64::context::save_vm_context();		\
+	expr; 									\
+	rvm64::context::restore_vm_context()
+
 __data hexane *ctx;
 __data vmcs_t *vmcs;
 __data HANDLE vmcs_mutex;
