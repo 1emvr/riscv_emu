@@ -1539,6 +1539,19 @@ namespace rvm64::operation {
 			   Description
 			   Take the branch if registers _rs1 and _rs2 are equal.
 			   */
+			uint8_t _rs1 = 0, _rs2 = 0; int32_t v1 = 0, v2 = 0; intptr_t offset = 0;
+
+			scr_read(uint8_t, _rs1, rs1);
+			scr_read(uint8_t, _rs2, rs2);
+			scr_read(intptr_t, offset, imm);
+
+			reg_read(int32_t, v1, _rs1);
+			reg_read(int32_t, v2, _rs2);
+
+			if (v1 == v2) {
+				vmcs->pc += offset;
+				// vmcs->step = false;
+			}
 		}
 
 		__vmcall void rv_bne() {
@@ -1549,6 +1562,19 @@ namespace rvm64::operation {
 			   Implementation
 			   if (x[_rs1] != x[_rs2]) pc += sext(offset)
 			   */
+			uint8_t _rs1 = 0, _rs2 = 0; int32_t v1 = 0, v2 = 0; intptr_t offset = 0;
+
+			scr_read(uint8_t, _rs1, rs1);
+			scr_read(uint8_t, _rs2, rs2);
+			scr_read(intptr_t, offset, imm);
+
+			reg_read(int32_t, v1, _rs1);
+			reg_read(int32_t, v2, _rs2);
+
+			if (v1 != v2) {
+				vmcs->pc += offset;
+				// vmcs->step = false;
+			}
 		}
 
 		__vmcall void rv_blt() {
@@ -1559,6 +1585,19 @@ namespace rvm64::operation {
 			   Implementation
 			   if (x[_rs1] <s x[_rs2]) pc += sext(offset)
 			   */
+			uint8_t _rs1 = 0, _rs2 = 0; int32_t v1 = 0, v2 = 0; intptr_t offset = 0;
+
+			scr_read(uint8_t, _rs1, rs1);
+			scr_read(uint8_t, _rs2, rs2);
+			scr_read(intptr_t, offset, imm);
+
+			reg_read(int32_t, v1, _rs1);
+			reg_read(int32_t, v2, _rs2);
+
+			if (v1 < v2) {
+				vmcs->pc += offset;
+				// vmcs->step = false;
+			}
 		}
 
 		__vmcall void rv_bge() {
@@ -1569,6 +1608,19 @@ namespace rvm64::operation {
 			   Implementation
 			   if (x[_rs1] >=s x[_rs2]) pc += sext(offset)
 			   */
+			uint8_t _rs1 = 0, _rs2 = 0; int32_t v1 = 0, v2 = 0; intptr_t offset = 0;
+
+			scr_read(uint8_t, _rs1, rs1);
+			scr_read(uint8_t, _rs2, rs2);
+			scr_read(intptr_t, offset, imm);
+
+			reg_read(int32_t, v1, _rs1);
+			reg_read(int32_t, v2, _rs2);
+
+			if (v1 >= v2) {
+				vmcs->pc += offset;
+				// vmcs->step = false;
+			}
 		}
 
 		__vmcall void rv_bltu() {
@@ -1579,6 +1631,19 @@ namespace rvm64::operation {
 			   Implementation
 			   if (x[_rs1] <u x[_rs2]) pc += sext(offset)
 			   */
+			uint8_t _rs1 = 0, _rs2 = 0; uint32_t v1 = 0, v2 = 0; intptr_t offset = 0;
+
+			scr_read(uint8_t, _rs1, rs1);
+			scr_read(uint8_t, _rs2, rs2);
+			scr_read(intptr_t, offset, imm);
+
+			reg_read(uint32_t, v1, _rs1);
+			reg_read(uint32_t, v2, _rs2);
+
+			if (v1 < v2) {
+				vmcs->pc += offset;
+				// vmcs->step = false;
+			}
 		}
 
 		__vmcall void rv_bgeu() {
@@ -1589,6 +1654,19 @@ namespace rvm64::operation {
 			   Implementation
 			   if (x[_rs1] >=u x[_rs2]) pc += sext(offset)
 			   */
+			uint8_t _rs1 = 0, _rs2 = 0; uint32_t v1 = 0, v2 = 0; intptr_t offset = 0;
+
+			scr_read(uint8_t, _rs1, rs1);
+			scr_read(uint8_t, _rs2, rs2);
+			scr_read(intptr_t, offset, imm);
+
+			reg_read(uint32_t, v1, _rs1);
+			reg_read(uint32_t, v2, _rs2);
+
+			if (v1 >= v2) {
+				vmcs->pc += offset;
+				// vmcs->step = false;
+			}
 		}
 	}
 
