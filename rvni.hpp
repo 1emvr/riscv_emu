@@ -32,6 +32,91 @@ namespace rvm64::rvni {
 		};
 	};
 
+	/*
+	__data unordered_map::table_map *ucrt_native_table;
+
+	namespace unordered_map {
+		struct entry {
+			uintptr_t address;		
+			native_wrapper wrapper;
+		};
+
+		struct table_map {
+			entry *entries;
+			size_t capacity;
+		};
+
+		table_map* init() {
+			table_map *map = (table_map*)malloc(sizeof(table_map));
+			map->entries = nullptr;
+			map->capacity = 0;
+			return map;
+		}
+
+		static bool end() {
+			return false;
+		}
+
+		void push(table_map *map, uintptr_t address, native_wrapper wrapper) {
+			entry *temp = (entry*) realloc(map->entries, sizeof(entry) * (map->capacity + 1));
+			if (!temp) {
+				return;
+			}
+			map->entries = temp;
+			map->entries[map->capacity].address = address; 
+			map->entries[map->capacity].wrapper = wrapper; 
+			map->capacity += 1;
+		}
+
+		native_wrapper find(table_map *map, uintptr_t k) {
+			for (size_t i = 0; i < map->capacity; i++) {
+				if (map->entries[i].address == k) {
+					return map->entries[i].wrapper;	
+				}
+			}
+			return native_wrapper{ };
+		}
+
+		void pop(table_map *map, uintptr_t k) {
+			for (size_t i = 0; i < map->capacity; i++) {
+				if (map->entries[i].address == k) {
+					for (size_t j = 0; j < map->capacity - 1; j++) {
+						map->entries[j] = map->entries[j + 1];
+					}
+					map->capacity -= 1;
+					if (map->capcity > 0) {
+						map->entries = (entry*) realloc(map->entries, sizeof(entry) * map->capacity);
+					} else {
+						free(map->entries);
+						map->entries = nullptr;
+					}
+					return;
+				}
+			}
+		}
+
+		void destroy(table_map *map) {
+			if (map) {
+				free(map->entries);
+				free(map);
+			}
+		}
+	}
+
+	int main() {
+		void *new_address = 0x1234;
+		native_wrapper new_wrapper = { };
+
+		ucrt_native_table = unordered_map::init();
+		unordered_map::push(&ucrt_native_table, (uintpr_t)new_address, new_wrapper);
+
+		native_wrapper found = unordered_map::find(&ucrt_native_table, (uintptr_t)0x1234);
+		unordered_map::destroy(&ucrt_native_table);
+
+		return 0;
+	} 
+	*/
+
 	__data std::unordered_map<void*, native_wrapper> ucrt_native_table; // NOTE: might cause compiler exception (unsure)
 																
 	struct ucrt_alias {

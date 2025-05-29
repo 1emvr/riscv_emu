@@ -141,7 +141,7 @@ typedef struct {
 
 namespace rvm64::elf {
 	__native bool patch_elf64_imports(void *process, vm_range_t *plt) {
-		auto* ehdr (elf64_ehdr*)(process);
+		auto* ehdr (elf64_ehdr*)process;
 
 		if (ehdr->e_type != ET_EXEC && ehdr->e_type != ET_DYN) {
 			return false;
