@@ -119,14 +119,17 @@ namespace rvm64::rvni {
 
 	__data simple_map::unordered_map<uintptr_t, native_wrapper> *ucrt_native_table;
 
-	native_wrapper second() {
+	__vmcall native_wrapper second() {
 		native_wrapper found = simple_map::find(ucrt_native_table, (uintptr_t)0x1234);
 		return found;
 	}
 
-	int main() {
+	__vmcall int main() {
 		void *new_address = 0x1234;
-		native_wrapper new_wrapper = { };
+		native_wrapper new_wrapper = { 
+			.address = new_address;
+			.open = decltype(open);
+		};
 
 		ucrt_native_table = simple_map::init<uintptr_t, native_wrapper>();
 		simple_map::push(ucrt_native_table, (uintptr_t)new_address, new_wrapper);
@@ -328,7 +331,7 @@ namespace rvm64::rvni {
 						reg_read(size_t, size, regenum::a0);
 
 						void* result = plt.malloc(size);
-						reg_write(uintptr_t, regenum::a0, (uintptr_t)result);
+						reg_write(uintptr_t, regenum::a0, result);
 						break;
 					}
 				case native_wrapper::PLT_FREE: 
@@ -347,7 +350,7 @@ namespace rvm64::rvni {
 						reg_read(size_t, n, regenum::a2);
 
 						void* result = plt.memcpy(dest, src, n);
-						reg_write(uintptr_t, regenum::a0, (uintptr_t)result);
+						reg_write(uintptr_t, regenum::a0, result);
 						break;
 					}
 				case native_wrapper::PLT_MEMSET: 
@@ -359,7 +362,7 @@ namespace rvm64::rvni {
 						reg_read(size_t, n, regenum::a2);
 
 						void* result = plt.memset(dest, value, n);
-						reg_write(uint64_t, regenum::a0, (uint64_t)result);
+						reg_write(uint64_t, regenum::a0, result);
 						break;
 					}
 				case native_wrapper::PLT_STRLEN: 
@@ -379,7 +382,7 @@ namespace rvm64::rvni {
 						reg_read(char*, src, regenum::a1);
 
 						char* result = plt.strcpy(dest, src);
-						reg_write(uintptr_t, regenum::a0, (uintptr_t)result);
+						reg_write(uintptr_t, regenum::a0, result);
 						break;
 					}
 				default: 
