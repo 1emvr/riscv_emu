@@ -279,8 +279,8 @@ namespace rvm64::elf {
 				continue;
 			}
 
-			void* dest = (uint8_t*)vmcs->process.address + (phdrs[i].p_vaddr - base);
-			void* src = (uint8_t*)image_data + phdrs[i].p_offset;
+			void *dest = (uint8_t*)vmcs->process.address + (phdrs[i].p_vaddr - base);
+			void *src = (uint8_t*)image_data + phdrs[i].p_offset;
 
 			memcpy(dest, src, phdrs[i].p_filesz);
 
