@@ -103,6 +103,7 @@ namespace rvm64::memory {
 
 		data->size += VM_PROCESS_PADDING;
 
+		// TODO: get plt start/end addresses
 		memory_init(data->size);
 		rvm64::elf::load_elf_image(data->address, data->size);
 		rvm64::elf::patch_elf_imports(data->address);
