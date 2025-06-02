@@ -107,6 +107,11 @@ namespace rvm64::memory {
 		memory_init(data->size);
 		rvm64::elf::load_elf_image(data->address, data->size);
 		rvm64::elf::patch_elf_imports(data->address);
+
+		if (data) {
+			free((void*)data->address);
+			free((void*)data);
+		}
 	}
 
 	__rdata const uintptr_t __handler[256] = {
