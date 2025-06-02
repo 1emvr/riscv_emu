@@ -3,11 +3,10 @@
 #include <compare>
 
 #include "vmmain.hpp"
-#include "vmcrypt.hpp"
-#include "vmctx.hpp"
-#include "vmatom.hpp"
+#include "vmcommon.hpp"
+#include "vmmem.hpp"
 
-namespace rvm64::operation {
+namespace rvm64::operations {
 	union {
 		double d;
 		uint64_t u;
@@ -289,7 +288,7 @@ namespace rvm64::operation {
 			reg_read(int32_t, v1, _rs1);
 			if ((shamt >> 5) != 0) {
 				vmcs->halt = 1;
-				vmcs->reason = vm_illegal_op;
+				vmcs->reason = illegal_instruction;
 				return;
 			}
 
@@ -306,7 +305,7 @@ namespace rvm64::operation {
 			reg_read(int32_t, v1, _rs1);
 			if ((shamt >> 5) != 0) {
 				vmcs->halt = 1;
-				vmcs->reason = vm_illegal_op;
+				vmcs->reason = illegal_instruction;
 				return;
 			}
 
@@ -324,7 +323,7 @@ namespace rvm64::operation {
 
 			if ((shamt >> 5) != 0) {
 				vmcs->halt = 1;
-				vmcs->reason = vm_illegal_op;
+				vmcs->reason = illegal_instruction;
 				return;
 			}
 
@@ -583,13 +582,13 @@ namespace rvm64::operation {
 			mem_read(uintptr_t, address, _rs1);
 			reg_read(int32_t, value, _rs2);
 
-			if (rvm64::atom::vm_check_load_rsv(0, address)) {
-				rvm64::atom::vm_set_load_rsv(0, address);
+			if (rvm64::memory::vm_check_load_rsv(0, address)) {
+				rvm64::memory::vm_set_load_rsv(0, address);
 
 				mem_write(int32_t, address, value);
 				reg_write(int32_t, _rd, 0);
 
-				rvm64::atom::vm_clear_load_rsv(0);
+				rvm64::memory::vm_clear_load_rsv(0);
 			} else {
 				reg_write(int32_t, _rd, 1);
 			}
@@ -605,13 +604,13 @@ namespace rvm64::operation {
 			reg_read(uintptr_t, address, _rs1);
 			reg_read(int64_t, value, _rs2);
 
-			if (!rvm64::atom::vm_check_load_rsv(0, address)) {
-				rvm64::atom::vm_set_load_rsv(0, address);
+			if (!rvm64::memory::vm_check_load_rsv(0, address)) {
+				rvm64::memory::vm_set_load_rsv(0, address);
 
 				mem_write(int64_t, address, value);
 				reg_write(int64_t, _rd, 0);
 
-				rvm64::atom::vm_clear_load_rsv(0);
+				rvm64::memory::vm_clear_load_rsv(0);
 			} else {
 				reg_write(int64_t, _rd, 1);
 			}
@@ -1752,84 +1751,6 @@ namespace rvm64::operation {
 		}
 	}
 
-	namespace r4type {}
-
-	__rdata const uintptr_t __handler[256] = {
-		// ITYPE
-		crypt::encrypt_ptr((uintptr_t) itype::rv_addi), crypt::encrypt_ptr((uintptr_t) itype::rv_slti),
-		crypt::encrypt_ptr((uintptr_t) itype::rv_sltiu), crypt::encrypt_ptr((uintptr_t) itype::rv_xori),
-		crypt::encrypt_ptr((uintptr_t) itype::rv_ori), crypt::encrypt_ptr((uintptr_t) itype::rv_andi),
-		crypt::encrypt_ptr((uintptr_t) itype::rv_slli), crypt::encrypt_ptr((uintptr_t) itype::rv_srli),
-		crypt::encrypt_ptr((uintptr_t) itype::rv_srai), crypt::encrypt_ptr((uintptr_t) itype::rv_addiw),
-		crypt::encrypt_ptr((uintptr_t) itype::rv_slliw), crypt::encrypt_ptr((uintptr_t) itype::rv_srliw),
-		crypt::encrypt_ptr((uintptr_t) itype::rv_sraiw), crypt::encrypt_ptr((uintptr_t) itype::rv_lb),
-		crypt::encrypt_ptr((uintptr_t) itype::rv_lh), crypt::encrypt_ptr((uintptr_t) itype::rv_lw),
-
-		crypt::encrypt_ptr((uintptr_t) itype::rv_lbu), crypt::encrypt_ptr((uintptr_t) itype::rv_lhu),
-		crypt::encrypt_ptr((uintptr_t) itype::rv_lwu), crypt::encrypt_ptr((uintptr_t) itype::rv_ld),
-		crypt::encrypt_ptr((uintptr_t) itype::rv_flq), crypt::encrypt_ptr((uintptr_t) itype::rv_fence),
-		crypt::encrypt_ptr((uintptr_t) itype::rv_fence_i), crypt::encrypt_ptr((uintptr_t) itype::rv_jalr),
-		crypt::encrypt_ptr((uintptr_t) itype::rv_ecall), crypt::encrypt_ptr((uintptr_t) itype::rv_ebreak),
-		crypt::encrypt_ptr((uintptr_t) itype::rv_csrrw), crypt::encrypt_ptr((uintptr_t) itype::rv_csrrs),
-		crypt::encrypt_ptr((uintptr_t) itype::rv_csrrc), crypt::encrypt_ptr((uintptr_t) itype::rv_csrrwi),
-		crypt::encrypt_ptr((uintptr_t) itype::rv_csrrsi), crypt::encrypt_ptr((uintptr_t) itype::rv_csrrci),
-		crypt::encrypt_ptr((uintptr_t) itype::rv_fclass_d), crypt::encrypt_ptr((uintptr_t) itype::rv_lrw),
-		crypt::encrypt_ptr((uintptr_t) itype::rv_lrd), crypt::encrypt_ptr((uintptr_t) itype::rv_fmv_d_x),
-		crypt::encrypt_ptr((uintptr_t) itype::rv_fcvt_s_d), crypt::encrypt_ptr((uintptr_t) itype::rv_fcvt_d_s),
-		crypt::encrypt_ptr((uintptr_t) itype::rv_fcvt_w_d), crypt::encrypt_ptr((uintptr_t) itype::rv_fcvt_wu_d),
-		crypt::encrypt_ptr((uintptr_t) itype::rv_fcvt_d_w), crypt::encrypt_ptr((uintptr_t) itype::rv_fcvt_d_wu),
-
-		// RTYPE
-		crypt::encrypt_ptr((uintptr_t) rtype::rv_fadd_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fsub_d),
-		crypt::encrypt_ptr((uintptr_t) rtype::rv_fmul_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fdiv_d),
-		crypt::encrypt_ptr((uintptr_t) rtype::rv_fsqrt_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fsgnj_d),
-		crypt::encrypt_ptr((uintptr_t) rtype::rv_fsgnjn_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fsgnjx_d),
-		crypt::encrypt_ptr((uintptr_t) rtype::rv_fmin_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_fmax_d),
-		crypt::encrypt_ptr((uintptr_t) rtype::rv_feq_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_flt_d),
-		crypt::encrypt_ptr((uintptr_t) rtype::rv_fle_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_scw),
-		crypt::encrypt_ptr((uintptr_t) rtype::rv_amoswap_w), crypt::encrypt_ptr((uintptr_t) rtype::rv_amoadd_w),
-		crypt::encrypt_ptr((uintptr_t) rtype::rv_amoxor_w), crypt::encrypt_ptr((uintptr_t) rtype::rv_amoand_w),
-		crypt::encrypt_ptr((uintptr_t) rtype::rv_amoor_w), crypt::encrypt_ptr((uintptr_t) rtype::rv_amomin_w),
-		crypt::encrypt_ptr((uintptr_t) rtype::rv_amomax_w), crypt::encrypt_ptr((uintptr_t) rtype::rv_amominu_w),
-		crypt::encrypt_ptr((uintptr_t) rtype::rv_amomaxu_w),
-
-		crypt::encrypt_ptr((uintptr_t) rtype::rv_scd),
-		crypt::encrypt_ptr((uintptr_t) rtype::rv_amoswap_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_amoadd_d),
-		crypt::encrypt_ptr((uintptr_t) rtype::rv_amoxor_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_amoand_d),
-		crypt::encrypt_ptr((uintptr_t) rtype::rv_amoor_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_amomin_d),
-		crypt::encrypt_ptr((uintptr_t) rtype::rv_amomax_d), crypt::encrypt_ptr((uintptr_t) rtype::rv_amominu_d),
-		crypt::encrypt_ptr((uintptr_t) rtype::rv_amomaxu_d),
-
-		crypt::encrypt_ptr((uintptr_t) rtype::rv_addw), crypt::encrypt_ptr((uintptr_t) rtype::rv_subw),
-		crypt::encrypt_ptr((uintptr_t) rtype::rv_mulw), crypt::encrypt_ptr((uintptr_t) rtype::rv_srlw),
-		crypt::encrypt_ptr((uintptr_t) rtype::rv_sraw), crypt::encrypt_ptr((uintptr_t) rtype::rv_divuw),
-		crypt::encrypt_ptr((uintptr_t) rtype::rv_sllw), crypt::encrypt_ptr((uintptr_t) rtype::rv_divw),
-		crypt::encrypt_ptr((uintptr_t) rtype::rv_remw), crypt::encrypt_ptr((uintptr_t) rtype::rv_remuw),
-
-		crypt::encrypt_ptr((uintptr_t) rtype::rv_add), crypt::encrypt_ptr((uintptr_t) rtype::rv_sub),
-		crypt::encrypt_ptr((uintptr_t) rtype::rv_mul), crypt::encrypt_ptr((uintptr_t) rtype::rv_sll),
-		crypt::encrypt_ptr((uintptr_t) rtype::rv_mulh), crypt::encrypt_ptr((uintptr_t) rtype::rv_slt),
-		crypt::encrypt_ptr((uintptr_t) rtype::rv_mulhsu), crypt::encrypt_ptr((uintptr_t) rtype::rv_sltu),
-		crypt::encrypt_ptr((uintptr_t) rtype::rv_mulhu), crypt::encrypt_ptr((uintptr_t) rtype::rv_xor),
-		crypt::encrypt_ptr((uintptr_t) rtype::rv_div), crypt::encrypt_ptr((uintptr_t) rtype::rv_srl),
-		crypt::encrypt_ptr((uintptr_t) rtype::rv_sra), crypt::encrypt_ptr((uintptr_t) rtype::rv_divu),
-		crypt::encrypt_ptr((uintptr_t) rtype::rv_or), crypt::encrypt_ptr((uintptr_t) rtype::rv_rem),
-		crypt::encrypt_ptr((uintptr_t) rtype::rv_and), crypt::encrypt_ptr((uintptr_t) rtype::rv_remu),
-
-		// TODO: Finish floating point instructions (probably S and I types) - f, fm, fnm, fcvt - have a few already done.
-		// STYPE
-		crypt::encrypt_ptr((uintptr_t) stype::rv_sb), crypt::encrypt_ptr((uintptr_t) stype::rv_sh),
-		crypt::encrypt_ptr((uintptr_t) stype::rv_sw), crypt::encrypt_ptr((uintptr_t) stype::rv_sd),
-		crypt::encrypt_ptr((uintptr_t) stype::rv_fsw), crypt::encrypt_ptr((uintptr_t) stype::rv_fsd),
-
-		// BTYPE
-		crypt::encrypt_ptr((uintptr_t) btype::rv_beq), crypt::encrypt_ptr((uintptr_t) btype::rv_bne),
-		crypt::encrypt_ptr((uintptr_t) btype::rv_blt), crypt::encrypt_ptr((uintptr_t) btype::rv_bge),
-		crypt::encrypt_ptr((uintptr_t) btype::rv_bltu), crypt::encrypt_ptr((uintptr_t) btype::rv_bgeu),
-
-		// UTYPE/JTYPE
-		crypt::encrypt_ptr((uintptr_t) utype::rv_lui), crypt::encrypt_ptr((uintptr_t) utype::rv_auipc),
-		crypt::encrypt_ptr((uintptr_t) jtype::rv_jal)
-	};
-}
+	namespace r4type {};
+};
 #endif // VMOPS_H

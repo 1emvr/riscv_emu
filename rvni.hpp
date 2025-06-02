@@ -1,9 +1,11 @@
 #ifndef RVNI_H
 #define RVNI_H
 #include <unordered_map>
+#include <windows.h>
 
 #include "vmmain.hpp"
-#include "vmctx.hpp"
+#include "vmcommon.hpp"
+#include "vmmem.hpp"
 
 namespace rvm64::rvni {
 	struct native_wrapper {
@@ -244,11 +246,11 @@ namespace rvm64::rvni {
 
 	__native void vm_trap_exit() {
 		// case VM_NATIVE_CALL:
-		if ((vmcs->pc >= vmcs->plt.start) && (vmcs->pc < vmcs->plt.end)) {
+		if ((vmcs->pc >= vmcs->process.plt.start) && (vmcs->pc < vmcs->process.plt.end)) {
 			auto it = ucrt_native_table.find((void*)vmcs->pc); 
 
 			if (it == ucrt_native_table.end()) {
-				vmcs->csr.m_cause = illegal_operation;                                
+				vmcs->csr.m_cause = illegal_instruction;                                
 				vmcs->csr.m_epc = vmcs->pc;                                           
 				vmcs->csr.m_tval = vmcs->pc;                                            
 				vmcs->halt = 1;
@@ -387,7 +389,7 @@ namespace rvm64::rvni {
 					}
 				default: 
 					{
-						vmcs->csr.m_cause = illegal_operation;                                
+						vmcs->csr.m_cause = illegal_instruction;                                
 						vmcs->csr.m_epc = vmcs->pc;                                           
 						vmcs->csr.m_tval = (plt.type);                                            
 						vmcs->halt = 1;

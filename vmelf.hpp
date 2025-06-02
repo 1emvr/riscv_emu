@@ -140,7 +140,7 @@ typedef struct {
 
 
 namespace rvm64::elf {
-	__native bool patch_elf64_imports(void *process, vm_range_t *plt) {
+	__native bool patch_elf_imports(void *process, vm_range_t *plt) {
 		auto* ehdr (elf64_ehdr*)process;
 
 		if (ehdr->e_type != ET_EXEC && ehdr->e_type != ET_DYN) {
@@ -174,13 +174,13 @@ namespace rvm64::elf {
 				case DT_JMPREL:   rela_plt_vaddr = dyn->d_un.d_ptr; break;
 				case DT_PLTRELSZ: rela_plt_size = dyn->d_un.d_val; break;
 				case DT_PLTREL:
-					{
-						if (dyn->d_un.d_val != DT_RELA) {
-							printf("ERROR: Only DT_RELA supported for PLT relocations.\n");
-							return false;
-						}
-						break;
-					}
+								  {
+									  if (dyn->d_un.d_val != DT_RELA) {
+										  printf("ERROR: Only DT_RELA supported for PLT relocations.\n");
+										  return false;
+									  }
+									  break;
+								  }
 			}
 		}
 
@@ -236,7 +236,7 @@ namespace rvm64::elf {
 		return true;
 	}
 
-	__native bool load_elf64_image(void* image_data, size_t image_size) {
+	__native bool load_elf_image(void* image_data, size_t image_size) {
 		elf64_ehdr* ehdr = (elf64_ehdr*)(image_data);
 
 		if (ehdr->e_ident[0] != 0x7F || 
@@ -272,6 +272,8 @@ namespace rvm64::elf {
 		size_t image_size = limit - base;
 
 		// NOTE: map segments
+		// TODO: still need to find plt start and end
+		
 		for (int i = 0; i < ehdr->e_phnum; ++i) {
 			if (phdrs[i].p_type != PT_LOAD) {
 				continue;
