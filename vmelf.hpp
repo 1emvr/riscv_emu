@@ -7,7 +7,18 @@
 #include "vmmain.hpp"
 #include "rvni.hpp"
 
-
+// Dynamic section tags
+#define DT_NULL         0       // End of dynamic section
+#define DT_SYMTAB       6       // Pointer to symbol table
+#define DT_STRTAB       5       // Pointer to string table
+#define DT_SYMENT       11      // Size of one symbol table entry
+#define DT_JMPREL       23      // Pointer to PLT relocation entries
+#define DT_PLTRELSZ     2       // Size in bytes of PLT relocations
+#define DT_PLTREL       20      // Type of PLT relocations (DT_RELA or DT_REL)
+#define DT_RELA         7       // Address of relocation table with addends
+#define DT_RELASZ       8       // Size of the DT_RELA table
+#define DT_RELAENT      9       // Size of one DT_RELA entry
+								//
 #define EI_MAG0     0   // 0x7F
 #define EI_MAG1     1   // 'E'
 #define EI_MAG2     2   // 'L'
@@ -40,6 +51,22 @@
 #define PT_SHLIB   5
 #define PT_PHDR    6
 #define PT_TLS     7
+
+#define SHT_NULL        0           // Inactive section header
+#define SHT_PROGBITS    1           // Program-defined contents
+#define SHT_SYMTAB      2           // Symbol table
+#define SHT_STRTAB      3           // String table
+#define SHT_RELA        4           // Relocation entries with addends
+#define SHT_NOBITS      8           // Uninitialized data (.bss)
+#define SHT_DYNSYM      11          // Dynamic linker symbol table
+									//
+#define SHN_UNDEF 		0	
+#define SHN_LORESERVE   0xff00
+#define SHN_LOPROC      0xff00
+#define SHN_HIPROC      0xff1f
+#define SHN_ABS         0xfff1   // Absolute values, not affected by relocation
+#define SHN_COMMON      0xfff2   // Common symbols
+#define SHN_HIRESERVE   0xffff
 
 typedef struct {
     uint8_t  e_ident[EI_NIDENT]; // ELF magic, class, data, etc.
@@ -82,6 +109,20 @@ typedef struct {
     uint64_t st_value;
     uint64_t st_size;
 } elf64_sym;
+
+typedef struct {
+    uint32_t sh_name;       // Offset to section name in the section header string table
+    uint32_t sh_type;       // Section type (e.g., SHT_PROGBITS, SHT_SYMTAB)
+    uint64_t sh_flags;      // Section attributes (e.g., SHF_ALLOC, SHF_EXECINSTR)
+    uint64_t sh_addr;       // Virtual address in memory (for loaded sections)
+    uint64_t sh_offset;     // Offset in the file
+    uint64_t sh_size;       // Size of the section
+    uint32_t sh_link;       // Link to another section (e.g., symbol table link)
+    uint32_t sh_info;       // Additional section information (depends on type)
+    uint64_t sh_addralign;  // Section alignment
+    uint64_t sh_entsize;    // Entry size if section holds table (e.g., symbol table)
+} elf64_shdr;
+
 
 typedef struct {
     int64_t d_tag;
@@ -138,10 +179,9 @@ typedef struct {
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #endif
 
-
 namespace rvm64::elf {
 	// TODO: needs re-written
-	__native bool patch_elf_imports(void *process) {
+	__native bool patch_elf_imports() {
 		uintptr_t process = (uintptr_t)vmcs->process.address;
 		auto* ehdr = (elf64_ehdr*)process;
 
@@ -149,7 +189,7 @@ namespace rvm64::elf {
 			return false;
 		}
 
-		auto* phdrs = (e_phdr*) ((uint8_t*)(process) + ehdr->e_phoff); 
+		auto* phdrs = (elf64_phdr*) ((uint8_t*)(process) + ehdr->e_phoff); 
 		uint64_t dyn_vaddr = 0;
 		uint64_t dyn_size = 0;
 
@@ -190,10 +230,10 @@ namespace rvm64::elf {
 			return false;
 		}
 
-		auto* rela_entries 	= (elf64_rela*) ((uint8_t*)process + rela_plt_vaddr);
+		auto* rela_entries 	= (elf64_rel*) ((uint8_t*)process + rela_plt_vaddr);
 		auto* symtab 		= (elf64_sym*) ((uint8_t*)process + symtab_vaddr);
 		const char* strtab 	= (const char*) ((uint8_t*)process + strtab_vaddr);
-		size_t rela_count 	= rela_plt_size / sizeof(elf64_rela);
+		size_t rela_count 	= rela_plt_size / sizeof(elf64_rel);
 
 		for (size_t i = 0; i < rela_count; ++i) {
 			uint32_t sym_idx = ELF64_R_SYM(rela_entries[i].r_info);
@@ -216,9 +256,7 @@ namespace rvm64::elf {
 			*reloc_addr = (uint64_t)(win_func);
 		}
 
-		const char* strtab;
 		auto shdrs = (elf64_shdr*) ((uint8_t*)process + ehdr->e_shoff);
-
 		if (ehdr->e_shstrndx != SHN_UNDEF) {
 			auto& strtab_hdr = shdrs[ehdr->e_shstrndx];
 			strtab = (const char*)((uint8_t*)process + strtab_hdr.sh_offset);
@@ -228,8 +266,8 @@ namespace rvm64::elf {
 			const auto& shdr = shdrs[i]; 
 
 			if (shdr.sh_type == SHT_PROGBITS && strcmp(strtab + shdr.sh_name, ".plt") == 0) {
-				plt->start = shdr.sh_addr;
-				plt->end   = shdr.sh_addr + shdr.sh_size;
+				vmcs->process.plt.start = shdr.sh_addr;
+				vmcs->process.plt.end   = shdr.sh_addr + shdr.sh_size;
 				break;
 			}
 		}
@@ -254,7 +292,7 @@ namespace rvm64::elf {
 			return false;
 		}
 
-		e_phdr* phdrs = (elf64_phdr*) ((uint8_t*)image_data + ehdr->e_phoff);
+		elf64_phdr* phdrs = (elf64_phdr*) ((uint8_t*)image_data + ehdr->e_phoff);
 		uint64_t base = UINT64_MAX;
 		uint64_t limit = 0;
 
@@ -270,7 +308,7 @@ namespace rvm64::elf {
 			return false;
 		}
 
-		size_t image_size = limit - base;
+		image_size = limit - base;
 
 		// NOTE: map segments
 		// TODO: still need to find plt start and end

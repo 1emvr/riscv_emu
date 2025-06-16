@@ -83,4 +83,6 @@ __data HANDLE vmcs_mutex;
 
 __data uintptr_t __stack_cookie = 0;
 __rdata const uintptr_t __key = 0;
+__rdata const int memcheck = 1;
+
 #endif //VMCS_H

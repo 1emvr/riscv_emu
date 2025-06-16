@@ -82,6 +82,8 @@ namespace rvm64::memory {
 		{
 			return false;
 		}
+
+		return true;
 	}
 
 	__native void memory_end() {
@@ -207,74 +209,5 @@ namespace rvm64::check {
 		return true;
 	}
 };
-
-#define mem_read(T, retval, addr)  								\
-	do {														\
-		if (!rvm64::check::mem_read_check<T>(addr)) { 			\
-			vmcs->halt = 1; 									\
-			return; 											\
-		} 														\
-		retval = *(T *)(vmcs->process.address +  				\
-				((addr) - vmcs->process.address)); 				\
-	} while(0)
-
-#define mem_write(T, addr, value)  								\
-	do {														\
-		if (!rvm64::check::mem_write_check<T>(addr)) { 			\
-			vmcs->halt = 1; 									\
-			return; 											\
-		} 														\
-		*(T *)(vmcs->process.address +  						\
-				((addr) - vmcs->process.address)) = value;  	\
-	} while(0)
-
-#define reg_read(T, dst, reg_idx) 								\
-	do { 														\
-		if (!rvm64::check::reg_read_check(reg_idx)) { 			\
-			vmcs->halt = 1; 									\
-			return; 											\
-		} 														\
-		dst = (T)vmcs->vregs[(reg_idx)];						\
-	} while(0)
-
-#define reg_write(T, reg_idx, src) 								\
-	do { 														\
-		if (!rvm64::check::reg_write_check(reg_idx)) { 			\
-			vmcs->halt = 1; 									\
-			return; 											\
-		} 														\
-		vmcs->vregs[(reg_idx)] = (T)(src);						\
-	} while(0)
-
-#define scr_read(T, dst, scr_idx) 								\
-	do { 														\
-		if (!rvm64::check::scr_read_check(scr_idx)) { 			\
-			vmcs->halt = 1; 									\
-			return; 											\
-		} 														\
-		dst = (T)vmcs->vscratch[(scr_idx)];						\
-	} while(0)
-
-#define scr_write(T, scr_idx, src) 								\
-	do { 														\
-		if (!rvm64::check::scr_write_check(scr_idx)) { 			\
-			vmcs->halt = 1; 									\
-			return; 											\
-		} 														\
-		vmcs->vscratch[(scr_idx)] = (T)(src);					\
-	} while(0)
-
-#define unwrap_opcall(hdl_idx) 									\
-	do { 														\
-		if (!rvm64::check::opcall_check(hdl_idx)) { 			\
-			vmcs->halt = 1; 									\
-			return; 											\
-		} 														\
-		auto a = ((uintptr_t*)vmcs->handler)[hdl_idx];			\
-		auto b = rvm64::crypt::decrypt_ptr((uintptr_t)a);		\
-		void (*fn)() = (void (*)())(b);							\
-		fn();													\
-	} while(0)
-
 
 #endif // VMMEM_H

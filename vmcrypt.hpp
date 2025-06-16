@@ -4,7 +4,7 @@
 
 namespace rvm64::crypt {
 	constexpr uintptr_t encrypt_ptr(uintptr_t ptr) {
-		return ptr ^ vmcs->dkey;
+		return ptr ^ __key;
 	}
 
 	__vmcall uintptr_t decrypt_ptr(uintptr_t ptr) {
@@ -12,4 +12,4 @@ namespace rvm64::crypt {
 	}
 };
 
-#endif VMCRYPT_HPP
+#endif // VMCRYPT_HPP

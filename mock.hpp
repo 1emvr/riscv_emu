@@ -8,8 +8,8 @@
 #include "vmmain.hpp"
 #include "vmcommon.hpp"
 
-namespace mock {
-	__function vm_buffer* read_file() {
+namespace rvm64::mock {
+	__native vm_buffer* read_file() {
 		BOOL success = false;
 		DWORD bytes_read = 0;
 
@@ -62,14 +62,15 @@ defer:
 		data->size += VM_PROCESS_PADDING;
 
 		// TODO: get plt start/end addresses
-		memory_init(data->size);
+		rvm64::memory::memory_init(data->size);
 		rvm64::elf::load_elf_image(data->address, data->size);
-		rvm64::elf::patch_elf_imports(data->address);
+		rvm64::elf::patch_elf_imports();
 
 		if (data) {
 			free((void*)data->address);
 			free((void*)data);
 		}
+		return true;
 	}
 };
 #endif // MOCK_H
