@@ -92,7 +92,7 @@ typedef struct {
 } elf64_dyn;
 
 #define ELF64_R_SYM(info)    	((info) >> 32)   // Extract symbol index from relocation info
-#define ELF64_rel_type(info)   	((info) & 0xFFFFFFFF)   // Extract relocation type from relocation info
+#define ELF64_REL_TYPE(info)   	((info) & 0xFFFFFFFF)   // Extract relocation type from relocation info
 #define ELF64_R_INFO(S, T) 		((((uint64_t)(S)) << 32) + (T))  // Construct relocation info from symbol index and type
 																
 #define ELF64_ST_BIND(info)   	((info) >> 4)
@@ -142,13 +142,14 @@ typedef struct {
 namespace rvm64::elf {
 	// TODO: needs re-written
 	__native bool patch_elf_imports(void *process) {
-		auto* ehdr (elf64_ehdr*)process;
+		uintptr_t process = (uintptr_t)vmcs->process.address;
+		auto* ehdr = (elf64_ehdr*)process;
 
 		if (ehdr->e_type != ET_EXEC && ehdr->e_type != ET_DYN) {
 			return false;
 		}
 
-		auto* phdrs = (e_phdr*) ((uint8_t*)(process) + ehdr->e_phoff); // NOTE: find the elf "program headers"
+		auto* phdrs = (e_phdr*) ((uint8_t*)(process) + ehdr->e_phoff); 
 		uint64_t dyn_vaddr = 0;
 		uint64_t dyn_size = 0;
 
@@ -163,11 +164,11 @@ namespace rvm64::elf {
 			return false;
 		}
 
-		auto* dyn_entries = (elf64_dyn*) ((uint8_t*)process + dyn_vaddr); // NOTE: find the "elf import table" (??)
+		auto* dyn_entries = (elf64_dyn*) ((uint8_t*)process + dyn_vaddr); 
 		uint64_t symtab_vaddr = 0, strtab_vaddr = 0, rela_plt_vaddr = 0;
 		uint64_t rela_plt_size = 0, syment_size = 0;
 
-		for (elf64_dyn* dyn = dyn_entries; dyn->d_tag != DT_NULL; ++dyn) { // NOTE: resolve string/symbol/relative tables (?)
+		for (elf64_dyn* dyn = dyn_entries; dyn->d_tag != DT_NULL; ++dyn) { 
 			switch (dyn->d_tag) {
 				case DT_SYMTAB:   symtab_vaddr = dyn->d_un.d_ptr; break;
 				case DT_STRTAB:   strtab_vaddr = dyn->d_un.d_ptr; break;
@@ -177,7 +178,7 @@ namespace rvm64::elf {
 				case DT_PLTREL:
 								  {
 									  if (dyn->d_un.d_val != DT_RELA) {
-										  printf("ERROR: Only DT_RELA supported for PLT relocations.\n");
+										  // printf("ERROR: Only DT_RELA supported for PLT relocations.\n");
 										  return false;
 									  }
 									  break;
@@ -189,43 +190,42 @@ namespace rvm64::elf {
 			return false;
 		}
 
-		auto* rela_entries = (elf64_rela*) ((uint8_t*)process + rela_plt_vaddr);
-		auto* symtab = (elf64_sym*) ((uint8_t*)process + symtab_vaddr);
-		const char* strtab = (const char*) ((uint8_t*)process + strtab_vaddr);
-		size_t rela_count = rela_plt_size / sizeof(elf64_rela);
+		auto* rela_entries 	= (elf64_rela*) ((uint8_t*)process + rela_plt_vaddr);
+		auto* symtab 		= (elf64_sym*) ((uint8_t*)process + symtab_vaddr);
+		const char* strtab 	= (const char*) ((uint8_t*)process + strtab_vaddr);
+		size_t rela_count 	= rela_plt_size / sizeof(elf64_rela);
 
 		for (size_t i = 0; i < rela_count; ++i) {
 			uint32_t sym_idx = ELF64_R_SYM(rela_entries[i].r_info);
-			uint32_t rel_type = ELF64_rel_type(rela_entries[i].r_info);
+			uint32_t rel_type = ELF64_REL_TYPE(rela_entries[i].r_info);
 
 			uint64_t *reloc_addr = (uint64_t*) ((uint8_t*)process + rela_entries[i].r_offset);
 			const char *sym_name = strtab + symtab[sym_idx].st_name;
 
 			if (rel_type != R_RISCV_JUMP_SLOT && rel_type != R_RISCV_CALL_PLT) {
-				printf("WARN: unsupported relocation type: %u\n", rel_type);
+				// printf("WARN: unsupported relocation type: %u\n", rel_type);
 				continue;
 			}
 
 			void *win_func = rvm64::rvni::windows_thunk_resolver(sym_name);
 			if (!win_func) {
-				printf("WARN: unresolved import: %s\n", sym_name);
+				// printf("WARN: unresolved import: %s\n", sym_name);
 				continue;
 			}
 
 			*reloc_addr = (uint64_t)(win_func);
 		}
 
-		auto* shdrs = (elf64_shdr*)((uint8_t*)process + ehdr->e_shoff);
-		const char* strtab = nullptr;
+		const char* strtab;
+		auto shdrs = (elf64_shdr*) ((uint8_t*)process + ehdr->e_shoff);
 
 		if (ehdr->e_shstrndx != SHN_UNDEF) {
 			auto& strtab_hdr = shdrs[ehdr->e_shstrndx];
 			strtab = (const char*)((uint8_t*)process + strtab_hdr.sh_offset);
 		}
 
-		// TODO: find the section headers and resolve .plt offsets for vm_trap_exit
 		for (int i = 0; i < ehdr->e_shnum; ++i) {
-			const auto& shdr = ehdr->unknown_xxxxxxxxx[i]; 
+			const auto& shdr = shdrs[i]; 
 
 			if (shdr.sh_type == SHT_PROGBITS && strcmp(strtab + shdr.sh_name, ".plt") == 0) {
 				plt->start = shdr.sh_addr;
