@@ -4,7 +4,6 @@
 #include <cstdint>
 
 #include "vmcommon.hpp"
-#include "vmmem.hpp"
 
 typedef struct __hexane {
     void *heap;
@@ -78,44 +77,10 @@ typedef struct {
 	uint32_t reason;
 } vmcs_t;
 
-
 __data hexane *ctx;
 __data vmcs_t *vmcs;
 __data HANDLE vmcs_mutex;
 
 __data uintptr_t __stack_cookie = 0;
 __rdata const uintptr_t __key = 0;
-
-
-namespace rvm64::entry {
-	__native void vm_init() {
-		rvm64::memory::context_init();
-		rvm64::rvni::resolve_ucrt_imports(); 
-
-		while (!vmcs->halt) {
-			if (!memory::read_program_from_packet()) { 
-				continue;
-			}
-		}
-	}
-
-	__native void vm_end() {
-		rvm64::memory::memory_end();
-	}
-
-	__vmcall void vm_entry() {
-		while (!vmcs->halt) {
-			rvm64::decoder::vm_decode(*(int32_t*)vmcs->pc);
-
-			if (vmcs->csr.m_cause == environment_call_native) {
-				rvni::vm_trap_exit();  
-				continue;
-			}
-			if (vmcs->step) {
-				vmcs->pc += 4; 
-			}
-		}
-	}
-};
-
 #endif //VMCS_H

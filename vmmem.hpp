@@ -1,20 +1,13 @@
 #ifndef VMMEM_H
 #define VMMEM_H
 #include "vmmain.hpp"
-#include "vmops.hpp"
+#include "vmcrypt.hpp"
+#include "vmelf.hpp"
 
 namespace rvm64::memory {
-    constexpr uintptr_t encrypt_ptr(uintptr_t ptr) {
-        return ptr ^ __key;
-    }
-
-    __vmcall uintptr_t decrypt_ptr(uintptr_t ptr) {
-        return ptr ^ vmcs->dkey;
-    }
-
     __native void context_init() {
 		vmcs->dkey = __key; 
-		vmcs->handler = (uintptr_t)__handler;
+		vmcs->handler = (uintptr_t)rvm64::operations::__handler;
 
 		vmcs->load_rsv_valid = false;
 		vmcs->load_rsv_addr = 0LL;
@@ -95,102 +88,7 @@ namespace rvm64::memory {
 		vmcs->reason = ctx->win32.NtFreeVirtualMemory(NtCurrentProcess(), (LPVOID*)&vmcs->process.address, &vmcs->process.size, MEM_RELEASE);
 	}
 
-	__native bool read_program_from_packet() {
-		vm_buffer *data = mock::read_file();
-		if (!data) {
-			return false;
-		}
 
-		data->size += VM_PROCESS_PADDING;
-
-		// TODO: get plt start/end addresses
-		memory_init(data->size);
-		rvm64::elf::load_elf_image(data->address, data->size);
-		rvm64::elf::patch_elf_imports(data->address);
-
-		if (data) {
-			free((void*)data->address);
-			free((void*)data);
-		}
-	}
-
-	__rdata const uintptr_t __handler[256] = {
-		// ITYPE
-		encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_addi), 		encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_slti),
-		encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_sltiu), 		encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_xori),
-		encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_ori), 			encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_andi),
-		encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_slli), 		encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_srli),
-		encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_srai), 		encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_addiw),
-		encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_slliw), 		encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_srliw),
-		encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_sraiw), 		encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_lb),
-		encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_lh), 			encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_lw),
-
-		encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_lbu), 			encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_lhu),
-		encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_lwu), 			encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_ld),
-		encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_flq), 			encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_fence),
-		encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_fence_i), 		encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_jalr),
-		encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_ecall), 		encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_ebreak),
-		encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_csrrw), 		encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_csrrs),
-		encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_csrrc), 		encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_csrrwi),
-		encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_csrrsi), 		encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_csrrci),
-		encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_fclass_d), 	encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_lrw),
-		encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_lrd), 			encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_fmv_d_x),
-		encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_fcvt_s_d), 	encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_fcvt_d_s),
-		encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_fcvt_w_d), 	encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_fcvt_wu_d),
-		encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_fcvt_d_w), 	encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_fcvt_d_wu),
-
-		// RTYPE
-		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fadd_d), 		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fsub_d),
-		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fmul_d), 		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fdiv_d),
-		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fsqrt_d), 		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fsgnj_d),
-		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fsgnjn_d), 	encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fsgnjx_d),
-		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fmin_d), 		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fmax_d),
-		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_feq_d), 		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_flt_d),
-		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fle_d), 		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_scw),
-		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amoswap_w), 	encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amoadd_w),
-		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amoxor_w), 	encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amoand_w),
-		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amoor_w), 		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amomin_w),
-		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amomax_w), 	encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amominu_w),
-		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amomaxu_w),
-
-		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_scd),
-		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amoswap_d), 	encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amoadd_d),
-		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amoxor_d), 	encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amoand_d),
-		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amoor_d), 		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amomin_d),
-		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amomax_d), 	encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amominu_d),
-		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amomaxu_d),
-
-		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_addw), 	encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_subw),
-		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_mulw), 	encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_srlw),
-		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_sraw), 	encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_divuw),
-		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_sllw), 	encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_divw),
-		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_remw), 	encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_remuw),
-
-		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_add), 		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_sub),
-		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_mul), 		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_sll),
-		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_mulh), 	encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_slt),
-		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_mulhsu), 	encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_sltu),
-		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_mulhu), 	encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_xor),
-		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_div), 		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_srl),
-		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_sra), 		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_divu),
-		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_or), 		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_rem),
-		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_and), 		encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_remu),
-
-		// TODO: Finish floating point instructions (probably S and I types) - f, fm, fnm, fcvt - have a few already done.
-		// STYPE
-		encrypt_ptr((uintptr_t) rvm64::operations::stype::rv_sb), 	encrypt_ptr((uintptr_t) rvm64::operations::stype::rv_sh),
-		encrypt_ptr((uintptr_t) rvm64::operations::stype::rv_sw), 	encrypt_ptr((uintptr_t) rvm64::operations::stype::rv_sd),
-		encrypt_ptr((uintptr_t) rvm64::operations::stype::rv_fsw), 	encrypt_ptr((uintptr_t) rvm64::operations::stype::rv_fsd),
-
-		// BTYPE
-		encrypt_ptr((uintptr_t) rvm64::operations::btype::rv_beq), 	encrypt_ptr((uintptr_t) rvm64::operations::btype::rv_bne),
-		encrypt_ptr((uintptr_t) rvm64::operations::btype::rv_blt), 	encrypt_ptr((uintptr_t) rvm64::operations::btype::rv_bge),
-		encrypt_ptr((uintptr_t) rvm64::operations::btype::rv_bltu), encrypt_ptr((uintptr_t) rvm64::operations::btype::rv_bgeu),
-
-		// UTYPE/JTYPE
-		encrypt_ptr((uintptr_t) rvm64::operations::utype::rv_lui), 	encrypt_ptr((uintptr_t) rvm64::operations::utype::rv_auipc),
-		encrypt_ptr((uintptr_t) rvm64::operations::jtype::rv_jal)
-	};
 };
 
 namespace rvm64::context {
@@ -219,6 +117,7 @@ namespace rvm64::context {
     }
 };
 
+// TODO: consider making this a macro and then just -DDEBUG when necessary. The size-cost isn't good, but it's more robust/safe this way, so pick-and-choose.
 namespace rvm64::check {
 	template <typename T>
 		__vmcall bool mem_read_check(uintptr_t addr) {
@@ -308,4 +207,74 @@ namespace rvm64::check {
 		return true;
 	}
 };
+
+#define mem_read(T, retval, addr)  								\
+	do {														\
+		if (!rvm64::check::mem_read_check<T>(addr)) { 			\
+			vmcs->halt = 1; 									\
+			return; 											\
+		} 														\
+		retval = *(T *)(vmcs->process.address +  				\
+				((addr) - vmcs->process.address)); 				\
+	} while(0)
+
+#define mem_write(T, addr, value)  								\
+	do {														\
+		if (!rvm64::check::mem_write_check<T>(addr)) { 			\
+			vmcs->halt = 1; 									\
+			return; 											\
+		} 														\
+		*(T *)(vmcs->process.address +  						\
+				((addr) - vmcs->process.address)) = value;  	\
+	} while(0)
+
+#define reg_read(T, dst, reg_idx) 								\
+	do { 														\
+		if (!rvm64::check::reg_read_check(reg_idx)) { 			\
+			vmcs->halt = 1; 									\
+			return; 											\
+		} 														\
+		dst = (T)vmcs->vregs[(reg_idx)];						\
+	} while(0)
+
+#define reg_write(T, reg_idx, src) 								\
+	do { 														\
+		if (!rvm64::check::reg_write_check(reg_idx)) { 			\
+			vmcs->halt = 1; 									\
+			return; 											\
+		} 														\
+		vmcs->vregs[(reg_idx)] = (T)(src);						\
+	} while(0)
+
+#define scr_read(T, dst, scr_idx) 								\
+	do { 														\
+		if (!rvm64::check::scr_read_check(scr_idx)) { 			\
+			vmcs->halt = 1; 									\
+			return; 											\
+		} 														\
+		dst = (T)vmcs->vscratch[(scr_idx)];						\
+	} while(0)
+
+#define scr_write(T, scr_idx, src) 								\
+	do { 														\
+		if (!rvm64::check::scr_write_check(scr_idx)) { 			\
+			vmcs->halt = 1; 									\
+			return; 											\
+		} 														\
+		vmcs->vscratch[(scr_idx)] = (T)(src);					\
+	} while(0)
+
+#define unwrap_opcall(hdl_idx) 									\
+	do { 														\
+		if (!rvm64::check::opcall_check(hdl_idx)) { 			\
+			vmcs->halt = 1; 									\
+			return; 											\
+		} 														\
+		auto a = ((uintptr_t*)vmcs->handler)[hdl_idx];			\
+		auto b = rvm64::crypt::decrypt_ptr((uintptr_t)a);		\
+		void (*fn)() = (void (*)())(b);							\
+		fn();													\
+	} while(0)
+
+
 #endif // VMMEM_H

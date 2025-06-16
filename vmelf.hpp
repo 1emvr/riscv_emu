@@ -140,7 +140,8 @@ typedef struct {
 
 
 namespace rvm64::elf {
-	__native bool patch_elf_imports(void *process, vm_range_t *plt) {
+	// TODO: needs re-written
+	__native bool patch_elf_imports(void *process) {
 		auto* ehdr (elf64_ehdr*)process;
 
 		if (ehdr->e_type != ET_EXEC && ehdr->e_type != ET_DYN) {

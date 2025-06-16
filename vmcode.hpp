@@ -1,6 +1,7 @@
 #ifndef VMCODE_H
 #define VMCODE_H
 #include "vmmain.hpp"
+#include "vmcrypt.hpp"
 #include "vmops.hpp"
 
 namespace rvm64::decoder {
@@ -100,7 +101,7 @@ namespace rvm64::decoder {
             }
         }
         if (!decoded) {
-			vmcs->csr.m_cause = illegal_operation;                                
+			vmcs->csr.m_cause = illegal_instruction;                                
 			vmcs->csr.m_epc = vmcs->pc;                                           
 			vmcs->csr.m_tval = (opcode);                                            
 			vmcs->halt = 1;

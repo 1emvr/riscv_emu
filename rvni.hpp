@@ -189,8 +189,6 @@ namespace rvm64::rvni {
 		HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
 
 		if (!ucrt) {
-			printf("ERR: could not load ucrtbase.dll\n");
-
 			vmcs->halt = 1;
 			vmcs->csr.m_cause = vm_undefined;
 			return;
@@ -208,8 +206,6 @@ namespace rvm64::rvni {
 		for (auto& f : funcs) {
 			void* native = (void*)GetProcAddress(ucrt, f.name);
 			if (!native) {
-				printf("ERR: could not resolve %s\n", f.name);
-
 				vmcs->halt = 1;
 				vmcs->csr.m_cause = vm_undefined;
 				return;

@@ -52,5 +52,24 @@ defer:
 
 		return buffer;
 	}
+
+	__native bool read_program_from_packet() {
+		vm_buffer *data = rvm64::mock::read_file();
+		if (!data) {
+			return false;
+		}
+
+		data->size += VM_PROCESS_PADDING;
+
+		// TODO: get plt start/end addresses
+		memory_init(data->size);
+		rvm64::elf::load_elf_image(data->address, data->size);
+		rvm64::elf::patch_elf_imports(data->address);
+
+		if (data) {
+			free((void*)data->address);
+			free((void*)data);
+		}
+	}
 };
 #endif // MOCK_H
