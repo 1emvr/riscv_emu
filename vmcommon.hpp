@@ -1,6 +1,7 @@
 #ifndef _VMCOMMON_H
 #define _VMCOMMON_H
 #include <windows.h>
+#include "vmcrypt.hpp"
 
 
 typedef NTSTATUS(NTAPI* NtAllocateVirtualMemory_t)(HANDLE ProcessHandle, PVOID* BaseAddress, ULONG_PTR ZeroBits, PSIZE_T RegionSize, ULONG AllocationType, ULONG Protect);
@@ -9,12 +10,12 @@ typedef NTSTATUS(NTAPI* NtGetContextThread_t)(HANDLE ThreadHandle, PCONTEXT Thre
 typedef NTSTATUS(NTAPI* NtSetContextThread_t)(HANDLE ThreadHandle, PCONTEXT ThreadContext);
 typedef PVOID(NTAPI* RtlAllocateHeap_t)(HANDLE HeapHandle, ULONG Flags, SIZE_T Size);
 
-#define __native //__attribute__((section(".text$B")))
-#define __vmcall //__attribute__((section(".text$B"))) __attribute__((calling_convention("custom")))
+#define _native //__attribute__((section(".text$B")))
+#define _vmcall //__attribute__((section(".text$B"))) __attribute__((calling_convention("custom")))
 
-#define __rdata    	__attribute__((section(".rdata")))
-#define __data     	__attribute__((section(".data")))
-#define __extern   	extern "C"
+#define _rdata    	__attribute__((section(".rdata")))
+#define _data     	__attribute__((section(".data")))
+#define _extern   	extern "C"
 
 #define NT_SUCCESS(status)      ((status) >= 0)
 #define NtCurrentProcess()      ((HANDLE) (LONG_PTR) -1)
@@ -113,11 +114,4 @@ enum typenum {
 		vmcs->vscratch[(scr_idx)] = (T)(src);					\
 	} while(0)
 
-#define unwrap_opcall(hdl_idx) 									\
-	do { 														\
-		auto a = ((uintptr_t*)vmcs->handler)[hdl_idx];			\
-		auto b = rvm64::crypt::decrypt_ptr((uintptr_t)a);		\
-		void (*fn)() = (void (*)())(b);							\
-		fn();													\
-	} while(0)
 #endif // _VMCOMMON_H

@@ -7,9 +7,11 @@
 
 #include "vmmain.hpp"
 #include "vmcommon.hpp"
+#include "vmmem.hpp"
+#include "vmelf.hpp"
 
 namespace rvm64::mock {
-	__native vm_buffer* read_file() {
+	_native vm_buffer* read_file() {
 		BOOL success = false;
 		DWORD bytes_read = 0;
 
@@ -52,7 +54,7 @@ defer:
 		return buffer;
 	}
 
-	__native bool read_program_from_packet() {
+	_native bool read_program_from_packet() {
 		vm_buffer *data = rvm64::mock::read_file();
 		if (!data) {
 			return false;

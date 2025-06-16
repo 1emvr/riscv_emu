@@ -181,7 +181,7 @@ typedef struct {
 
 namespace rvm64::elf {
 	// TODO: needs re-written
-	__native bool patch_elf_imports() {
+	_native bool patch_elf_imports() {
 		uintptr_t process = (uintptr_t)vmcs->process.address;
 		auto* ehdr = (elf64_ehdr*)process;
 
@@ -275,7 +275,7 @@ namespace rvm64::elf {
 		return true;
 	}
 
-	__native bool load_elf_image(void* image_data, size_t image_size) {
+	_native bool load_elf_image(void* image_data, size_t image_size) {
 		elf64_ehdr* ehdr = (elf64_ehdr*)(image_data);
 
 		if (ehdr->e_ident[0] != 0x7F || 
@@ -288,7 +288,7 @@ namespace rvm64::elf {
 		}
 
 		if (ehdr->e_ident[EI_CLASS] != ELFCLASS64 || ehdr->e_machine != EM_RISCV) {
-			printf("ERROR: Unsupported ELF format or architecture.\n");
+			// printf("ERROR: Unsupported ELF format or architecture.\n");
 			return false;
 		}
 
@@ -304,7 +304,7 @@ namespace rvm64::elf {
 		}
 
 		if (base == UINT64_MAX || limit <= base) {
-			printf("ERROR: No loadable segments found.\n");
+			// printf("ERROR: No loadable segments found.\n");
 			return false;
 		}
 

@@ -77,12 +77,12 @@ typedef struct {
 	uint32_t reason;
 } vmcs_t;
 
-__data hexane *ctx;
-__data vmcs_t *vmcs;
-__data HANDLE vmcs_mutex;
+_data hexane *ctx;
+_data vmcs_t *vmcs;
+_data HANDLE vmcs_mutex;
 
-__data uintptr_t __stack_cookie = 0;
-__rdata const uintptr_t __key = 0;
-__rdata const int memcheck = 1;
+_data uintptr_t stack_cookie = 0;
+_rdata const uintptr_t key = 0;
+_rdata const int memcheck = 1;
 
 #endif //VMCS_H

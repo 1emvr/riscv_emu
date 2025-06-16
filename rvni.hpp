@@ -119,25 +119,25 @@ namespace rvm64::rvni {
 		}
 	}
 
-	__data simple_map::unordered_map<uintptr_t, native_wrapper> *ucrt_native_table;
+	_data simple_map::unordered_map<uintptr_t, native_wrapper> *ucrtnative_table;
 
-	__vmcall native_wrapper second() {
-		native_wrapper found = simple_map::find(ucrt_native_table, (uintptr_t)0x1234);
+	vmcall native_wrapper second() {
+		native_wrapper found = simple_map::find(ucrtnative_table, (uintptr_t)0x1234);
 		return found;
 	}
 
-	__vmcall int main() {
+	vmcall int main() {
 		void *new_address = 0x1234;
 		native_wrapper new_wrapper = { 
 			.address = new_address;
 			.open = decltype(open);
 		};
 
-		ucrt_native_table = simple_map::init<uintptr_t, native_wrapper>();
-		simple_map::push(ucrt_native_table, (uintptr_t)new_address, new_wrapper);
+		ucrtnative_table = simple_map::init<uintptr_t, native_wrapper>();
+		simple_map::push(ucrtnative_table, (uintptr_t)new_address, new_wrapper);
 
 		auto found = second();
-		simple_map::destroy(ucrt_native_table);
+		simple_map::destroy(ucrtnative_table);
 
 		if (found.address == 0) {
 			return 1;
@@ -147,20 +147,20 @@ namespace rvm64::rvni {
 	} 
 	*/
 
-	__data std::unordered_map<void*, native_wrapper> ucrt_native_table; 
+	_data std::unordered_map<void*, native_wrapper> ucrtnative_table; 
 																
 	struct ucrt_alias {
 		const char* original;
 		const char* alias;
 	};
 
-	__data const ucrt_alias alias_table[] = {
+	_data const ucrt_alias alias_table[] = {
 		{ "open",  "_open"  }, { "read",  "_read"  }, { "write", "_write" },
 		{ "close", "_close" }, { "exit",  "_exit"  },
 	};
 
 
-	__native void* windows_thunk_resolver(const char* sym_name) {
+	_native void* windows_thunk_resolver(const char* sym_name) {
 		static HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
 		if (!ucrt) {
 			vmcs->halt = 1;
@@ -185,7 +185,7 @@ namespace rvm64::rvni {
 		return proc;
 	}
 
-	__native void resolve_ucrt_imports() {
+	_native void resolve_ucrt_imports() {
 		HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
 
 		if (!ucrt) {
@@ -236,16 +236,16 @@ namespace rvm64::rvni {
 												  }
 			}
 
-			ucrt_native_table[native] = wrap;
+			ucrtnative_table[native] = wrap;
 		}
 	}
 
-	__native void vm_trap_exit() {
-		// case VM_NATIVE_CALL:
+	_native void vm_trap_exit() {
+		// case VMnative_CALL:
 		if ((vmcs->pc >= vmcs->process.plt.start) && (vmcs->pc < vmcs->process.plt.end)) {
-			auto it = ucrt_native_table.find((void*)vmcs->pc); 
+			auto it = ucrtnative_table.find((void*)vmcs->pc); 
 
-			if (it == ucrt_native_table.end()) {
+			if (it == ucrtnative_table.end()) {
 				vmcs->csr.m_cause = illegal_instruction;                                
 				vmcs->csr.m_epc = vmcs->pc;                                           
 				vmcs->csr.m_tval = vmcs->pc;                                            
