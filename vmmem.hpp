@@ -3,11 +3,12 @@
 #include "vmmain.hpp"
 #include "vmcrypt.hpp"
 #include "vmelf.hpp"
+#include "vmtable.hpp"
 
 namespace rvm64::memory {
     __native void context_init() {
 		vmcs->dkey = __key; 
-		vmcs->handler = (uintptr_t)rvm64::operations::__handler;
+		vmcs->handler = (uintptr_t)__handler;
 
 		vmcs->load_rsv_valid = false;
 		vmcs->load_rsv_addr = 0LL;
