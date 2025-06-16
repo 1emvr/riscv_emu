@@ -3,6 +3,7 @@
 #include "vmmain.hpp"
 #include "vmcrypt.hpp"
 #include "vmmem.hpp"
+#include "vmrwx.hpp"
 
 namespace rvm64::decoder {
 	struct opcode {

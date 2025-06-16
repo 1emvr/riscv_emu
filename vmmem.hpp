@@ -197,4 +197,5 @@ namespace rvm64::check {
 		return true;
 	}
 };
+
 #endif // VMMEM_H

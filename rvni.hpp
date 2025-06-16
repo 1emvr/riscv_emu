@@ -3,17 +3,18 @@
 #include <unordered_map>
 #include <windows.h>
 
+#include "vmmem.hpp"
 #include "vmmain.hpp"
 #include "vmcommon.hpp"
-#include "vmmem.hpp"
+#include "vmrwx.hpp"
 
 namespace rvm64::rvni {
 	struct native_wrapper {
 		void *address;  
 
 		enum typecaster {
-			PLT_OPEN, PLT_READ, PLT_WRITE, PLT_CLOSE,
-			PLT_LSEEK, PLT_STAT64, PLT_MALLOC, PLT_FREE,
+			PLT_OPEN, 	PLT_READ, 	PLT_WRITE, 	PLT_CLOSE,
+			PLT_LSEEK, 	PLT_STAT64, PLT_MALLOC, PLT_FREE,
 			PLT_MEMCPY, PLT_MEMSET, PLT_STRLEN, PLT_STRCPY,
 			PLT_UNKNOWN
 		} type;
@@ -119,10 +120,10 @@ namespace rvm64::rvni {
 		}
 	}
 
-	_data simple_map::unordered_map<uintptr_t, native_wrapper> *ucrtnative_table;
+	_data simple_map::unordered_map<uintptr_t, native_wrapper> *ucrt_native_table;
 
 	vmcall native_wrapper second() {
-		native_wrapper found = simple_map::find(ucrtnative_table, (uintptr_t)0x1234);
+		native_wrapper found = simple_map::find(ucrt_native_table, (uintptr_t)0x1234);
 		return found;
 	}
 
@@ -133,11 +134,11 @@ namespace rvm64::rvni {
 			.open = decltype(open);
 		};
 
-		ucrtnative_table = simple_map::init<uintptr_t, native_wrapper>();
-		simple_map::push(ucrtnative_table, (uintptr_t)new_address, new_wrapper);
+		ucrt_native_table = simple_map::init<uintptr_t, native_wrapper>();
+		simple_map::push(ucrt_native_table, (uintptr_t)new_address, new_wrapper);
 
 		auto found = second();
-		simple_map::destroy(ucrtnative_table);
+		simple_map::destroy(ucrt_native_table);
 
 		if (found.address == 0) {
 			return 1;
@@ -147,14 +148,14 @@ namespace rvm64::rvni {
 	} 
 	*/
 
-	_data std::unordered_map<void*, native_wrapper> ucrtnative_table; 
+	_data std::unordered_map<void*, native_wrapper> ucrt_native_table; 
 																
 	struct ucrt_alias {
 		const char* original;
 		const char* alias;
 	};
 
-	_data const ucrt_alias alias_table[] = {
+	_data ucrt_alias alias_table[] = {
 		{ "open",  "_open"  }, { "read",  "_read"  }, { "write", "_write" },
 		{ "close", "_close" }, { "exit",  "_exit"  },
 	};
@@ -236,16 +237,16 @@ namespace rvm64::rvni {
 												  }
 			}
 
-			ucrtnative_table[native] = wrap;
+			ucrt_native_table[native] = wrap;
 		}
 	}
 
 	_native void vm_trap_exit() {
 		// case VMnative_CALL:
 		if ((vmcs->pc >= vmcs->process.plt.start) && (vmcs->pc < vmcs->process.plt.end)) {
-			auto it = ucrtnative_table.find((void*)vmcs->pc); 
+			auto it = ucrt_native_table.find((void*)vmcs->pc); 
 
-			if (it == ucrtnative_table.end()) {
+			if (it == ucrt_native_table.end()) {
 				vmcs->csr.m_cause = illegal_instruction;                                
 				vmcs->csr.m_epc = vmcs->pc;                                           
 				vmcs->csr.m_tval = vmcs->pc;                                            
