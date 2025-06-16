@@ -1782,7 +1782,7 @@ namespace rvm64::operations {
 		// RTYPE
 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fadd_d), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fsub_d),
 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fmul_d), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fdiv_d),
-		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fsqrt_d), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fsgnj_d),
+		/*rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fsqrt_d),*/ 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fsgnj_d),
 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fsgnjn_d), 	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fsgnjx_d),
 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fmin_d), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fmax_d),
 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_feq_d), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_flt_d),

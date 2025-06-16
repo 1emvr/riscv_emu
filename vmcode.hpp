@@ -251,6 +251,8 @@ namespace rvm64::decoder {
 
 						case 0b0101111: 
 							{
+								// TODO: func5 might be incorrect.
+        						uint8_t func7 = (opcode >> 24) & 0x7F;
         						uint8_t func5 = (func7 >> 2) & 0x1F;
         						uint8_t func3 = (opcode >> 12) & 0x7;
 

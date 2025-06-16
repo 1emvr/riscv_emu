@@ -19,7 +19,6 @@ namespace rvm64::mock {
 				OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
 		if (hfile == INVALID_HANDLE_VALUE) { // NOTE: since not reading from the network, this can only pass/fail - exit immediately
-			vmcs->mepc = vmcs->pc;
 			vmcs->reason = vm_undefined;
 			vmcs->halt = 1;
 			goto defer;
