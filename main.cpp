@@ -9,14 +9,6 @@ namespace rvm64::entry {
 		vmcs->dkey = key; 
 		vmcs->handler = (uintptr_t)handler;
 
-		vmcs->load_rsv_valid = false;
-		vmcs->load_rsv_addr = 0LL;
-
-		vmcs->csr.m_cause = 0;                                
-		vmcs->csr.m_epc = 0;                                           
-		vmcs->csr.m_tval = 0;                                            
-		vmcs->halt = 0;
-
 		rvm64::memory::context_init();
 		rvm64::rvni::resolve_ucrt_imports(); 
 
