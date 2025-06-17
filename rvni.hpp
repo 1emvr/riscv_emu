@@ -238,7 +238,6 @@ namespace rvm64::rvni {
 
 	_native void vm_trap_exit() {
 		if (vmcs->pc >= vmcs->process.plt.start && vmcs->pc < vmcs->process.plt.end) {
-			// NOTE: not sure if this actually captures the native fn pointer
 			auto it = ucrt_native_table.find((void*)vmcs->pc);
 
 			if (it == ucrt_native_table.end()) {
@@ -387,9 +386,7 @@ namespace rvm64::rvni {
 						for (int i = 1; i <= 7; ++i) {
 							reg_read(uint64_t, args[i - 1], regenum::a0 + i);
 						}
-
-						int result = plt.printf(fmt,
-								args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
+						int result = plt.printf(fmt, args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
 
 						reg_write(int, regenum::a0, result);
 						break;
