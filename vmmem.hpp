@@ -63,7 +63,10 @@ namespace rvm64::memory {
 	}
 
 	_native void memory_end() {
-		vmcs->reason = ctx->win32.NtFreeVirtualMemory(NtCurrentProcess(), (LPVOID*)&vmcs->process.address, &vmcs->process.size, MEM_RELEASE);
+    	NTSTATUS status = 0;
+		if (!NT_SUCCESS(status = ctx->win32.NtFreeVirtualMemory(NtCurrentProcess(), (LPVOID*)&vmcs->process.address, &vmcs->process.size, MEM_RELEASE))) {
+			CSR_SET(nullptr, load_access_fault, status, 0, 1);
+		}
 	}
 };
 

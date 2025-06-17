@@ -164,7 +164,7 @@ namespace rvm64::rvni {
 	_native void* windows_thunk_resolver(const char* sym_name) {
 		static HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
 		if (!ucrt) {
-			CSR_SET(nullptr, undefined_error, 0, 0, 1);
+			CSR_SET(nullptr, undefined, 0, 0, 1);
 			return nullptr;
 		}
 
@@ -177,7 +177,7 @@ namespace rvm64::rvni {
 
 		void* proc = (void*)GetProcAddress(ucrt, sym_name);
 		if (!proc) {
-			CSR_SET(nullptr, undefined_error, 0, 0, 1);
+			CSR_SET(nullptr, undefined, 0, 0, 1);
 			return nullptr;
 		}
 
@@ -188,7 +188,7 @@ namespace rvm64::rvni {
 		HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
 
 		if (!ucrt) {
-			CSR_SET(nullptr, undefined_error, 0, 0, 1);
+			CSR_SET(nullptr, undefined, 0, 0, 1);
 			return;
 		}
 
@@ -205,7 +205,7 @@ namespace rvm64::rvni {
 		for (auto& f : funcs) {
 			void* native = (void*)GetProcAddress(ucrt, f.name);
 			if (!native) {
-				CSR_SET(nullptr, undefined_error, 0, 0, 1);
+				CSR_SET(nullptr, undefined, 0, 0, 1);
 				return;
 			}
 
@@ -228,7 +228,7 @@ namespace rvm64::rvni {
 				case native_wrapper::PLT_STRCPY:  wrap.strcpy = (decltype(wrap.strcpy))native; break;
 				case native_wrapper::PLT_PRINTF:  wrap.printf = (decltype(wrap.printf))native; break;
 				default: {
-					CSR_SET(nullptr, undefined_error, 0, 0, 1);
+					CSR_SET(nullptr, undefined, 0, 0, 1);
 					return;
 				}
 			}

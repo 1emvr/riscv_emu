@@ -22,13 +22,13 @@ namespace rvm64::mock {
 		BOOL success = false;
 		DWORD bytes_read = 0;
 
-		auto buffer = (vm_buffer_t *) malloc(sizeof(vm_buffer_t));
+		auto buffer = (vm_buffer_t*) malloc(sizeof(vm_buffer_t));
 
 		HANDLE hfile = ctx->win32.NtCreateFile("./test.elf", GENERIC_READ, FILE_SHARE_READ, nullptr,
 		                                       OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
 		if (hfile == INVALID_HANDLE_VALUE) {
-			CSR_SET(nullptr, undefined_error, 0, 0, 1);
+			CSR_SET(nullptr, undefined, (uintptr_t)INVALID_HANDLE_VALUE, 0, 1);
 			goto defer;
 		}
 
@@ -36,14 +36,14 @@ namespace rvm64::mock {
 		status = ctx->win32.NtGetFileSize(hfile, (LPDWORD) &buffer->size);
 
 		if (status == INVALID_FILE_SIZE || buffer->size == 0) {
-			CSR_SET(nullptr, undefined_error, INVALID_FILE_SIZE, 0, 1);
+			CSR_SET(nullptr, undefined, INVALID_FILE_SIZE, 0, 1);
 			vmcs->halt = 1;
 			goto defer;
 		}
 
 		if (!ctx->win32.NtReadFile(hfile, (LPVOID) buffer->address, buffer->size, &bytes_read, NULL) ||
 		    bytes_read != buffer->size) {
-			CSR_SET(nullptr, undefined_error, 0, 0, 1);
+			CSR_SET(nullptr, undefined, 0, 0, 1);
 			goto defer;
 		}
 		success = true;
