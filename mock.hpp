@@ -67,9 +67,11 @@ namespace rvm64::mock {
 
 		data->size += VM_PROCESS_PADDING;
 
-		rvm64::memory::memory_init(data->size);
-		rvm64::elf::load_elf_image(data->address, data->size);
-		rvm64::elf::patch_elf_imports();
+		if (!rvm64::memory::memory_init(data->size) ||
+			!rvm64::elf::load_elf_image(data->address, data->size) ||
+			!rvm64::elf::patch_elf_imports()) {
+			return false;
+		}
 
 		destroy_file(data);
 		return true;

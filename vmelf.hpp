@@ -19,38 +19,38 @@
 #define DT_RELASZ       8       // Size of the DT_RELA table
 #define DT_RELAENT      9       // Size of one DT_RELA entry
 								//
-#define EI_MAG0     0   // 0x7F
-#define EI_MAG1     1   // 'E'
-#define EI_MAG2     2   // 'L'
-#define EI_MAG3     3   // 'F'
-#define EI_CLASS    4   // File class
-#define EI_DATA     5   // Data encoding
-#define EI_VERSION  6   // File version
-#define EI_OSABI    7   // OS/ABI identification
-#define EI_ABIVERSION 8 // ABI version
-#define EI_PAD      9   // Start of padding bytes (up to 16)
-#define EI_NIDENT   16  // Size of e_ident[]
+#define EI_MAG0			0   // 0x7F
+#define EI_MAG1			1   // 'E'
+#define EI_MAG2			2   // 'L'
+#define EI_MAG3			3   // 'F'
+#define EI_CLAS			4   // File class
+#define EI_DATA			5   // Data encoding
+#define EI_VERS			6   // File version
+#define EI_OSAB			7   // OS/ABI identification
+#define EI_ABIVERSION	8 // ABI version
+#define EI_PAD			9   // Start of padding bytes (up to 16)
+#define EI_NIDENT		16  // Size of e_ident[]
 
-#define ELFCLASS32 1
-#define ELFCLASS64 2
+#define ELFCLASS32		1
+#define ELFCLASS64		2
 
-#define ET_NONE    0 // No file type
-#define ET_REL     1 // Relocatable file
-#define ET_EXEC    2 // Executable file
-#define ET_DYN     3 // Shared object file
-#define ET_CORE    4 // Core file
+#define ET_NONE			0 // No file type
+#define ET_REL 			1 // Relocatable file
+#define ET_EXEC			2 // Executable file
+#define ET_DYN 			3 // Shared object file
+#define ET_CORE			4 // Core file
 
-#define EM_NONE    0
-#define EM_RISCV   243 // RISC-V target
+#define EM_NONE			0
+#define EM_RISC			243 // RISC-V target
 
-#define PT_NULL    0
-#define PT_LOAD    1
-#define PT_DYNAMIC 2
-#define PT_INTERP  3
-#define PT_NOTE    4
-#define PT_SHLIB   5
-#define PT_PHDR    6
-#define PT_TLS     7
+#define PT_NULL			0
+#define PT_LOAD			1
+#define PT_DYNA			2
+#define PT_INTE			3
+#define PT_NOTE			4
+#define PT_SHLI			5
+#define PT_PHDR			6
+#define PT_TLS 			7
 
 #define SHT_NULL        0           // Inactive section header
 #define SHT_PROGBITS    1           // Program-defined contents
@@ -186,6 +186,7 @@ namespace rvm64::elf {
 		auto ehdr = (elf64_ehdr*)process;
 
 		if (ehdr->e_type != ET_EXEC && ehdr->e_type != ET_DYN) {
+			CSR_SET(nullptr, bad_image_type, 0, 0, 1);
 			return false;
 		}
 
@@ -194,13 +195,14 @@ namespace rvm64::elf {
 		uint64_t dyn_size = 0;
 
 		for (int i = 0; i < ehdr->e_phnum; ++i) { 
-			if (phdrs[i].p_type == PT_DYNAMIC) {
+			if (phdrs[i].p_type == PT_DYNA) {
 				dyn_vaddr = phdrs[i].p_vaddr;
 				dyn_size = phdrs[i].p_memsz;
 				break;
 			}
 		}
 		if (!dyn_vaddr || !dyn_size) {
+			CSR_SET(nullptr, bad_image_load, 0, 0, 1);
 			return false;
 		}
 
@@ -216,14 +218,20 @@ namespace rvm64::elf {
 				case DT_PLTRELSZ: rela_plt_size = dyn->d_un.d_val; break;
 				case DT_PLTREL: {
 					if (dyn->d_un.d_val != DT_RELA) {
+						CSR_SET(nullptr, bad_image_load, 0, 0, 1);
 						return false;
 					}
 					break;
 				}
+				default: {
+					CSR_SET(nullptr, bad_image_load, 0, dyn->d_tag, 1);
+					return false;
+				}
 			}
 		}
 
-		if (!symtab_vaddr || !strtab_vaddr || !rela_plt_vaddr || !rela_plt_size) { 
+		if (!symtab_vaddr || !strtab_vaddr || !rela_plt_vaddr || !rela_plt_size) {
+			CSR_SET(nullptr, bad_image_load, 0, 0, 1);
 			return false;
 		}
 
@@ -279,7 +287,8 @@ namespace rvm64::elf {
 			return false;
 		}
 
-		if (ehdr->e_ident[EI_CLASS] != ELFCLASS64 || ehdr->e_machine != EM_RISCV) {
+		if (ehdr->e_ident[EI_CLAS] != ELFCLASS64 || ehdr->e_machine != EM_RISC) {
+			CSR_SET(nullptr, bad_image_type, 0, 0, 1);
 			return false;
 		}
 
@@ -294,6 +303,7 @@ namespace rvm64::elf {
 			}
 		}
 		if (base == UINT64_MAX || limit <= base) {
+			CSR_SET(nullptr, bad_image_load, 0, 0, 1);
 			return false;
 		}
 
