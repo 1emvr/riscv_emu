@@ -205,14 +205,14 @@ namespace rvm64::elf {
 		}
 
 		auto* dyn_entries = (elf64_dyn*) ((uint8_t*)process + dyn_vaddr); 
-		uint64_t symtab_vaddr = 0, strtab_vaddr = 0, rela_plt_vaddr = 0;
-		uint64_t rela_plt_size = 0, syment_size = 0;
+		uint64_t symtab_vaddr = 0, strtab_vaddr = 0, rela_plt_vaddr = 0, rela_plt_size = 0 /*, syment_size = 0*/;
 
+		// NOTE: what the hell is going on here?
 		for (elf64_dyn* dyn = dyn_entries; dyn->d_tag != DT_NULL; ++dyn) { 
 			switch (dyn->d_tag) {
 				case DT_SYMTAB:   symtab_vaddr = dyn->d_un.d_ptr; break;
 				case DT_STRTAB:   strtab_vaddr = dyn->d_un.d_ptr; break;
-				case DT_SYMENT:   syment_size = dyn->d_un.d_val;  break;
+				//case DT_SYMENT:   syment_size = dyn->d_un.d_val;  break;
 				case DT_JMPREL:   rela_plt_vaddr = dyn->d_un.d_ptr; break;
 				case DT_PLTRELSZ: rela_plt_size = dyn->d_un.d_val; break;
 				case DT_PLTREL: {
@@ -325,7 +325,7 @@ namespace rvm64::elf {
 			}
 		}
 
-		vmcs->process.vsize = image_size;
+		vmcs->process.size = image_size;
 		vmcs->process.base_vaddr = base;
 		vmcs->process.entry = (uintptr_t)vmcs->process.address + (ehdr->e_entry - base);
 
