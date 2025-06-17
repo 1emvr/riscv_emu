@@ -398,7 +398,7 @@ namespace rvm64::rvni {
 							reg_read(uint64_t, args[i - 1], regenum::a0 + i);
 						}
 
-						// NOTE: This implementation is limited to 7 arguments max
+						// NOTE: this implementation is limited to 7 arguments max
 						int result = plt.printf(fmt,
 								args[0], args[1], args[2], args[3],
 								args[4], args[5], args[6]);
