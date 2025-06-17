@@ -148,7 +148,7 @@ namespace rvm64::rvni {
 	} 
 	*/
 
-	_data std::unordered_map<void*, native_wrapper> ucrt_native_table; 
+	_data std::unordered_map<void*, native_wrapper> ucrt_native_table;
 																
 	struct ucrt_alias {
 		const char* original;
@@ -164,8 +164,7 @@ namespace rvm64::rvni {
 	_native void* windows_thunk_resolver(const char* sym_name) {
 		static HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
 		if (!ucrt) {
-			vmcs->halt = 1;
-			vmcs->reason = vm_undefined;
+			csr_set(nullptr, causenum::undefined, 0, 0, 1);
 			return nullptr;
 		}
 
@@ -178,11 +177,8 @@ namespace rvm64::rvni {
 
 		void* proc = (void*)GetProcAddress(ucrt, sym_name);
 		if (!proc) {
-			vmcs->halt = 1;
-			vmcs->reason = vm_undefined;
-			return nullptr;
+			csr_set(nullptr, causenum::undefined, 0, 0, 1);
 		}
-
 		return proc;
 	}
 
@@ -190,8 +186,7 @@ namespace rvm64::rvni {
 		HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
 
 		if (!ucrt) {
-			vmcs->halt = 1;
-			vmcs->csr.m_cause = vm_undefined;
+			csr_set(nullptr, causenum::undefined, 0, 0, 1);
 			return;
 		}
 

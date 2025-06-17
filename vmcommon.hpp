@@ -49,6 +49,7 @@ enum causenum {
 	environment_call_native = 0xF014,
 	store_amo_page_fault = 0xF015,
 	machine_external_interrupt = 0xF111,
+	undefined = 0xFFFF,
 };
 
 enum vm_reason {
@@ -80,4 +81,10 @@ enum typenum {
 	rtype = 1, r4type, itype, stype, btype, utype, jtype,
 };
 
+#define csr_set(epc, cause, stat, val, hlt)	\
+	vmcs->csr.m_epc = (uintptr_t)epc;		\
+	vmcs->csr.m_cause = cause;				\
+	vmcs->csr.m_status = stat;				\
+	vmcs->csr.m_tval = val;					\
+	vmcs->halt = hlt
 #endif // _VMCOMMON_H
