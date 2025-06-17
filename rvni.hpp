@@ -164,7 +164,7 @@ namespace rvm64::rvni {
 	_native void* windows_thunk_resolver(const char* sym_name) {
 		static HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
 		if (!ucrt) {
-			csr_set(nullptr, causenum::undefined, 0, 0, 1);
+			csr_set(nullptr, undefined_error, 0, 0, 1);
 			return nullptr;
 		}
 
@@ -177,8 +177,10 @@ namespace rvm64::rvni {
 
 		void* proc = (void*)GetProcAddress(ucrt, sym_name);
 		if (!proc) {
-			csr_set(nullptr, causenum::undefined, 0, 0, 1);
+			csr_set(nullptr, undefined_error, 0, 0, 1);
+			return nullptr;
 		}
+
 		return proc;
 	}
 
@@ -186,7 +188,7 @@ namespace rvm64::rvni {
 		HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
 
 		if (!ucrt) {
-			csr_set(nullptr, causenum::undefined, 0, 0, 1);
+			csr_set(nullptr, undefined_error, 0, 0, 1);
 			return;
 		}
 
@@ -203,7 +205,8 @@ namespace rvm64::rvni {
 		for (auto& f : funcs) {
 			void* native = (void*)GetProcAddress(ucrt, f.name);
 			if (!native) {
-				csr_set(nullptr, causenum::undefined, 0, 0, 1);
+				csr_set(nullptr, undefined_error, 0, 0, 1);
+				return;
 			}
 
 			native_wrapper wrap = { };
@@ -225,8 +228,7 @@ namespace rvm64::rvni {
 				case native_wrapper::PLT_STRCPY:  wrap.strcpy = (decltype(wrap.strcpy))native; break;
 				case native_wrapper::PLT_PRINTF:  wrap.printf = (decltype(wrap.printf))native; break;
 				default: {
-					vmcs->halt = 1;
-					vmcs->csr.m_cause = vm_undefined;
+					csr_set(nullptr, undefined_error, 0, 0, 1);
 					return;
 				}
 			}

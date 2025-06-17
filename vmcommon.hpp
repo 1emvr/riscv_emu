@@ -49,20 +49,7 @@ enum causenum {
 	environment_call_native = 0xF014,
 	store_amo_page_fault = 0xF015,
 	machine_external_interrupt = 0xF111,
-	undefined = 0xFFFF,
-};
-
-enum vm_reason {
-	vm_ok,
-	vm_illegal_op,
-	vm_access_violation,
-	vm_unaligned_op,
-	vm_invalid_pc,
-	vm_return_address_corruption,
-	vm_stack_overflow,
-	vm_undefined,
-	vm_user_ecall,
-	vm_debug_break,
+	undefined_error = 0xFFFF,
 };
 
 enum screnum {
