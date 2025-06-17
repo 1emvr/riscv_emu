@@ -203,9 +203,7 @@ namespace rvm64::rvni {
 		for (auto& f : funcs) {
 			void* native = (void*)GetProcAddress(ucrt, f.name);
 			if (!native) {
-				vmcs->halt = 1;
-				vmcs->csr.m_cause = vm_undefined;
-				return;
+				csr_set(nullptr, causenum::undefined, 0, 0, 1);
 			}
 
 			native_wrapper wrap = { };
@@ -242,10 +240,8 @@ namespace rvm64::rvni {
 			auto it = ucrt_native_table.find((void*)vmcs->pc); 
 
 			if (it == ucrt_native_table.end()) {
-				vmcs->csr.m_cause = illegal_instruction;                                
-				vmcs->csr.m_epc = vmcs->pc;                                           
-				vmcs->csr.m_tval = vmcs->pc;                                            
-				vmcs->halt = 1;
+				csr_set(vmcs->pc, illegal_instruction, 0, vmcs->pc, 1);
+				return;
 			}
 
 			native_wrapper& plt = it->second;
@@ -399,23 +395,17 @@ namespace rvm64::rvni {
 					}
 				default: 
 					{
-						vmcs->csr.m_cause = illegal_instruction;                                
-						vmcs->csr.m_epc = vmcs->pc;                                           
-						vmcs->csr.m_tval = (plt.type);                                            
-						vmcs->halt = 1;
+						csr_set(vmcs->pc, illegal_instruction, 0, plt.type, 1);
 					}
 			}
 		} else {
-			vmcs->csr.m_cause = instruction_access_fault;                                
-			vmcs->csr.m_epc = vmcs->pc;                                           
-			vmcs->csr.m_tval = vmcs->pc;                                            
-			vmcs->halt = 1;
-		}				
+			csr_set(vmcs->pc, instruction_access_fault, 0, vmcs->pc, 1);
+			return;
+		}
 
 		uintptr_t ret = 0;
-		reg_read(uintptr_t, ret, regenum::ra);
 
-		vmcs->csr.m_cause = 0;
+		reg_read(uintptr_t, ret, regenum::ra);
 		vmcs->step = true;
 		vmcs->pc = ret; 
 	}
