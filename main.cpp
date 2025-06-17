@@ -34,6 +34,7 @@ namespace rvm64::entry {
 				vmcs->pc += 4; 
 			}
 		}
+		CSR_GET();
 	}
 };
 
@@ -46,7 +47,6 @@ namespace rvm64 {
 		rvm64::entry::vm_entry();
 		rvm64::entry::vm_end();
 
-		CSR_GET();
 		return (int64_t)vmcs->csr.m_cause;
 	}
 };
