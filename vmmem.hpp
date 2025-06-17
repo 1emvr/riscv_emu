@@ -49,18 +49,6 @@ namespace rvm64::memory {
         return valid;
     }
 
-	/*
-		// NOTE: process loading
-		if (!rvm64::memory::memory_init(vmcs->data.size + VM_PROCESS_PADDING) ||
-				!rvm64::elf::load_elf64_image((void*)vmcs->data.address, vmcs->data.size) ||
-				!rvm64::elf::patch_elf64_imports((void*)vmcs->process.address, &vmcs->vm_plt)) {
-
-			vmcs->halt = 1;
-			vmcs->reason = vm_undefined;
-			goto defer;
-		}
-	 */
-
 	_native bool memory_init(size_t process_size) {
     	NTSTATUS status = 0;
 		vmcs->process.size = process_size;
