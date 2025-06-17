@@ -16,7 +16,7 @@ namespace rvm64::rvni {
 			PLT_OPEN, 	PLT_READ, 	PLT_WRITE, 	PLT_CLOSE,
 			PLT_LSEEK, 	PLT_STAT64, PLT_MALLOC, PLT_FREE,
 			PLT_MEMCPY, PLT_MEMSET, PLT_STRLEN, PLT_STRCPY,
-			PLT_UNKNOWN
+			PLT_PRINTF, PLT_UNKNOWN
 		} type;
 
 		union {
@@ -32,6 +32,7 @@ namespace rvm64::rvni {
 			void* (*memset)(void*, int, size_t);
 			size_t (*strlen)(const char*);
 			char* (*strcpy)(char*, const char*);
+			int printf(const char *format, ...);
 		};
 	};
 
@@ -202,6 +203,7 @@ namespace rvm64::rvni {
 			{"_open", native_wrapper::PLT_OPEN}, {"_read", native_wrapper::PLT_READ}, {"_write", native_wrapper::PLT_WRITE}, {"_close", native_wrapper::PLT_CLOSE},
 			{"_lseek", native_wrapper::PLT_LSEEK}, {"_stat64", native_wrapper::PLT_STAT64}, {"malloc", native_wrapper::PLT_MALLOC}, {"free", native_wrapper::PLT_FREE},
 			{"memcpy", native_wrapper::PLT_MEMCPY}, {"memset", native_wrapper::PLT_MEMSET}, {"strlen", native_wrapper::PLT_STRLEN}, {"strcpy", native_wrapper::PLT_STRCPY},
+			{"printf", native_wrapper::PLT_PRINTF},
 		};
 
 		for (auto& f : funcs) {
@@ -229,6 +231,7 @@ namespace rvm64::rvni {
 				case native_wrapper::PLT_MEMSET:  wrap.memset = (decltype(wrap.memset))native; break;
 				case native_wrapper::PLT_STRLEN:  wrap.strlen = (decltype(wrap.strlen))native; break;
 				case native_wrapper::PLT_STRCPY:  wrap.strcpy = (decltype(wrap.strcpy))native; break;
+				case native_wrapper::PLT_PRINTF:  wrap.printf = (decltype(wrap.printf))native; break;
 				default:                       
 												  {
 													  vmcs->halt = 1;
@@ -382,6 +385,25 @@ namespace rvm64::rvni {
 
 						char* result = plt.strcpy(dest, src);
 						reg_write(uintptr_t, regenum::a0, result);
+						break;
+					}
+				case native_wrapper::PLT_PRINTF:
+					{
+						// TODO: needs testing.
+						char *fmt;
+						uint64_t args[7] = { };
+
+						reg_read(char*, fmt, regenum::a0);
+						for (int i = 1; i <= 7; ++i) {
+							reg_read(uint64_t, args[i - 1], regenum::a0 + i);
+						}
+
+						// NOTE: This implementation is limited to 7 arguments max
+						int result = plt.printf(fmt,
+								args[0], args[1], args[2], args[3],
+								args[4], args[5], args[6]);
+
+						reg_write(int, regenum::a0, result);
 						break;
 					}
 				default: 
