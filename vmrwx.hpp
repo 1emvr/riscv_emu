@@ -49,7 +49,7 @@
 	}
 
 #define	opcall_check(hdl_idx)											\
-	if ((hdl_idx) >= 255) {												\
+	if ((hdl_idx) > 255) {												\
 		csr_set(vmcs->pc, illegal_instruction, 0, hdl_idx, 1);			\
 		return;															\
 	}
