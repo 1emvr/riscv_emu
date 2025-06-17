@@ -389,8 +389,7 @@ namespace rvm64::rvni {
 						}
 
 						int result = plt.printf(fmt,
-								args[0], args[1], args[2], args[3],
-								args[4], args[5], args[6]);
+								args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
 
 						reg_write(int, regenum::a0, result);
 						break;
