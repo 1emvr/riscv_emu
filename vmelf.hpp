@@ -279,13 +279,10 @@ namespace rvm64::elf {
 				ehdr->e_ident[1] != 'E' || 
 				ehdr->e_ident[2] != 'L' || 
 				ehdr->e_ident[3] != 'F') {
-
-			printf("ERROR: Invalid ELF magic.\n");
 			return false;
 		}
 
 		if (ehdr->e_ident[EI_CLASS] != ELFCLASS64 || ehdr->e_machine != EM_RISCV) {
-			// printf("ERROR: Unsupported ELF format or architecture.\n");
 			return false;
 		}
 
@@ -301,7 +298,6 @@ namespace rvm64::elf {
 		}
 
 		if (base == UINT64_MAX || limit <= base) {
-			// printf("ERROR: No loadable segments found.\n");
 			return false;
 		}
 

@@ -76,6 +76,7 @@ typedef struct {
 	uint32_t reason;
 } vmcs_t;
 
+
 _data hexane *ctx;
 _data vmcs_t *vmcs;
 _data HANDLE vmcs_mutex;

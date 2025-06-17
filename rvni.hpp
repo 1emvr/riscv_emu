@@ -213,7 +213,7 @@ namespace rvm64::rvni {
 				return;
 			}
 
-			native_wrapper wrap;
+			native_wrapper wrap = { };
 			wrap.address = native;
 			wrap.type = f.type;
 
