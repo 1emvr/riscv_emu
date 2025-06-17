@@ -182,14 +182,14 @@ typedef struct {
 namespace rvm64::elf {
 	// TODO: needs re-written
 	_native bool patch_elf_imports() {
-		uintptr_t process = (uintptr_t)vmcs->process.address;
-		auto* ehdr = (elf64_ehdr*)process;
+		auto process = vmcs->process.address;
+		auto ehdr = (elf64_ehdr*)process;
 
 		if (ehdr->e_type != ET_EXEC && ehdr->e_type != ET_DYN) {
 			return false;
 		}
 
-		auto* phdrs = (elf64_phdr*) ((uint8_t*)(process) + ehdr->e_phoff); 
+		auto phdrs = (elf64_phdr*) ((uint8_t*)(process) + ehdr->e_phoff);
 		uint64_t dyn_vaddr = 0;
 		uint64_t dyn_size = 0;
 
@@ -228,16 +228,16 @@ namespace rvm64::elf {
 			return false;
 		}
 
-		auto* rela_entries 	= (elf64_rel*) ((uint8_t*)process + rela_plt_vaddr);
-		auto* symtab 		= (elf64_sym*) ((uint8_t*)process + symtab_vaddr);
-		const char* strtab 	= (const char*) ((uint8_t*)process + strtab_vaddr);
+		auto rela_entries 	= (elf64_rel*) ((uint8_t*)process + rela_plt_vaddr);
+		auto symtab 		= (elf64_sym*) ((uint8_t*)process + symtab_vaddr);
+		auto strtab 		= (const char*) ((uint8_t*)process + strtab_vaddr);
 		size_t rela_count 	= rela_plt_size / sizeof(elf64_rel);
 
 		for (size_t i = 0; i < rela_count; ++i) {
 			uint32_t sym_idx = ELF64_R_SYM(rela_entries[i].r_info);
 			uint32_t rel_type = ELF64_REL_TYPE(rela_entries[i].r_info);
 
-			uint64_t *reloc_addr = (uint64_t*) ((uint8_t*)process + rela_entries[i].r_offset);
+			auto reloc_addr = (uint64_t*) ((uint8_t*)process + rela_entries[i].r_offset);
 			const char *sym_name = strtab + symtab[sym_idx].st_name;
 
 			if (rel_type != R_RISCV_JUMP_SLOT && rel_type != R_RISCV_CALL_PLT) {
@@ -273,7 +273,7 @@ namespace rvm64::elf {
 	}
 
 	_native bool load_elf_image(void* image_data, size_t image_size) {
-		elf64_ehdr* ehdr = (elf64_ehdr*)(image_data);
+		auto ehdr = (elf64_ehdr*)(image_data);
 
 		if (ehdr->e_ident[0] != 0x7F || 
 				ehdr->e_ident[1] != 'E' || 
