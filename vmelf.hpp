@@ -146,7 +146,7 @@ typedef struct {
 typedef struct {
     uint64_t r_offset;
     uint64_t r_info;
-} elf64_rel;
+} elf64_rela;
 
 typedef struct {
     uint32_t st_name;
@@ -181,7 +181,6 @@ typedef struct {
 
 
 namespace rvm64::elf {
-	// TODO: needs re-written
 	_native bool patch_elf_imports() {
 		auto process = vmcs->process.address;
 		auto ehdr = (elf64_ehdr*)process;
@@ -208,8 +207,7 @@ namespace rvm64::elf {
 		auto* dyn_entries = (elf64_dyn*) ((uint8_t*)process + dyn_vaddr); 
 		uint64_t symtab_vaddr = 0, strtab_vaddr = 0, rela_plt_vaddr = 0, rela_plt_size = 0 /*, syment_size = 0*/;
 
-		// NOTE: what the hell is going on here?
-		for (elf64_dyn* dyn = dyn_entries; dyn->d_tag != DT_NULL; ++dyn) { 
+		for (elf64_dyn* dyn = dyn_entries; dyn->d_tag != DT_NULL; ++dyn) {
 			switch (dyn->d_tag) {
 				case DT_SYMTAB:   symtab_vaddr = dyn->d_un.d_ptr; break;
 				case DT_STRTAB:   strtab_vaddr = dyn->d_un.d_ptr; break;
@@ -229,10 +227,10 @@ namespace rvm64::elf {
 			return false;
 		}
 
-		auto rela_entries 	= (elf64_rel*) ((uint8_t*)process + rela_plt_vaddr);
+		auto rela_entries 	= (elf64_rela*) ((uint8_t*)process + rela_plt_vaddr);
 		auto symtab 		= (elf64_sym*) ((uint8_t*)process + symtab_vaddr);
 		auto strtab 		= (const char*) ((uint8_t*)process + strtab_vaddr);
-		size_t rela_count 	= rela_plt_size / sizeof(elf64_rel);
+		size_t rela_count 	= rela_plt_size / sizeof(elf64_rela);
 
 		for (size_t i = 0; i < rela_count; ++i) {
 			uint32_t sym_idx = ELF64_R_SYM(rela_entries[i].r_info);
@@ -244,7 +242,6 @@ namespace rvm64::elf {
 			if (rel_type != R_RISCV_JUMP_SLOT && rel_type != R_RISCV_CALL_PLT) {
 				continue;
 			}
-
 			void *win_func = rvm64::rvni::windows_thunk_resolver(sym_name);
 			if (!win_func) {
 				continue;
@@ -259,7 +256,6 @@ namespace rvm64::elf {
 			strtab = (const char*)((uint8_t*)process + strtab_hdr.sh_offset);
 		}
 
-		// NOTE: make sure this is correct.
 		for (int i = 0; i < ehdr->e_shnum; ++i) {
 			const auto& shdr = shdrs[i]; 
 
@@ -297,7 +293,6 @@ namespace rvm64::elf {
 				limit = MAX(limit, phdrs[i].p_vaddr + phdrs[i].p_memsz);
 			}
 		}
-
 		if (base == UINT64_MAX || limit <= base) {
 			return false;
 		}
@@ -306,7 +301,6 @@ namespace rvm64::elf {
 			if (phdrs[i].p_type != PT_LOAD) {
 				continue;
 			}
-
 			void *dest = (uint8_t*)vmcs->process.address + (phdrs[i].p_vaddr - base);
 			void *src = (uint8_t*)image_data + phdrs[i].p_offset;
 
