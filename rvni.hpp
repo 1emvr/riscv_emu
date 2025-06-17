@@ -237,9 +237,9 @@ namespace rvm64::rvni {
 	}
 
 	_native void vm_trap_exit() {
-		// NOTE: not sure if this actually captures the native fn pointer
 		if ((vmcs->pc >= vmcs->process.plt.start) && (vmcs->pc < vmcs->process.plt.end)) {
-			auto it = ucrt_native_table.find((void*)vmcs->pc); 
+			// NOTE: not sure if this actually captures the native fn pointer
+			auto it = ucrt_native_table.find((void*)vmcs->pc);
 
 			if (it == ucrt_native_table.end()) {
 				CSR_SET(vmcs->pc, illegal_instruction, 0, vmcs->pc, 1);
