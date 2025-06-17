@@ -9,11 +9,20 @@
 #include "vmelf.hpp"
 
 namespace rvm64::mock {
-	_native vm_buffer *read_file() {
+	_native void destroy_file(vm_buffer_t *data) {
+		if (data) {
+			if (data->address) {
+				free((void*)data->address);
+			}
+			free((void*)data);
+		}
+	}
+
+	_native vm_buffer_t *read_file() {
 		BOOL success = false;
 		DWORD bytes_read = 0;
 
-		auto buffer = (vm_buffer *) malloc(sizeof(vm_buffer));
+		auto buffer = (vm_buffer_t *) malloc(sizeof(vm_buffer_t));
 
 		HANDLE hfile = ctx->win32.NtCreateFile("./test.elf", GENERIC_READ, FILE_SHARE_READ, nullptr,
 		                                       OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
@@ -37,11 +46,11 @@ namespace rvm64::mock {
 			csr_set(nullptr, undefined_error, 0, 0, 1);
 			goto defer;
 		}
-
 		success = true;
+
 	defer:
 		if (hfile) {
-			CloseHandle((HANDLE) hfile);
+			CloseHandle(hfile);
 		}
 		if (!success) {
 			free(buffer);
@@ -52,7 +61,7 @@ namespace rvm64::mock {
 	}
 
 	_native bool read_program_from_packet() {
-		vm_buffer *data = read_file();
+		vm_buffer_t *data = read_file();
 		if (!data) {
 			return false;
 		}
@@ -63,10 +72,7 @@ namespace rvm64::mock {
 		rvm64::elf::load_elf_image(data->address, data->size);
 		rvm64::elf::patch_elf_imports();
 
-		if (data) {
-			free((void*)data->address);
-			free((void*)data);
-		}
+		destroy_file(data);
 		return true;
 	}
 };

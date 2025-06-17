@@ -34,7 +34,7 @@ typedef struct {
 typedef struct {
 	uint8_t *address;
 	size_t size;
-} vm_buffer;
+} vm_buffer_t;
 
 
 typedef struct {
@@ -43,7 +43,7 @@ typedef struct {
 	uintptr_t entry;
 	size_t size;
 	vm_range_t plt;
-} vm_memory_t;
+} vm_process_t;
 
 
 typedef struct {
@@ -58,8 +58,8 @@ typedef struct {
     CONTEXT host_context;
     CONTEXT vm_context;
 
-    vm_memory_t data;
-    vm_memory_t process;
+    vm_process_t data;
+    vm_process_t process;
 
     volatile uintptr_t load_rsv_addr;
     volatile int load_rsv_valid;
