@@ -148,8 +148,6 @@ namespace rvm64::rvni {
 	} 
 	*/
 
-	_data std::unordered_map<void*, native_wrapper> ucrt_native_table;
-																
 	struct ucrt_alias {
 		const char* original;
 		const char* alias;
@@ -160,6 +158,7 @@ namespace rvm64::rvni {
 		{ "close", "_close" }, { "exit",  "_exit"  },
 	};
 
+	_data std::unordered_map<void*, native_wrapper> ucrt_native_table;
 
 	_native void* windows_thunk_resolver(const char* sym_name) {
 		static HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
@@ -238,6 +237,7 @@ namespace rvm64::rvni {
 	}
 
 	_native void vm_trap_exit() {
+		// NOTE: not sure if this actually captures the native fn pointer
 		if ((vmcs->pc >= vmcs->process.plt.start) && (vmcs->pc < vmcs->process.plt.end)) {
 			auto it = ucrt_native_table.find((void*)vmcs->pc); 
 
