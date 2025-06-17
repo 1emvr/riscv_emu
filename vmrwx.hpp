@@ -11,7 +11,7 @@
 		(addr) >= vmcs->process.address + vmcs->process.size) {			\
 		csr_set(vmcs->pc, load_access_fault, 0, addr, 1);				\
 		return;															\
-	}																	\
+	}
 
 #define mem_write_check(T, addr)										\
 	if ((addr) % sizeof(T) != 0) {										\
@@ -22,19 +22,19 @@
 		(addr) >= vmcs->process.address + vmcs->process.size) { 		\
 		csr_set(vmcs->pc, store_amo_access_fault, 0, addr, 1);			\
 		return;															\
-	}																	\
+	}
 
 #define reg_read_check(reg_idx)											\
 	if ((reg_idx) > t6) {												\
 		csr_set(vmcs->pc, instruction_access_fault, 0, reg_idx, 1);		\
 		return;															\
-	}																	\
+	}
 
 #define reg_write_check(reg_idx)										\
 	if ((reg_idx) == zr || (reg_idx) > t6) {							\
 		csr_set(vmcs->pc, instruction_access_fault, 0, reg_idx, 1);		\
 		return;															\
-	}																	\
+	}
 
 #define scr_read_check(scr_idx)											\
 	if ((scr_idx) > imm) {												\
