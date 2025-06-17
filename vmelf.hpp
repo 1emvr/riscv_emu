@@ -215,14 +215,12 @@ namespace rvm64::elf {
 				case DT_SYMENT:   syment_size = dyn->d_un.d_val;  break;
 				case DT_JMPREL:   rela_plt_vaddr = dyn->d_un.d_ptr; break;
 				case DT_PLTRELSZ: rela_plt_size = dyn->d_un.d_val; break;
-				case DT_PLTREL:
-								  {
-									  if (dyn->d_un.d_val != DT_RELA) {
-										  // printf("ERROR: Only DT_RELA supported for PLT relocations.\n");
-										  return false;
-									  }
-									  break;
-								  }
+				case DT_PLTREL: {
+					if (dyn->d_un.d_val != DT_RELA) {
+						return false;
+					}
+					break;
+				}
 			}
 		}
 
@@ -243,13 +241,11 @@ namespace rvm64::elf {
 			const char *sym_name = strtab + symtab[sym_idx].st_name;
 
 			if (rel_type != R_RISCV_JUMP_SLOT && rel_type != R_RISCV_CALL_PLT) {
-				// printf("WARN: unsupported relocation type: %u\n", rel_type);
 				continue;
 			}
 
 			void *win_func = rvm64::rvni::windows_thunk_resolver(sym_name);
 			if (!win_func) {
-				// printf("WARN: unresolved import: %s\n", sym_name);
 				continue;
 			}
 
@@ -262,6 +258,7 @@ namespace rvm64::elf {
 			strtab = (const char*)((uint8_t*)process + strtab_hdr.sh_offset);
 		}
 
+		// NOTE: make sure this is correct.
 		for (int i = 0; i < ehdr->e_shnum; ++i) {
 			const auto& shdr = shdrs[i]; 
 

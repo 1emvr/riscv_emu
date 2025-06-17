@@ -243,7 +243,6 @@ namespace rvm64::rvni {
 	}
 
 	_native void vm_trap_exit() {
-		// case VMnative_CALL:
 		if ((vmcs->pc >= vmcs->process.plt.start) && (vmcs->pc < vmcs->process.plt.end)) {
 			auto it = ucrt_native_table.find((void*)vmcs->pc); 
 

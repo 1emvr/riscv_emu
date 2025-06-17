@@ -102,9 +102,9 @@ namespace rvm64::decoder {
 			}
 		}
 		if (!decoded) {
-			vmcs->csr.m_cause = illegal_instruction;                                
-			vmcs->csr.m_epc = vmcs->pc;                                           
-			vmcs->csr.m_tval = (opcode);                                            
+			vmcs->csr.m_cause = illegal_instruction;
+			vmcs->csr.m_epc = vmcs->pc;
+			vmcs->csr.m_tval = (opcode);
 			vmcs->halt = 1;
 			return;
 		}
@@ -116,7 +116,7 @@ namespace rvm64::decoder {
 					scr_write(uint8_t, screnum::rs1, (opcode >> 15) & 0x1F);
 
 					switch(opcode7) {
-						case 0b0010011: 
+						case 0b0010011:
 							{
 								// NOTE: imm_i is scoped this way because of the few functions that want shamt instead.
 								switch(func3) {
@@ -127,7 +127,7 @@ namespace rvm64::decoder {
 									case 0b110: { scr_write(int32_t, imm, imm_i(opcode)); unwrap_opcall(_rv_ori);  break; }
 									case 0b111: { scr_write(int32_t, imm, imm_i(opcode)); unwrap_opcall(_rv_andi); break; }
 									case 0b001: { scr_write(int32_t, imm, shamt_i(opcode)); unwrap_opcall(_rv_slli); break; }
-									case 0b101: 
+									case 0b101:
 												{
 													uint8_t func7 = (opcode >> 24) & 0x7F;
 													switch(func7) {
@@ -137,12 +137,12 @@ namespace rvm64::decoder {
 												}
 								}
 							}
-						case 0b0011011: 
+						case 0b0011011:
 							{
 								switch(func3) {
 									case 0b000: { scr_write(int32_t, imm, imm_i(opcode)); unwrap_opcall(_rv_addiw); break; }
 									case 0b001: { scr_write(int32_t, imm, shamt_i(opcode)); unwrap_opcall(_rv_slliw); break; }
-									case 0b101: 
+									case 0b101:
 												{
 													uint8_t func7 = (opcode >> 24) & 0x7F;
 													switch(func7) {
@@ -152,7 +152,7 @@ namespace rvm64::decoder {
 												}
 								}
 							}
-						case 0b0000011: 
+						case 0b0000011:
 							{
 								switch(func3) {
 									case 0b000: { scr_write(int32_t, imm, imm_i(opcode)); unwrap_opcall(_rv_lb); break;  }
@@ -167,14 +167,14 @@ namespace rvm64::decoder {
 					}
 				}
 
-			case rtype: 
+			case rtype:
 				{
 					scr_write(uint8_t, screnum::rs2, (opcode >> 20) & 0x1F);
 					scr_write(uint8_t, screnum::rs1, (opcode >> 15) & 0x1F);
 					scr_write(uint8_t, screnum::rd, (opcode >> 7) & 0x1F);
 
 					switch(opcode7) {
-						case 0b1010011: 
+						case 0b1010011:
 							{
 								uint8_t func7 = (opcode >> 24) & 0x7F;
 								switch(func7) {
@@ -184,21 +184,21 @@ namespace rvm64::decoder {
 									case 0b0001101: { unwrap_opcall(_rv_fdiv_d); break; }
 													//case 0b0101101: { unwrap_opcall(_rv_fsqrt_d); break; }
 									case 0b1111001: { unwrap_opcall(_rv_fmv_d_x); break; }
-									case 0b0100000: 
+									case 0b0100000:
 													{
 														uint8_t fcvt_mask = (opcode >> 20) & 0x1F;
 														switch(fcvt_mask) {
 															case 0b00001: unwrap_opcall(_rv_fcvt_s_d); break;
 														}
 													}
-									case 0b0100001: 
+									case 0b0100001:
 													{
 														uint8_t fcvt_mask = (opcode >> 20) & 0x1F;
 														switch(fcvt_mask) {
 															case 0b00000: unwrap_opcall(_rv_fcvt_d_s); break;
 														}
 													}
-									case 0b1100001: 
+									case 0b1100001:
 													{
 														uint8_t fcvt_mask = (opcode >> 20) & 0x1F;
 														switch(fcvt_mask) {
@@ -206,7 +206,7 @@ namespace rvm64::decoder {
 															case 0b00001: { unwrap_opcall(_rv_fcvt_wu_d); break; }
 														}
 													}
-									case 0b1101001: 
+									case 0b1101001:
 													{
 														uint8_t fcvt_mask = (opcode >> 20) & 0x1F;
 														switch(fcvt_mask) {
@@ -214,7 +214,7 @@ namespace rvm64::decoder {
 															case 0b00001: { unwrap_opcall(_rv_fcvt_d_wu); break; }
 														}
 													}
-									case 0b0010001: 
+									case 0b0010001:
 													{
 														uint8_t func3 = (opcode >> 12) & 0x7;
 														switch(func3) {
@@ -223,7 +223,7 @@ namespace rvm64::decoder {
 															case 0b010: { unwrap_opcall(_rv_fsgnjx_d); break; }
 														}
 													}
-									case 0b0010101: 
+									case 0b0010101:
 													{
 														uint8_t func3 = (opcode >> 12) & 0x7;
 														switch(func3) {
@@ -231,8 +231,8 @@ namespace rvm64::decoder {
 															case 0b001: { unwrap_opcall(_rv_fmax_d); break; }
 														}
 													}
-									case 0b1010001: 
-													{ 
+									case 0b1010001:
+													{
 														uint8_t func3 = (opcode >> 12) & 0x7;
 														switch(func3) {
 															case 0b010: { unwrap_opcall(_rv_feq_d); break; }
@@ -240,7 +240,7 @@ namespace rvm64::decoder {
 															case 0b000: { unwrap_opcall(_rv_fle_d); break; }
 														}
 													}
-									case 0b1110001: 
+									case 0b1110001:
 													{
 														uint8_t func3 = (opcode >> 12) & 0x7;
 														switch(func3) {
@@ -250,7 +250,7 @@ namespace rvm64::decoder {
 								}
 							}
 
-						case 0b0101111: 
+						case 0b0101111:
 							{
 								// TODO: func5 might be incorrect.
 								uint8_t func7 = (opcode >> 24) & 0x7F;
@@ -258,7 +258,7 @@ namespace rvm64::decoder {
 								uint8_t func3 = (opcode >> 12) & 0x7;
 
 								switch(func3) {
-									case 0b010: 
+									case 0b010:
 										{
 											switch(func5) {
 												case 0b00010: { unwrap_opcall(_rv_lrw); break; }
@@ -274,7 +274,7 @@ namespace rvm64::decoder {
 												case 0b11100: { unwrap_opcall(_rv_amomaxu_w); break; }
 											}
 										}
-									case 0b011: 
+									case 0b011:
 										{
 											switch(func5) {
 												case 0b00010: { unwrap_opcall(_rv_lrd); break; }
@@ -293,13 +293,13 @@ namespace rvm64::decoder {
 								}
 							}
 
-						case 0b0111011: 
+						case 0b0111011:
 							{
 								uint8_t func7 = (opcode >> 24) & 0x7F;
 								uint8_t func3 = (opcode >> 12) & 0x7;
 
 								switch(func3) {
-									case 0b000: 
+									case 0b000:
 										{
 											switch(func7) {
 												case 0b0000000: { unwrap_opcall(_rv_addw); break; }
@@ -307,7 +307,7 @@ namespace rvm64::decoder {
 												case 0b0000001: { unwrap_opcall(_rv_mulw); break; }
 											}
 										}
-									case 0b101: 
+									case 0b101:
 										{
 											switch(func7) {
 												case 0b0000000: { unwrap_opcall(_rv_srlw); break; }
@@ -322,13 +322,13 @@ namespace rvm64::decoder {
 								}
 							}
 
-						case 0b0110011: 
+						case 0b0110011:
 							{
 								uint8_t func7 = (opcode >> 24) & 0x7F;
 								uint8_t func3 = (opcode >> 12) & 0x7;
 
 								switch(func3) {
-									case 0b000: 
+									case 0b000:
 										{
 											switch(func7) {
 												case 0b0000000: { unwrap_opcall(_rv_add); break; }
@@ -336,35 +336,35 @@ namespace rvm64::decoder {
 												case 0b0000001: { unwrap_opcall(_rv_mul); break; }
 											}
 										}
-									case 0b001: 
+									case 0b001:
 										{
 											switch(func7) {
 												case 0b0000000: { unwrap_opcall(_rv_sll); break; }
 												case 0b0000001: { unwrap_opcall(_rv_mulh); break; }
 											}
 										}
-									case 0b010: 
+									case 0b010:
 										{
 											switch(func7) {
 												case 0b0000000: { unwrap_opcall(_rv_slt); break; }
 												case 0b0000001: { unwrap_opcall(_rv_mulhsu); break; }
 											}
 										}
-									case 0b011: 
+									case 0b011:
 										{
 											switch(func7) {
 												case 0b0000000: { unwrap_opcall(_rv_sltu); break; }
 												case 0b0000001: { unwrap_opcall(_rv_mulhu); break; }
 											}
 										}
-									case 0b100: 
+									case 0b100:
 										{
 											switch(func7) {
 												case 0b0000000: { unwrap_opcall(_rv_xor); break; }
 												case 0b0000001: { unwrap_opcall(_rv_div); break; }
 											}
 										}
-									case 0b101: 
+									case 0b101:
 										{
 											switch(func7) {
 												case 0b0000000: { unwrap_opcall(_rv_srl); break; }
@@ -372,14 +372,14 @@ namespace rvm64::decoder {
 												case 0b0000001: { unwrap_opcall(_rv_divu); break; }
 											}
 										}
-									case 0b110: 
+									case 0b110:
 										{
 											switch(func7) {
 												case 0b0000000: { unwrap_opcall(_rv_or); break; }
 												case 0b0000001: { unwrap_opcall(_rv_rem); break; }
 											}
 										}
-									case 0b111: 
+									case 0b111:
 										{
 											switch(func7) {
 												case 0b0000000: { unwrap_opcall(_rv_and); break; }
@@ -391,7 +391,7 @@ namespace rvm64::decoder {
 					}
 				}
 
-			case stype: 
+			case stype:
 				{
 					uint8_t func3 = (opcode >> 12) & 0x7;
 
@@ -400,7 +400,7 @@ namespace rvm64::decoder {
 					scr_write(int32_t, imm, imm_s(opcode));
 
 					switch(opcode7) {
-						case 0b0100011: 
+						case 0b0100011:
 							{
 								switch(func3) {
 									case 0b000: { unwrap_opcall(_rv_sb); break; }
@@ -409,7 +409,7 @@ namespace rvm64::decoder {
 									case 0b011: { unwrap_opcall(_rv_sd); break; }
 								}
 							}
-						case 0b0100111: 
+						case 0b0100111:
 							{
 								switch(func3) {
 									case 0b010: { unwrap_opcall(_rv_fsw); break; }
@@ -419,13 +419,13 @@ namespace rvm64::decoder {
 					}
 				}
 
-			case btype: 
+			case btype:
 				{
 					uint8_t func3 = (opcode >> 12) & 0x7;
 
 					scr_write(uint8_t, screnum::rs2, (opcode >> 20) & 0x1F);
 					scr_write(uint8_t, screnum::rs1, (opcode >> 15) & 0x1F);
-					scr_write(int32_t, imm, imm_b(opcode)); 
+					scr_write(int32_t, imm, imm_b(opcode));
 
 					switch(func3) {
 						case 0b000: { unwrap_opcall(_rv_beq); break; }
@@ -437,10 +437,10 @@ namespace rvm64::decoder {
 					}
 				}
 
-			case utype: 
+			case utype:
 				{
 					scr_write(uint8_t, screnum::rd, (opcode >> 7) & 0x1F);
-					scr_write(int32_t, screnum::imm, imm_u(opcode)); 
+					scr_write(int32_t, screnum::imm, imm_u(opcode));
 
 					switch(opcode7) {
 						case 0b0110111: { unwrap_opcall(_rv_lui); break; }
@@ -448,17 +448,17 @@ namespace rvm64::decoder {
 					}
 				}
 
-			case jtype: 
+			case jtype:
 				{
 					scr_write(uint8_t, screnum::rd, (opcode >> 7) & 0x1F);
-					scr_write(int32_t, screnum::imm, imm_j(opcode)); 
+					scr_write(int32_t, screnum::imm, imm_j(opcode));
 
 					switch(opcode7) {
 						case 0b1101111: { unwrap_opcall(_rv_jal); break; }
 					}
 				}
 
-			case r4type: 
+			case r4type:
 				{
 					// NOTE: likely used for floating point operations
 				}
