@@ -237,7 +237,7 @@ namespace rvm64::rvni {
 	}
 
 	_native void vm_trap_exit() {
-		if ((vmcs->pc >= vmcs->process.plt.start) && (vmcs->pc < vmcs->process.plt.end)) {
+		if (vmcs->pc >= vmcs->process.plt.start && vmcs->pc < vmcs->process.plt.end) {
 			// NOTE: not sure if this actually captures the native fn pointer
 			auto it = ucrt_native_table.find((void*)vmcs->pc);
 
