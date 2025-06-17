@@ -28,7 +28,7 @@ namespace rvm64::mock {
 		                                       OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
 		if (hfile == INVALID_HANDLE_VALUE) {
-			csr_set(nullptr, undefined_error, 0, 0, 1);
+			CSR_SET(nullptr, undefined_error, 0, 0, 1);
 			goto defer;
 		}
 
@@ -36,14 +36,14 @@ namespace rvm64::mock {
 		status = ctx->win32.NtGetFileSize(hfile, (LPDWORD) &buffer->size);
 
 		if (status == INVALID_FILE_SIZE || buffer->size == 0) {
-			csr_set(nullptr, undefined_error, INVALID_FILE_SIZE, 0, 1);
+			CSR_SET(nullptr, undefined_error, INVALID_FILE_SIZE, 0, 1);
 			vmcs->halt = 1;
 			goto defer;
 		}
 
 		if (!ctx->win32.NtReadFile(hfile, (LPVOID) buffer->address, buffer->size, &bytes_read, NULL) ||
 		    bytes_read != buffer->size) {
-			csr_set(nullptr, undefined_error, 0, 0, 1);
+			CSR_SET(nullptr, undefined_error, 0, 0, 1);
 			goto defer;
 		}
 		success = true;

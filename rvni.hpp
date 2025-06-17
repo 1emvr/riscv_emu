@@ -164,7 +164,7 @@ namespace rvm64::rvni {
 	_native void* windows_thunk_resolver(const char* sym_name) {
 		static HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
 		if (!ucrt) {
-			csr_set(nullptr, undefined_error, 0, 0, 1);
+			CSR_SET(nullptr, undefined_error, 0, 0, 1);
 			return nullptr;
 		}
 
@@ -177,7 +177,7 @@ namespace rvm64::rvni {
 
 		void* proc = (void*)GetProcAddress(ucrt, sym_name);
 		if (!proc) {
-			csr_set(nullptr, undefined_error, 0, 0, 1);
+			CSR_SET(nullptr, undefined_error, 0, 0, 1);
 			return nullptr;
 		}
 
@@ -188,7 +188,7 @@ namespace rvm64::rvni {
 		HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
 
 		if (!ucrt) {
-			csr_set(nullptr, undefined_error, 0, 0, 1);
+			CSR_SET(nullptr, undefined_error, 0, 0, 1);
 			return;
 		}
 
@@ -205,7 +205,7 @@ namespace rvm64::rvni {
 		for (auto& f : funcs) {
 			void* native = (void*)GetProcAddress(ucrt, f.name);
 			if (!native) {
-				csr_set(nullptr, undefined_error, 0, 0, 1);
+				CSR_SET(nullptr, undefined_error, 0, 0, 1);
 				return;
 			}
 
@@ -228,7 +228,7 @@ namespace rvm64::rvni {
 				case native_wrapper::PLT_STRCPY:  wrap.strcpy = (decltype(wrap.strcpy))native; break;
 				case native_wrapper::PLT_PRINTF:  wrap.printf = (decltype(wrap.printf))native; break;
 				default: {
-					csr_set(nullptr, undefined_error, 0, 0, 1);
+					CSR_SET(nullptr, undefined_error, 0, 0, 1);
 					return;
 				}
 			}
@@ -242,7 +242,7 @@ namespace rvm64::rvni {
 			auto it = ucrt_native_table.find((void*)vmcs->pc); 
 
 			if (it == ucrt_native_table.end()) {
-				csr_set(vmcs->pc, illegal_instruction, 0, vmcs->pc, 1);
+				CSR_SET(vmcs->pc, illegal_instruction, 0, vmcs->pc, 1);
 				return;
 			}
 
@@ -397,11 +397,11 @@ namespace rvm64::rvni {
 					}
 				default: 
 					{
-						csr_set(vmcs->pc, illegal_instruction, 0, plt.type, 1);
+						CSR_SET(vmcs->pc, illegal_instruction, 0, plt.type, 1);
 					}
 			}
 		} else {
-			csr_set(vmcs->pc, instruction_access_fault, 0, vmcs->pc, 1);
+			CSR_SET(vmcs->pc, instruction_access_fault, 0, vmcs->pc, 1);
 			return;
 		}
 

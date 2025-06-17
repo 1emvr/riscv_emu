@@ -46,7 +46,7 @@ namespace rvm64 {
 		rvm64::entry::vm_entry();
 		rvm64::entry::vm_end();
 
-		csr_get();
+		CSR_GET();
 		return (int64_t)vmcs->csr.m_cause;
 	}
 };

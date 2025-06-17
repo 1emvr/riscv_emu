@@ -102,7 +102,7 @@ namespace rvm64::decoder {
 			}
 		}
 		if (!decoded) {
-			csr_set(vmcs->pc, illegal_instruction, 0, opcode, 1);
+			CSR_SET(vmcs->pc, illegal_instruction, 0, opcode, 1);
 			return;
 		}
 
@@ -744,7 +744,7 @@ namespace rvm64::operations {
 
 			reg_read(int32_t, v1, _rs1);
 			if ((shamt >> 5) != 0) {
-				csr_set(vmcs->pc, illegal_instruction, 0, (uint64_t)vmcs->vscratch, 1);
+				CSR_SET(vmcs->pc, illegal_instruction, 0, (uint64_t)vmcs->vscratch, 1);
 				return;
 			}
 
@@ -760,7 +760,7 @@ namespace rvm64::operations {
 
 			reg_read(int32_t, v1, _rs1);
 			if ((shamt >> 5) != 0) {
-				csr_set(vmcs->pc, illegal_instruction, 0, (uint64_t)vmcs->vscratch, 1);
+				CSR_SET(vmcs->pc, illegal_instruction, 0, (uint64_t)vmcs->vscratch, 1);
 				return;
 			}
 
@@ -777,7 +777,7 @@ namespace rvm64::operations {
 			reg_read(int32_t, v1, _rs1);
 
 			if ((shamt >> 5) != 0) {
-				csr_set(vmcs->pc, illegal_instruction, 0, (uint64_t)vmcs->vscratch, 1);
+				CSR_SET(vmcs->pc, illegal_instruction, 0, (uint64_t)vmcs->vscratch, 1);
 				return;
 			}
 
@@ -911,7 +911,7 @@ namespace rvm64::operations {
 			vmcs->pc = address;
 			vmcs->step = false;
 
-			csr_set(vmcs->pc, environment_call_native, 0, 0, 0);
+			CSR_SET(vmcs->pc, environment_call_native, 0, 0, 0);
 		}
 
 		_vmcall void rv_ecall() {
@@ -951,7 +951,7 @@ namespace rvm64::operations {
 			   Implementation
 			   RaiseException(Breakpoint)
 			   */
-			csr_set(vmcs->pc, breakpoint, 0, vmcs->pc, 0);
+			CSR_SET(vmcs->pc, breakpoint, 0, vmcs->pc, 0);
 			__debugbreak();
 		}
 
