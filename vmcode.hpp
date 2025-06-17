@@ -883,16 +883,15 @@ namespace rvm64::operations {
 		}
 
 		_vmcall void rv_flq() {
-			// TODO
+			CSR_SET(vmcs->pc, illegal_instruction, 0, 0, 1);
 		}
 
-		// NOTE: fence instructions aren't needed rn.
 		_vmcall void rv_fence() {
-			// TODO
+			CSR_SET(vmcs->pc, illegal_instruction, 0, 0, 1);
 		}
 
 		_vmcall void rv_fence_i() {
-			// TODO
+			CSR_SET(vmcs->pc, illegal_instruction, 0, 0, 1);
 		}
 
 		_vmcall void rv_jalr() {
@@ -915,7 +914,6 @@ namespace rvm64::operations {
 		}
 
 		_vmcall void rv_ecall() {
-			// TODO: block all system calls.
 			/*
 			   Description
 			   Make a request to the supporting execution environment.
@@ -1430,7 +1428,6 @@ namespace rvm64::operations {
 
 		_vmcall void rv_mulh() {
 			uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; intptr_t v1 = 0, v2 = 0;
-			// TODO: CHECK THIS
 
 			scr_read(uint8_t, _rd, rd);
 			scr_read(uint8_t, _rs1, rs1);
@@ -1452,7 +1449,6 @@ namespace rvm64::operations {
 
 		_vmcall void rv_slt() {
 			uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; intptr_t v1 = 0, v2 = 0;
-			// TODO: CHECK THIS
 
 			scr_read(uint8_t, _rd, rd);
 			scr_read(uint8_t, _rs1, rs1);
@@ -1465,7 +1461,6 @@ namespace rvm64::operations {
 
 		_vmcall void rv_mulhsu() {
 			uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; intptr_t v1 = 0; uintptr_t v2 = 0;
-			// TODO: CHECK THIS
 
 			scr_read(uint8_t, _rd, rd);
 			scr_read(uint8_t, _rs1, rs1);
@@ -1499,7 +1494,6 @@ namespace rvm64::operations {
 
 		_vmcall void rv_mulhu() {
 			uint8_t _rd = 0, _rs1 = 0, _rs2 = 0; uintptr_t v1 = 0, v2 = 0;
-			// TODO: CHECK THIS
 
 			scr_read(uint8_t, _rd, rd);
 			scr_read(uint8_t, _rs1, rs1);
