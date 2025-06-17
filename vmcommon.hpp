@@ -26,6 +26,23 @@ typedef PVOID(NTAPI* RtlAllocateHeap_t)(HANDLE HeapHandle, ULONG Flags, SIZE_T S
 #define EXPONENT_MASK           0x7FF0000000000000ULL
 #define FRACTION_MASK           0x000FFFFFFFFFFFFFULL
 
+#define csr_set(epc, cause, stat, val, hlt)	\
+	vmcs->csr.m_epc = (uintptr_t)epc;		\
+	vmcs->csr.m_cause = cause;				\
+	vmcs->csr.m_status = stat;				\
+	vmcs->csr.m_tval = val;					\
+	vmcs->halt = hlt
+
+#ifdef DEBUG
+#define csr_get()						\
+	uintptr_t csr1 = vmcs->csr.m_epc;	\
+	uintptr_t csr2 = vmcs->csr.m_cause; \
+	uintptr_t csr3 = vmcs->csr.m_status;\
+	uintptr_t csr4 = vmcs->csr.m_tval;	\
+	__debugbreak()
+#else
+#define csr_get()
+#endif
 
 enum causenum {
 	instruction_address_misaligned = 0xF00,
@@ -68,10 +85,4 @@ enum typenum {
 	rtype = 1, r4type, itype, stype, btype, utype, jtype,
 };
 
-#define csr_set(epc, cause, stat, val, hlt)	\
-	vmcs->csr.m_epc = (uintptr_t)epc;		\
-	vmcs->csr.m_cause = cause;				\
-	vmcs->csr.m_status = stat;				\
-	vmcs->csr.m_tval = val;					\
-	vmcs->halt = hlt
 #endif // _VMCOMMON_H

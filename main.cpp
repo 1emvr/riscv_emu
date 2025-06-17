@@ -46,12 +46,12 @@ namespace rvm64 {
 		rvm64::entry::vm_entry();
 		rvm64::entry::vm_end();
 
-		return (int64_t)vmcs->reason;
+		csr_get();
+		return (int64_t)vmcs->csr.m_cause;
 	}
 };
 
 _native int main() {
-	__debugbreak();
     rvm64::vm_main();
 }
 
