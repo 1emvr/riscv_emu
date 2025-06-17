@@ -71,7 +71,7 @@ enum causenum {
 	load_page_fault = 0xb013,
 	store_amo_page_fault = 0xb015,
 	environment_call_native = 0xb024,
-	designated_for_custom_use_2 = 0xb025,
+	bad_symbol = 0xb025,
 	designated_for_custom_use_3 = 0xb026,
 	designated_for_custom_use_4 = 0xb027,
 	designated_for_custom_use_5 = 0xb028,

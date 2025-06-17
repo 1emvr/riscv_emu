@@ -50,7 +50,7 @@ namespace rvm64::rvni {
 	_native void* windows_thunk_resolver(const char* sym_name) {
 		static HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
 		if (!ucrt) {
-			CSR_SET(nullptr, undefined, 0, 0, 1);
+			CSR_SET(nullptr, bad_symbol, 0, 0, 1);
 			return nullptr;
 		}
 
@@ -63,7 +63,7 @@ namespace rvm64::rvni {
 
 		void* proc = (void*)GetProcAddress(ucrt, sym_name);
 		if (!proc) {
-			CSR_SET(nullptr, undefined, 0, 0, 1);
+			CSR_SET(nullptr, bad_symbol, 0, 0, 1);
 			return nullptr;
 		}
 
@@ -74,7 +74,7 @@ namespace rvm64::rvni {
 		HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
 
 		if (!ucrt) {
-			CSR_SET(nullptr, undefined, 0, 0, 1);
+			CSR_SET(nullptr, bad_symbol, 0, 0, 1);
 			return;
 		}
 
@@ -91,7 +91,7 @@ namespace rvm64::rvni {
 		for (auto& f : funcs) {
 			void* native = (void*)GetProcAddress(ucrt, f.name);
 			if (!native) {
-				CSR_SET(nullptr, undefined, 0, 0, 1);
+				CSR_SET(nullptr, bad_symbol, 0, 0, 1);
 				return;
 			}
 
@@ -289,8 +289,8 @@ namespace rvm64::rvni {
 		}
 
 		uintptr_t ret = 0;
-
 		reg_read(uintptr_t, ret, regenum::ra);
+
 		vmcs->step = true;
 		vmcs->pc = ret; 
 	}
