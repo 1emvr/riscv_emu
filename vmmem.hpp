@@ -96,6 +96,4 @@ namespace rvm64::context {
         }
     }
 };
-
-
 #endif // VMMEM_H
