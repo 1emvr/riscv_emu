@@ -926,6 +926,7 @@ namespace rvm64::operations {
 			   RaiseException(EnvironmentCall)
 
 			   */
+			CSR_SET(vmcs->pc, illegal_instruction, 0, 0, 1);
 		}
 
 		_vmcall void rv_ebreak() {
@@ -953,6 +954,7 @@ namespace rvm64::operations {
 			   Implementation
 			   t = CSRs[csr]; CSRs[csr] = x[_rs1]; x[_rd] = t
 			   */
+			CSR_SET(vmcs->pc, illegal_instruction, 0, 0, 1);
 		}
 
 		_vmcall void rv_csrrs() {
@@ -966,6 +968,7 @@ namespace rvm64::operations {
 			   Implementation
 			   t = CSRs[csr]; CSRs[csr] = t | x[_rs1]; x[_rd] = t
 			   */
+			CSR_SET(vmcs->pc, illegal_instruction, 0, 0, 1);
 		}
 
 		_vmcall void rv_csrrc() {
@@ -979,6 +982,7 @@ namespace rvm64::operations {
 			   Implementation
 			   t = CSRs[csr]; CSRs[csr] = t &~x[_rs1]; x[_rd] = t
 			   */
+			CSR_SET(vmcs->pc, illegal_instruction, 0, 0, 1);
 		}
 
 		_vmcall void rv_csrrwi() {
@@ -989,6 +993,7 @@ namespace rvm64::operations {
 			   Implementation
 			   x[_rd] = CSRs[csr]; CSRs[csr] = zimm
 			   */
+			CSR_SET(vmcs->pc, illegal_instruction, 0, 0, 1);
 		}
 
 		_vmcall void rv_csrrsi() {
@@ -999,6 +1004,7 @@ namespace rvm64::operations {
 			   Implementation
 			   t = CSRs[csr]; CSRs[csr] = t | zimm; x[_rd] = t
 			   */
+			CSR_SET(vmcs->pc, illegal_instruction, 0, 0, 1);
 		}
 
 		_vmcall void rv_csrrci() {
@@ -1009,6 +1015,7 @@ namespace rvm64::operations {
 			   Implementation
 			   t = CSRs[csr]; CSRs[csr] = t &~zimm; x[_rd] = t
 			   */
+			CSR_SET(vmcs->pc, illegal_instruction, 0, 0, 1);
 		}
 	}
 
