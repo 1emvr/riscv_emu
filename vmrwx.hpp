@@ -100,7 +100,7 @@
 
 #define scr_read(T, dst, scr_idx) 								\
 	do { 														\
-		scr_read_check(src_idx);								\
+		scr_read_check(scr_idx);								\
 		dst = (T)vmcs->vscratch[(scr_idx)];						\
 	} while(0)
 
