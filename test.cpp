@@ -1,12 +1,15 @@
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
+#include <stddef.h>
+#include <stdint.h>
+
+extern "C" void* malloc(size_t size);
+extern "C" void* memcpy(void* dst, void* src, size_t num);
+extern "C" int printf (const char * format, ...);
 
 int main() {
 	int result = 0xFFFF;
 	void *buffer = malloc(sizeof(int));
 
-	memcpy(buffer, (void*)&result, sizeof(int));
-	printf("the result is 0x%lx\n", buffer);
+	memcpy(buffer, &result, sizeof(int));
+	printf("the result is 0x%lx\n", *(int*)buffer);
 	return 0;
 }
