@@ -38,12 +38,11 @@ typedef struct {
 
 
 typedef struct {
-	vm_range_t plt;
 	uintptr_t address;
 	uintptr_t base_vaddr;
 	uintptr_t entry;
-	size_t vsize;
 	size_t size;
+	vm_range_t plt;
 } vm_memory_t;
 
 

@@ -3,7 +3,6 @@
 #include <unordered_map>
 #include <windows.h>
 
-#include "vmmem.hpp"
 #include "vmmain.hpp"
 #include "vmcommon.hpp"
 #include "vmrwx.hpp"
@@ -32,7 +31,7 @@ namespace rvm64::rvni {
 			void* (*memset)(void*, int, size_t);
 			size_t (*strlen)(const char*);
 			char* (*strcpy)(char*, const char*);
-			int printf(const char *format, ...);
+			int (*printf)(const char *format, ...);
 		};
 	};
 
@@ -232,12 +231,11 @@ namespace rvm64::rvni {
 				case native_wrapper::PLT_STRLEN:  wrap.strlen = (decltype(wrap.strlen))native; break;
 				case native_wrapper::PLT_STRCPY:  wrap.strcpy = (decltype(wrap.strcpy))native; break;
 				case native_wrapper::PLT_PRINTF:  wrap.printf = (decltype(wrap.printf))native; break;
-				default:                       
-												  {
-													  vmcs->halt = 1;
-													  vmcs->csr.m_cause = vm_undefined;
-													  return;
-												  }
+				default: {
+					vmcs->halt = 1;
+					vmcs->csr.m_cause = vm_undefined;
+					return;
+				}
 			}
 
 			ucrt_native_table[native] = wrap;
@@ -389,7 +387,7 @@ namespace rvm64::rvni {
 					}
 				case native_wrapper::PLT_PRINTF:
 					{
-						// TODO: needs testing.
+						// NOTE: this implementation is limited to 7 arguments max
 						char *fmt;
 						uint64_t args[7] = { };
 
@@ -398,7 +396,6 @@ namespace rvm64::rvni {
 							reg_read(uint64_t, args[i - 1], regenum::a0 + i);
 						}
 
-						// NOTE: this implementation is limited to 7 arguments max
 						int result = plt.printf(fmt,
 								args[0], args[1], args[2], args[3],
 								args[4], args[5], args[6]);
