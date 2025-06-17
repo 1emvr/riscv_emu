@@ -224,8 +224,7 @@ namespace rvm64::elf {
 					break;
 				}
 				default: {
-					CSR_SET(nullptr, bad_image_load, 0, dyn->d_tag, 1);
-					return false;
+					CSR_SET(nullptr, bad_symbol, 0, dyn->d_tag, 0);
 				}
 			}
 		}
@@ -252,6 +251,7 @@ namespace rvm64::elf {
 			}
 			void *win_func = rvm64::rvni::windows_thunk_resolver(sym_name);
 			if (!win_func) {
+				CSR_SET(nullptr, bad_symbol, 0, (uintptr_t)sym_name, 0);
 				continue;
 			}
 
