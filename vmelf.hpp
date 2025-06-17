@@ -68,6 +68,53 @@
 #define SHN_COMMON      0xfff2   // Common symbols
 #define SHN_HIRESERVE   0xffff
 
+#define R_RISCV_NONE          	0
+#define R_RISCV_32             	1   // Direct 32-bit
+#define R_RISCV_64             	2   // Direct 64-bit
+#define R_RISCV_RELATIVE       	3   // Adjust by program base
+#define R_RISCV_COPY           	4   // Copy symbol at runtime
+#define R_RISCV_JUMP_SLOT      	5   // Create PLT entry
+#define R_RISCV_TLS_DTPMOD32   	6
+#define R_RISCV_TLS_DTPMOD64   	7
+#define R_RISCV_TLS_DTPREL32   	8
+#define R_RISCV_TLS_DTPREL64   	9
+#define R_RISCV_TLS_TPREL32   	10
+#define R_RISCV_TLS_TPREL64   	11
+#define R_RISCV_BRANCH        	16   // PC-relative branch
+#define R_RISCV_JAL           	17   // PC-relative jump (J-type)
+#define R_RISCV_CALL          	18   // Call (with register save)
+#define R_RISCV_CALL_PLT      	19   // PLT call
+#define R_RISCV_GOT_HI20      	20   // High 20 bits of GOT address
+#define R_RISCV_TLS_GOT_HI20  	21
+#define R_RISCV_TLS_GD_HI20   	22
+#define R_RISCV_PCREL_HI20    	23   // High 20 bits PC-relative
+#define R_RISCV_PCREL_LO12_I  	24   // Low 12 bits for I-type
+#define R_RISCV_PCREL_LO12_S  	25   // Low 12 bits for S-type
+#define R_RISCV_HI20          	26   // High 20 bits of absolute address
+#define R_RISCV_LO12_I        	27   // Low 12 bits of absolute address (I-type)
+#define R_RISCV_LO12_S        	28   // Low 12 bits of absolute address (S-type)
+#define R_RISCV_TPREL_HI20    	29
+#define R_RISCV_TPREL_LO12_I  	30
+#define R_RISCV_TPREL_LO12_S  	31
+#define R_RISCV_RELAX         	51   // Instruction can be relaxed
+#define R_RISCV_ALIGN         	52   // Alignment hint
+
+#define ELF64_R_SYM(info)    	((info) >> 32)   // Extract symbol index from relocation info
+#define ELF64_REL_TYPE(info)   	((info) & 0xFFFFFFFF)   // Extract relocation type from relocation info
+#define ELF64_R_INFO(S, T) 		((((uint64_t)(S)) << 32) + (T))  // Construct relocation info from symbol index and type
+
+#define ELF64_ST_BIND(info)   	((info) >> 4)
+#define ELF64_ST_TYPE(info)   	((info) & 0xF)
+#define ELF64_ST_INFO(B, T) 	(((B) << 4) + ((T) & 0xF))
+
+#ifndef MIN
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#endif
+
+#ifndef MAX
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#endif
+
 typedef struct {
     uint8_t  e_ident[EI_NIDENT]; // ELF magic, class, data, etc.
     uint16_t e_type;
@@ -132,52 +179,6 @@ typedef struct {
     } d_un;
 } elf64_dyn;
 
-#define ELF64_R_SYM(info)    	((info) >> 32)   // Extract symbol index from relocation info
-#define ELF64_REL_TYPE(info)   	((info) & 0xFFFFFFFF)   // Extract relocation type from relocation info
-#define ELF64_R_INFO(S, T) 		((((uint64_t)(S)) << 32) + (T))  // Construct relocation info from symbol index and type
-																
-#define ELF64_ST_BIND(info)   	((info) >> 4)
-#define ELF64_ST_TYPE(info)   	((info) & 0xF)
-#define ELF64_ST_INFO(B, T) 	(((B) << 4) + ((T) & 0xF))
-
-#define R_RISCV_NONE          	0
-#define R_RISCV_32             	1   // Direct 32-bit
-#define R_RISCV_64             	2   // Direct 64-bit
-#define R_RISCV_RELATIVE       	3   // Adjust by program base
-#define R_RISCV_COPY           	4   // Copy symbol at runtime
-#define R_RISCV_JUMP_SLOT      	5   // Create PLT entry
-#define R_RISCV_TLS_DTPMOD32   	6
-#define R_RISCV_TLS_DTPMOD64   	7
-#define R_RISCV_TLS_DTPREL32   	8
-#define R_RISCV_TLS_DTPREL64   	9
-#define R_RISCV_TLS_TPREL32   	10
-#define R_RISCV_TLS_TPREL64   	11
-#define R_RISCV_BRANCH        	16   // PC-relative branch
-#define R_RISCV_JAL           	17   // PC-relative jump (J-type)
-#define R_RISCV_CALL          	18   // Call (with register save)
-#define R_RISCV_CALL_PLT      	19   // PLT call
-#define R_RISCV_GOT_HI20      	20   // High 20 bits of GOT address
-#define R_RISCV_TLS_GOT_HI20  	21
-#define R_RISCV_TLS_GD_HI20   	22
-#define R_RISCV_PCREL_HI20    	23   // High 20 bits PC-relative
-#define R_RISCV_PCREL_LO12_I  	24   // Low 12 bits for I-type
-#define R_RISCV_PCREL_LO12_S  	25   // Low 12 bits for S-type
-#define R_RISCV_HI20          	26   // High 20 bits of absolute address
-#define R_RISCV_LO12_I        	27   // Low 12 bits of absolute address (I-type)
-#define R_RISCV_LO12_S        	28   // Low 12 bits of absolute address (S-type)
-#define R_RISCV_TPREL_HI20    	29
-#define R_RISCV_TPREL_LO12_I  	30
-#define R_RISCV_TPREL_LO12_S  	31
-#define R_RISCV_RELAX         	51   // Instruction can be relaxed
-#define R_RISCV_ALIGN         	52   // Alignment hint
-
-#ifndef MIN
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
-#endif
-
-#ifndef MAX
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
-#endif
 
 namespace rvm64::elf {
 	// TODO: needs re-written
@@ -292,7 +293,7 @@ namespace rvm64::elf {
 
 		for (int i = 0; i < ehdr->e_phnum; ++i) {
 			if (phdrs[i].p_type == PT_LOAD) {
-				base = MIN(base, phdrs[i].p_vaddr); // NOTE: find the process address space
+				base = MIN(base, phdrs[i].p_vaddr);
 				limit = MAX(limit, phdrs[i].p_vaddr + phdrs[i].p_memsz);
 			}
 		}
@@ -301,11 +302,6 @@ namespace rvm64::elf {
 			return false;
 		}
 
-		image_size = limit - base;
-
-		// NOTE: map segments
-		// TODO: still need to find plt start and end
-		
 		for (int i = 0; i < ehdr->e_phnum; ++i) {
 			if (phdrs[i].p_type != PT_LOAD) {
 				continue;
@@ -323,7 +319,7 @@ namespace rvm64::elf {
 
 		vmcs->process.size = image_size;
 		vmcs->process.base_vaddr = base;
-		vmcs->process.entry = (uintptr_t)vmcs->process.address + (ehdr->e_entry - base);
+		vmcs->process.entry = vmcs->process.address + (ehdr->e_entry - base);
 
 		vmcs->pc = vmcs->process.entry;
 		return true;
