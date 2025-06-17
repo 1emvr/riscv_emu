@@ -4,53 +4,53 @@
 #ifdef DEBUG
 #define mem_read_check(T, addr)											\
 	if ((addr) % sizeof(T) != 0) {										\
-		csr_set(vmcs->pc, load_address_misaligned, 0, addr, 1);			\
+		CSR_SET(vmcs->pc, load_address_misaligned, 0, addr, 1);			\
 		return;															\
 	}																	\
 	if ((addr) < vmcs->process.address ||								\
 		(addr) >= vmcs->process.address + vmcs->process.size) {			\
-		csr_set(vmcs->pc, load_access_fault, 0, addr, 1);				\
+		CSR_SET(vmcs->pc, load_access_fault, 0, addr, 1);				\
 		return;															\
 	}
 
 #define mem_write_check(T, addr)										\
 	if ((addr) % sizeof(T) != 0) {										\
-		csr_set(vmcs->pc, load_address_misaligned, 0, addr, 1); 		\
+		CSR_SET(vmcs->pc, load_address_misaligned, 0, addr, 1); 		\
 		return;															\
 	}																	\
 	if ((addr) < vmcs->process.address ||								\
 		(addr) >= vmcs->process.address + vmcs->process.size) { 		\
-		csr_set(vmcs->pc, store_amo_access_fault, 0, addr, 1);			\
+		CSR_SET(vmcs->pc, store_amo_access_fault, 0, addr, 1);			\
 		return;															\
 	}
 
 #define reg_read_check(reg_idx)											\
 	if ((reg_idx) > t6) {												\
-		csr_set(vmcs->pc, instruction_access_fault, 0, reg_idx, 1);		\
+		CSR_SET(vmcs->pc, instruction_access_fault, 0, reg_idx, 1);		\
 		return;															\
 	}
 
 #define reg_write_check(reg_idx)										\
 	if ((reg_idx) == zr || (reg_idx) > t6) {							\
-		csr_set(vmcs->pc, instruction_access_fault, 0, reg_idx, 1);		\
+		CSR_SET(vmcs->pc, instruction_access_fault, 0, reg_idx, 1);		\
 		return;															\
 	}
 
 #define scr_read_check(scr_idx)											\
 	if ((scr_idx) > imm) {												\
-		csr_set(vmcs->pc, instruction_access_fault, 0, scr_idx, 1); 	\
+		CSR_SET(vmcs->pc, instruction_access_fault, 0, scr_idx, 1); 	\
 		return;															\
 	}
 
 #define scr_write_check(scr_idx)										\
 	if ((scr_idx) > imm) {												\
-		csr_set(vmcs->pc, instruction_access_fault, 0, scr_idx, 1);		\
+		CSR_SET(vmcs->pc, instruction_access_fault, 0, scr_idx, 1);		\
 		return;															\
 	}
 
 #define	opcall_check(hdl_idx)											\
 	if ((hdl_idx) > 255) {												\
-		csr_set(vmcs->pc, illegal_instruction, 0, hdl_idx, 1);			\
+		CSR_SET(vmcs->pc, illegal_instruction, 0, hdl_idx, 1);			\
 		return;															\
 	}
 #else
