@@ -925,21 +925,7 @@ namespace rvm64::operations {
 			   Implementation
 			   RaiseException(EnvironmentCall)
 
-			   - CHECK SEDELEG
-			   - SAVE PC IN SEPC/MEPC
-			   - RAISE PRIVILEGE TO S/M
-			   - JUMP TO STVEC/MTVEC
-			   - KERNEL/SBI HANDLER
-			   - RETURN TO SEPC/MEPC
-
-			   Save register and program state
 			   */
-			// rvm64::context::save_vm_context();
-			// rvm64::context::decode_syscall();
-			// rvm64::context::setup_arguments();
-			// rvm64::context::vm_exit();
-			// rvm64::context::restore_vm_context();
-
 		}
 
 		_vmcall void rv_ebreak() {
