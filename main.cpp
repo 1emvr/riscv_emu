@@ -5,18 +5,17 @@
 #include "mock.hpp"
 
 namespace rvm64::entry {
-	_native void vm_init() {
+	_native bool vm_init() {
 		vmcs->dkey = key; 
 		vmcs->handler = (uintptr_t)handler;
 
 		rvm64::memory::context_init();
 		rvm64::rvni::resolve_ucrt_imports(); 
 
-		while (!vmcs->halt) {
-			if (!rvm64::mock::read_program_from_packet()) { 
-				continue;
-			}
+		if (!rvm64::mock::read_program_from_packet()) { 
+			return false;
 		}
+		return true;
 	}
 
 	_native void vm_end() {
@@ -52,6 +51,7 @@ namespace rvm64 {
 };
 
 _native int main() {
+	__debugbreak();
     rvm64::vm_main();
 }
 
