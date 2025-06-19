@@ -1,0 +1,19 @@
+#ifndef VMVEH_H
+#define VMVEH_H
+#include "vmmain.hpp"
+
+LONG CALLBACK vm_exception_handler(PEXCEPTION_POINTERS exception_info) {
+	DWORD code = exception_info->ExceptionRecord->ExceptionCode;
+
+	if (code == STATUS_SINGLE_STEP) {
+		return EXCEPTION_CONTINUE_SEARCH;
+	}
+	if (vmcs->halt || code != EXCEPTION_BREAKPOINT) { // FATAL! Either vm_exit or host exception
+		exception_info->ContextRecord->Rip = (DWORD64) vmcs->trap_handler;
+	}
+
+	CSR_GET();
+	return EXCEPTION_CONTINUE_EXECUTION;
+}
+
+#endif //VMVEH_H

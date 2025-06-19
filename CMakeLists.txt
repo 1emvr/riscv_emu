@@ -12,4 +12,5 @@ add_executable(rvm64
         vmelf.hpp
         vmmain.hpp
         vmmem.hpp
-        vmrwx.hpp)
+        vmrwx.hpp
+        vmveh.hpp)

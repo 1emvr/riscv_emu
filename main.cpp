@@ -1,22 +1,11 @@
-#include "errhandlingapi.h"
+#include <errhandlingapi.h>
+
 #include "vmmain.hpp"
 #include "vmcode.hpp"
 #include "vmcommon.hpp"
+#include "vmveh.hpp"
 #include "rvni.hpp"
 #include "mock.hpp"
-
-LONG CALLBACK vm_exception_handler(PEXCEPTION_POINTERS exception_info) {
-	DWORD code = exception_info->ExceptionRecord->ExceptionCode;
-	if (code == STATUS_SINGLE_STEP) {
-		return EXCEPTION_CONTINUE_SEARCH;
-	}
-	if (vmcs->halt || code != EXCEPTION_BREAKPOINT) { // FATAL! Either vm_exit or host exception
-		exception_info->ContextRecord->Rip = (DWORD64) vmcs->trap_handler;
-	}
-
-	CSR_GET();
-	return EXCEPTION_CONTINUE_EXECUTION;
-}
 
 namespace rvm64::entry {
 	_native bool vm_init() {
