@@ -1990,11 +1990,11 @@ namespace rvm64::operations {
 		}
 
 		_vmcall void rv_auipc() {
-			uint8_t _rd = 0; int32_t _imm = 0; 
+			uint8_t _rd = 0; int32_t _imm = 0;
 
 			scr_read(uint8_t, _rd, rd);
 			scr_read(int32_t, _imm, imm);
-			reg_write(int32_t, _rd, (int64_t)vmcs->pc + _imm);
+			reg_write(int64_t, _rd, (int64_t)vmcs->pc + _imm);
 		}
 	}
 
