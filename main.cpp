@@ -8,7 +8,7 @@
 #include "mock.hpp"
 
 namespace rvm64::entry {
-	_native bool vm_init() {
+	_native void vm_init() {
 		vmcs->dkey = key; 
 		vmcs->handler = (uintptr_t)handler;
 		vmcs->trap_handler = (uintptr_t)&&vm_return;
@@ -17,11 +17,7 @@ namespace rvm64::entry {
 
 		rvm64::memory::context_init();
 		rvm64::rvni::resolve_ucrt_imports(); 
-
-		if (!rvm64::mock::read_program_from_packet()) {
-			return false;
-		}
-		return true;
+		rvm64::mock::read_program_from_packet();
 	}
 
 	_native void vm_end() {

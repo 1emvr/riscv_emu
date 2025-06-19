@@ -18,8 +18,7 @@ namespace rvm64::mock {
 		}
 	}
 
-	_native vm_buffer_t *read_file() {
-		BOOL success = false;
+	_native vm_buffer_t* read_file() {
 		DWORD bytes_read = 0;
 		NTSTATUS status = 0;
 
@@ -29,51 +28,37 @@ namespace rvm64::mock {
 
 		if (hfile == INVALID_HANDLE_VALUE) {
 			CSR_SET(nullptr, undefined, (uintptr_t)INVALID_HANDLE_VALUE, 0, 1);
-			goto defer;
 		}
 
 		status = ctx->win32.NtGetFileSize(hfile, (LPDWORD) &buffer->size);
 
 		if (status == INVALID_FILE_SIZE || buffer->size == 0) {
-			CSR_SET(nullptr, undefined, INVALID_FILE_SIZE, 0, 1);
-			vmcs->halt = 1;
-			goto defer;
+			CSR_SET(nullptr, bad_image_load, INVALID_FILE_SIZE, 0, 1);
 		}
 
 		if (!ctx->win32.NtReadFile(hfile, (LPVOID) buffer->address, buffer->size, &bytes_read, NULL) ||
 		    bytes_read != buffer->size) {
-			CSR_SET(nullptr, undefined, 0, 0, 1);
-			goto defer;
+			CSR_SET(nullptr, bad_image_load, 0, 0, 1);
 		}
-		success = true;
 
-	defer:
 		if (hfile) {
 			CloseHandle(hfile);
 		}
-		if (!success) {
-			free(buffer);
-			buffer = nullptr;
-		}
-
 		return buffer;
 	}
 
-	_native bool read_program_from_packet() {
+	_native void read_program_from_packet() {
 		vm_buffer_t *data = read_file();
 		if (!data) {
-			return false;
+			CSR_SET(nullptr, bad_image_load, 0, 0, 1);
 		}
 
 		data->size += VM_PROCESS_PADDING;
 
-		if (!rvm64::memory::memory_init(data->size) ||
-			!rvm64::elf::load_elf_image(data->address, data->size)) {
-			return false;
-		}
+		rvm64::memory::memory_init(data->size);
+		rvm64::elf::load_elf_image(data->address, data->size);
 
 		destroy_file(data);
-		return true;
 	}
 };
 #endif // MOCK_H

@@ -181,13 +181,12 @@ typedef struct {
 
 
 namespace rvm64::elf {
-	_native bool patch_elf_imports() {
+	_native void patch_elf_imports() {
 		auto process = vmcs->process.address;
 		auto ehdr = (elf64_ehdr*)process;
 
 		if (ehdr->e_type != ET_EXEC && ehdr->e_type != ET_DYN) {
 			CSR_SET(nullptr, bad_image_type, 0, 0, 1);
-			return false;
 		}
 
 		auto phdrs = (elf64_phdr*) ((uint8_t*)(process) + ehdr->e_phoff);
@@ -203,7 +202,6 @@ namespace rvm64::elf {
 		}
 		if (!dyn_vaddr || !dyn_size) {
 			CSR_SET(nullptr, bad_image_load, 0, 0, 1);
-			return false;
 		}
 
 		auto* dyn_entries = (elf64_dyn*) ((uint8_t*)process + dyn_vaddr); 
@@ -219,7 +217,6 @@ namespace rvm64::elf {
 				case DT_PLTREL: {
 					if (dyn->d_un.d_val != DT_RELA) {
 						CSR_SET(nullptr, bad_image_load, 0, 0, 1);
-						return false;
 					}
 					break;
 				}
@@ -231,7 +228,6 @@ namespace rvm64::elf {
 
 		if (!symtab_vaddr || !strtab_vaddr || !rela_plt_vaddr || !rela_plt_size) {
 			CSR_SET(nullptr, bad_image_load, 0, 0, 1);
-			return false;
 		}
 
 		auto rela_entries 	= (elf64_rela*) ((uint8_t*)process + rela_plt_vaddr);
@@ -273,23 +269,19 @@ namespace rvm64::elf {
 				break;
 			}
 		}
-
-		return true;
 	}
 
-	_native bool load_elf_image(void* image_data, size_t image_size) {
+	_native void load_elf_image(void* image_data, size_t image_size) {
 		auto ehdr = (elf64_ehdr*)(image_data);
 
-		if (ehdr->e_ident[0] != 0x7F || 
-				ehdr->e_ident[1] != 'E' || 
-				ehdr->e_ident[2] != 'L' || 
-				ehdr->e_ident[3] != 'F') {
-			return false;
+		if (ehdr->e_ident[0] != 0x7F ||
+		    ehdr->e_ident[1] != 'E' ||
+		    ehdr->e_ident[2] != 'L' ||
+		    ehdr->e_ident[3] != 'F') {
+			CSR_SET(nullptr, bad_image_type, 0, 0, 1);
 		}
-
 		if (ehdr->e_ident[EI_CLAS] != ELFCLASS64 || ehdr->e_machine != EM_RISC) {
 			CSR_SET(nullptr, bad_image_type, 0, 0, 1);
-			return false;
 		}
 
 		elf64_phdr* phdrs = (elf64_phdr*) ((uint8_t*)image_data + ehdr->e_phoff);
@@ -304,7 +296,6 @@ namespace rvm64::elf {
 		}
 		if (base == UINT64_MAX || limit <= base) {
 			CSR_SET(nullptr, bad_image_load, 0, 0, 1);
-			return false;
 		}
 
 		for (int i = 0; i < ehdr->e_phnum; ++i) {
@@ -326,11 +317,7 @@ namespace rvm64::elf {
 		vmcs->process.entry = vmcs->process.address + (ehdr->e_entry - base);
 
 		vmcs->pc = vmcs->process.entry;
-		if (!patch_elf_imports()) {
-			return false;
-		}
-
-		return true;
+		patch_elf_imports();
 	}
 };
 #endif // VMELF_H
