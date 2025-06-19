@@ -34,10 +34,6 @@ namespace rvm64::entry {
 			vmcs->step = true;
 			rvm64::decoder::vm_decode(*(int32_t*)vmcs->pc);
 
-			if (vmcs->csr.m_cause == environment_call_native) {
-				rvni::vm_trap_exit();  
-				continue;
-			}
 			if (vmcs->step) {
 				vmcs->pc += 4; 
 			}

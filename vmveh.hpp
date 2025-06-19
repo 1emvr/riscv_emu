@@ -1,6 +1,7 @@
 #ifndef VMVEH_H
 #define VMVEH_H
 #include "vmmain.hpp"
+#include "rvni.hpp"
 
 LONG CALLBACK vm_exception_handler(PEXCEPTION_POINTERS exception_info) {
 	DWORD code = exception_info->ExceptionRecord->ExceptionCode;
@@ -10,9 +11,14 @@ LONG CALLBACK vm_exception_handler(PEXCEPTION_POINTERS exception_info) {
 	}
 	if (vmcs->halt || code != EXCEPTION_BREAKPOINT) { // FATAL! Either vm_exit or host exception
 		exception_info->ContextRecord->Rip = (DWORD64) vmcs->trap_handler;
+		return EXCEPTION_CONTINUE_EXECUTION;
 	}
 
 	CSR_GET();
+	if (vmcs->csr.m_cause == environment_call_native) {
+		rvm64::rvni::vm_native_call();
+	}
+
 	return EXCEPTION_CONTINUE_EXECUTION;
 }
 
