@@ -19,8 +19,8 @@ namespace rvm64::mock {
 	}
 
 	_native vm_buffer_t* read_file() {
-		DWORD bytes_read = 0;
 		NTSTATUS status = 0;
+		DWORD bytes_read = 0;
 
 		auto buffer = (vm_buffer_t*) malloc(sizeof(vm_buffer_t));
 		HANDLE hfile = ctx->win32.NtCreateFile("./test.elf", GENERIC_READ, FILE_SHARE_READ, nullptr,
