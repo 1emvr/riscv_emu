@@ -61,6 +61,7 @@ typedef struct {
     vm_process_t data;
     vm_process_t process;
 
+	volatile uintptr_t trap_handler;
     volatile uintptr_t load_rsv_addr;
     volatile int load_rsv_valid;
 

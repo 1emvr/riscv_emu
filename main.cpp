@@ -1,18 +1,35 @@
+#include "errhandlingapi.h"
 #include "vmmain.hpp"
 #include "vmcode.hpp"
 #include "vmcommon.hpp"
 #include "rvni.hpp"
 #include "mock.hpp"
 
+LONG CALLBACK vm_exception_handler(PEXCEPTION_POINTERS exception_info) {
+	DWORD code = exception_info->ExceptionRecord->ExceptionCode;
+	if (code == STATUS_SINGLE_STEP) {
+		return EXCEPTION_CONTINUE_SEARCH;
+	}
+	if (vmcs->halt || code != EXCEPTION_BREAKPOINT) { // FATAL! Either vm_exit or host exception
+		exception_info->ContextRecord->Rip = (DWORD64) vmcs->trap_handler;
+	}
+
+	CSR_GET();
+	return EXCEPTION_CONTINUE_EXECUTION;
+}
+
 namespace rvm64::entry {
 	_native bool vm_init() {
 		vmcs->dkey = key; 
 		vmcs->handler = (uintptr_t)handler;
+		vmcs->trap_handler = (uintptr_t)&&vm_exit;
+
+		AddVectoredExceptionHandler(1, vm_exception_handler);
 
 		rvm64::memory::context_init();
 		rvm64::rvni::resolve_ucrt_imports(); 
 
-		if (!rvm64::mock::read_program_from_packet()) { 
+		if (!rvm64::mock::read_program_from_packet()) {
 			return false;
 		}
 		return true;
@@ -20,6 +37,7 @@ namespace rvm64::entry {
 
 	_native void vm_end() {
 		rvm64::memory::memory_end();
+		RemoveVectoredExceptionHandler(vm_exception_handler);
 	}
 
 	_vmcall void vm_entry() {
@@ -35,7 +53,6 @@ namespace rvm64::entry {
 				vmcs->pc += 4; 
 			}
 		}
-		CSR_GET();
 	}
 };
 
@@ -46,8 +63,9 @@ namespace rvm64 {
 
 		rvm64::entry::vm_init();
 		rvm64::entry::vm_entry();
-		rvm64::entry::vm_end();
 
+	vm_exit:
+		rvm64::entry::vm_end();
 		return (int64_t)vmcs->csr.m_cause;
 	}
 };
