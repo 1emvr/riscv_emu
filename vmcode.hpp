@@ -910,7 +910,9 @@ namespace rvm64::operations {
 			vmcs->pc = address;
 			vmcs->step = false;
 
-			CSR_SET(vmcs->pc, environment_call_native, 0, 0, 0);
+			if (vmcs->pc >= vmcs->process.plt.start && vmcs->pc < vmcs->process.plt.end) {
+				CSR_SET(vmcs->pc, environment_call_native, 0, 0, 0);
+			}
 		}
 
 		_vmcall void rv_ecall() {

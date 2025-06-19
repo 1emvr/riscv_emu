@@ -124,7 +124,6 @@ namespace rvm64::rvni {
 	}
 
 	_native void vm_native_call() {
-		if (vmcs->pc >= vmcs->process.plt.start && vmcs->pc < vmcs->process.plt.end) {
 			auto it = ucrt_native_table.find((void*)vmcs->pc);
 
 			if (it == ucrt_native_table.end()) {
@@ -283,10 +282,6 @@ namespace rvm64::rvni {
 						CSR_SET(vmcs->pc, illegal_instruction, 0, plt.type, 1);
 					}
 			}
-		} else {
-			CSR_SET(vmcs->pc, instruction_access_fault, 0, vmcs->pc, 1);
-			return;
-		}
 
 		uintptr_t ret = 0;
 		reg_read(uintptr_t, ret, regenum::ra);
