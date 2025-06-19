@@ -11,7 +11,7 @@ namespace rvm64::entry {
 	_native bool vm_init() {
 		vmcs->dkey = key; 
 		vmcs->handler = (uintptr_t)handler;
-		vmcs->trap_handler = (uintptr_t)&&vm_exit;
+		vmcs->trap_handler = (uintptr_t)&&vm_return;
 
 		AddVectoredExceptionHandler(1, vm_exception_handler);
 
@@ -49,7 +49,7 @@ namespace rvm64 {
 		rvm64::entry::vm_init();
 		rvm64::entry::vm_entry();
 
-	vm_exit:
+	vm_return:
 		rvm64::entry::vm_end();
 		return (int64_t)vmcs->csr.m_cause;
 	}
