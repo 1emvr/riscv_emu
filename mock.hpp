@@ -30,7 +30,7 @@ namespace rvm64::mock {
 			CSR_SET(nullptr, undefined, (uintptr_t)INVALID_HANDLE_VALUE, 0, 1);
 		}
 
-		status = ctx->win32.NtGetFileSize(hfile, (LPDWORD) &buffer->size);
+		status = ctx->win32.NtGetFileSize(hfile, (LPDWORD)&buffer->size);
 		if (status == INVALID_FILE_SIZE || buffer->size == 0) {
 			CSR_SET(nullptr, bad_image_load, INVALID_FILE_SIZE, 0, 1);
 		}
