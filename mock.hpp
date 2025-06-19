@@ -31,10 +31,11 @@ namespace rvm64::mock {
 		}
 
 		status = ctx->win32.NtGetFileSize(hfile, (LPDWORD) &buffer->size);
-
 		if (status == INVALID_FILE_SIZE || buffer->size == 0) {
 			CSR_SET(nullptr, bad_image_load, INVALID_FILE_SIZE, 0, 1);
 		}
+
+		buffer->address = (uint8_t*)malloc(buffer->size);
 
 		if (!ctx->win32.NtReadFile(hfile, (LPVOID) buffer->address, buffer->size, &bytes_read, NULL) ||
 		    bytes_read != buffer->size) {
