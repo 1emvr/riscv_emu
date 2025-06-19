@@ -326,6 +326,10 @@ namespace rvm64::elf {
 		vmcs->process.entry = vmcs->process.address + (ehdr->e_entry - base);
 
 		vmcs->pc = vmcs->process.entry;
+		if (!patch_elf_imports()) {
+			return false;
+		}
+
 		return true;
 	}
 };
