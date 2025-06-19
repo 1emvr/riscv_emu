@@ -9,12 +9,12 @@ LONG CALLBACK vm_exception_handler(PEXCEPTION_POINTERS exception_info) {
 	if (code == STATUS_SINGLE_STEP) {
 		return EXCEPTION_CONTINUE_SEARCH;
 	}
+
+	CSR_GET();
 	if (vmcs->halt || code != EXCEPTION_BREAKPOINT) {
 		exception_info->ContextRecord->Rip = (DWORD64) vmcs->trap_handler;
 		return EXCEPTION_CONTINUE_EXECUTION;
 	}
-
-	CSR_GET();
 	if (vmcs->csr.m_cause == environment_call_native) {
 		rvm64::rvni::vm_native_call();
 	}
