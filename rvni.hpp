@@ -34,19 +34,19 @@ namespace rvm64::rvni {
 		} type;
 
 		union {
-			int (*open)(const char*, int, int);
-			int (*read)(int, void*, unsigned int);
-			int (*write)(int, const void*, unsigned int);
-			int (*close)(int);
-			long (*lseek)(int, long, int);
-			int (*stat64)(const char*, void*);
-			void* (*malloc)(size_t);
-			void (*free)(void*);
-			void* (*memcpy)(void*, const void*, size_t);
-			void* (*memset)(void*, int, size_t);
-			size_t (*strlen)(const char*);
-			char* (*strcpy)(char*, const char*);
-			int (*printf)(const char *format, ...);
+			int	(__cdecl *open)(const char*, int, int);
+			int	(__cdecl *read)(int, void*, unsigned int);
+			int	(__cdecl *write)(int, const void*, unsigned int);
+			int	(__cdecl *close)(int);
+			long (__cdecl *lseek)(int, long, int);
+			int	(__cdecl *stat64)(const char*, void*);
+			void* (__cdecl *malloc)(size_t);
+			void (__cdecl *free)(void*);
+			void* (__cdecl *memcpy)(void*, const void*, size_t);
+			void* (__cdecl *memset)(void*, int, size_t);
+			size_t (__cdecl *strlen)(const char*);
+			char* (__cdecl *strcpy)(char*, const char*);
+			int	(__cdecl *printf)(const char *format, ...);
 		};
 	};
 
@@ -125,167 +125,166 @@ namespace rvm64::rvni {
 		}
 	}
 
-	_native void vm_native_call() {
-			auto it = ucrt_native_table.find((void*)vmcs->pc);
-			if (it == ucrt_native_table.end()) {
-				CSR_SET_TRAP(vmcs->pc, illegal_instruction, 0, vmcs->pc, 1);
+	_vmcall void vm_native_call() {
+		// TODO: we have a discrepency with the calling convention from _vmcall to _native when invoking a win32 call
+		// TODO: the compiler will likely set up arguments here incorrectly for the native ABI
+		auto it = ucrt_native_table.find((void*)vmcs->pc);
+		if (it == ucrt_native_table.end()) {
+			CSR_SET_TRAP(vmcs->pc, illegal_instruction, 0, vmcs->pc, 1);
+		}
+
+		native_wrapper &plt = it->second;
+		switch (plt.type) {
+			case native_wrapper::PLT_OPEN: {
+				char *pathname;
+				int flags = 0, mode = 0;
+
+				reg_read(char*, pathname, regenum::a0);
+				reg_read(int, flags, regenum::a1);
+				reg_read(int, mode, regenum::a2);
+
+				SAVE_VM_CONTEXT(int result = plt.open(pathname, flags, mode));
+				reg_write(int, regenum::a0, result);
+				break;
 			}
+			case native_wrapper::PLT_READ: {
+				int fd = 0;
+				void *buf;
+				unsigned int count = 0;
 
-			native_wrapper& plt = it->second;
-			switch (plt.type) {
-				case native_wrapper::PLT_OPEN: 
-					{
-						char *pathname; int flags = 0, mode = 0;
+				reg_read(int, fd, regenum::a0);
+				reg_read(void*, buf, regenum::a1);
+				reg_read(unsigned int, count, regenum::a2);
 
-						reg_read(char*, pathname, regenum::a0);
-						reg_read(int, flags, regenum::a1);
-						reg_read(int, mode, regenum::a2);
-
-						SAVE_VM_CONTEXT(int result = plt.open(pathname, flags, mode));
-						reg_write(int, regenum::a0, result);
-						break;
-					}
-				case native_wrapper::PLT_READ: 
-					{
-						int fd = 0; void *buf; unsigned int count = 0;
-
-						reg_read(int, fd, regenum::a0);
-						reg_read(void*, buf, regenum::a1);
-						reg_read(unsigned int, count, regenum::a2);
-
-						SAVE_VM_CONTEXT(int result = plt.read(fd, buf, count));
-						reg_write(int, regenum::a0, result);
-						break;
-					}
-				case native_wrapper::PLT_WRITE: 
-					{
-						int fd = 0; void *buf; unsigned int count = 0;
-
-						reg_read(int, fd, regenum::a0);
-						reg_read(void*, buf, regenum::a1);
-						reg_read(unsigned int, count, regenum::a2);
-
-						SAVE_VM_CONTEXT(int result = plt.write(fd, buf, count));
-						reg_write(int, regenum::a0, result);
-						break;
-					}
-				case native_wrapper::PLT_CLOSE: 
-					{
-						int fd = 0;
-						reg_read(int, fd, regenum::a0);
-
-						SAVE_VM_CONTEXT(int result = plt.close(fd));
-						reg_write(int, regenum::a0, result);
-						break;
-					}
-				case native_wrapper::PLT_LSEEK: 
-					{
-						int fd = 0; long offset = 0; int whence = 0; 
-
-						reg_read(int, fd, regenum::a0);
-						reg_read(long, offset, regenum::a1);
-						reg_read(int, whence, regenum::a2);
-
-						SAVE_VM_CONTEXT(long result = plt.lseek(fd, offset, whence));
-						reg_write(long, regenum::a0, result);
-						break;
-					}
-				case native_wrapper::PLT_STAT64: 
-					{
-						const char *pathname; void *statbuf; 
-
-						reg_read(const char*, pathname, regenum::a0);
-						reg_read(void*, statbuf, regenum::a1);
-
-						SAVE_VM_CONTEXT(int result = plt.stat64(pathname, statbuf));
-						reg_write(int, regenum::a0, result);
-						break;
-					}
-				case native_wrapper::PLT_MALLOC: 
-					{
-						size_t size = 0; 
-						reg_read(size_t, size, regenum::a0);
-
-						SAVE_VM_CONTEXT(void* result = plt.malloc(size));
-						reg_write(uintptr_t, regenum::a0, result);
-						break;
-					}
-				case native_wrapper::PLT_FREE: 
-					{
-						void *ptr;
-						reg_read(void*, ptr, regenum::a0);
-
-						SAVE_VM_CONTEXT(plt.free(ptr));
-						break;
-					}
-				case native_wrapper::PLT_MEMCPY: 
-					{
-						void *dest, *src; size_t n = 0;
-
-						reg_read(void*, dest, regenum::a0);
-						reg_read(void*, src, regenum::a1);
-						reg_read(size_t, n, regenum::a2);
-
-						SAVE_VM_CONTEXT(void* result = plt.memcpy(dest, src, n));
-						reg_write(uintptr_t, regenum::a0, result);
-						break;
-					}
-				case native_wrapper::PLT_MEMSET: 
-					{
-						void *dest; int value = 0; size_t n = 0; 
-
-						reg_read(void*, dest, regenum::a0);
-						reg_read(int, value, regenum::a1);
-						reg_read(size_t, n, regenum::a2);
-
-						SAVE_VM_CONTEXT(void* result = plt.memset(dest, value, n));
-						reg_write(uint64_t, regenum::a0, result);
-						break;
-					}
-				case native_wrapper::PLT_STRLEN: 
-					{
-						char *s; 
-						reg_read(char*, s, regenum::a0);
-
-						SAVE_VM_CONTEXT(size_t result = plt.strlen(s));
-						reg_write(size_t, regenum::a0, result);
-						break;
-					}
-				case native_wrapper::PLT_STRCPY: 
-					{
-						char *dest, *src; 
-
-						reg_read(char*, dest, regenum::a0);
-						reg_read(char*, src, regenum::a1);
-
-						SAVE_VM_CONTEXT(char* result = plt.strcpy(dest, src));
-						reg_write(uintptr_t, regenum::a0, result);
-						break;
-					}
-				case native_wrapper::PLT_PRINTF:
-					{
-						// NOTE: this implementation is limited to 7 arguments max
-						char *fmt;
-						uint64_t args[7] = { };
-
-						reg_read(char*, fmt, regenum::a0);
-						for (int i = 1; i <= 7; ++i) {
-							reg_read(uint64_t, args[i - 1], regenum::a0 + i);
-						}
-
-						SAVE_VM_CONTEXT(
-							int result = plt.printf(fmt,
-								args[0], args[1], args[2], args[3],
-								args[4], args[5], args[6])
-						);
-						reg_write(int, regenum::a0, result);
-						break;
-					}
-				default: 
-					{
-						CSR_SET_TRAP(vmcs->pc, illegal_instruction, 0, plt.type, 1);
-					}
+				SAVE_VM_CONTEXT(int result = plt.read(fd, buf, count));
+				reg_write(int, regenum::a0, result);
+				break;
 			}
+			case native_wrapper::PLT_WRITE: {
+				int fd = 0;
+				void *buf;
+				unsigned int count = 0;
+
+				reg_read(int, fd, regenum::a0);
+				reg_read(void*, buf, regenum::a1);
+				reg_read(unsigned int, count, regenum::a2);
+
+				SAVE_VM_CONTEXT(int result = plt.write(fd, buf, count));
+				reg_write(int, regenum::a0, result);
+				break;
+			}
+			case native_wrapper::PLT_CLOSE: {
+				int fd = 0;
+				reg_read(int, fd, regenum::a0);
+
+				SAVE_VM_CONTEXT(int result = plt.close(fd));
+				reg_write(int, regenum::a0, result);
+				break;
+			}
+			case native_wrapper::PLT_LSEEK: {
+				int fd = 0;
+				long offset = 0;
+				int whence = 0;
+
+				reg_read(int, fd, regenum::a0);
+				reg_read(long, offset, regenum::a1);
+				reg_read(int, whence, regenum::a2);
+
+				SAVE_VM_CONTEXT(long result = plt.lseek(fd, offset, whence));
+				reg_write(long, regenum::a0, result);
+				break;
+			}
+			case native_wrapper::PLT_STAT64: {
+				const char *pathname;
+				void *statbuf;
+
+				reg_read(const char*, pathname, regenum::a0);
+				reg_read(void*, statbuf, regenum::a1);
+
+				SAVE_VM_CONTEXT(int result = plt.stat64(pathname, statbuf));
+				reg_write(int, regenum::a0, result);
+				break;
+			}
+			case native_wrapper::PLT_MALLOC: {
+				size_t size = 0;
+				reg_read(size_t, size, regenum::a0);
+
+				SAVE_VM_CONTEXT(void* result = plt.malloc(size));
+				reg_write(uintptr_t, regenum::a0, result);
+				break;
+			}
+			case native_wrapper::PLT_FREE: {
+				void *ptr;
+				reg_read(void*, ptr, regenum::a0);
+
+				SAVE_VM_CONTEXT(plt.free(ptr));
+				break;
+			}
+			case native_wrapper::PLT_MEMCPY: {
+				void *dest, *src;
+				size_t n = 0;
+
+				reg_read(void*, dest, regenum::a0);
+				reg_read(void*, src, regenum::a1);
+				reg_read(size_t, n, regenum::a2);
+
+				SAVE_VM_CONTEXT(void* result = plt.memcpy(dest, src, n));
+				reg_write(uintptr_t, regenum::a0, result);
+				break;
+			}
+			case native_wrapper::PLT_MEMSET: {
+				void *dest;
+				int value = 0;
+				size_t n = 0;
+
+				reg_read(void*, dest, regenum::a0);
+				reg_read(int, value, regenum::a1);
+				reg_read(size_t, n, regenum::a2);
+
+				SAVE_VM_CONTEXT(void* result = plt.memset(dest, value, n));
+				reg_write(uint64_t, regenum::a0, result);
+				break;
+			}
+			case native_wrapper::PLT_STRLEN: {
+				char *s;
+				reg_read(char*, s, regenum::a0);
+
+				SAVE_VM_CONTEXT(size_t result = plt.strlen(s));
+				reg_write(size_t, regenum::a0, result);
+				break;
+			}
+			case native_wrapper::PLT_STRCPY: {
+				char *dest, *src;
+
+				reg_read(char*, dest, regenum::a0);
+				reg_read(char*, src, regenum::a1);
+
+				SAVE_VM_CONTEXT(char* result = plt.strcpy(dest, src));
+				reg_write(uintptr_t, regenum::a0, result);
+				break;
+			}
+			case native_wrapper::PLT_PRINTF: {
+				// NOTE: this implementation is limited to 7 arguments max
+				char *fmt;
+				uint64_t args[7] = {};
+
+				reg_read(char*, fmt, regenum::a0);
+				for (int i = 1; i <= 7; ++i) {
+					reg_read(uint64_t, args[i - 1], regenum::a0 + i);
+				}
+
+				SAVE_VM_CONTEXT(
+					int result = plt.printf(fmt,
+						args[0], args[1], args[2], args[3],
+						args[4], args[5], args[6])
+				);
+				reg_write(int, regenum::a0, result);
+				break;
+			}
+			default: {
+				CSR_SET_TRAP(vmcs->pc, illegal_instruction, 0, plt.type, 1);
+			}
+		}
 
 		uintptr_t ret = 0;
 		reg_read(uintptr_t, ret, regenum::ra);
