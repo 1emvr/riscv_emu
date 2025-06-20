@@ -98,6 +98,7 @@ typedef struct {
 	} csr;
 
     int halt;
+	int trap;
 } vmcs_t;
 
 

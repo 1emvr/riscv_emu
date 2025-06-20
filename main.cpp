@@ -9,11 +9,12 @@
 
 namespace rvm64::entry {
 	_native void vm_init() {
-		vmcs->dkey = key; 
+		rvm64::context::save_host_context();
+
+		vmcs->dkey = key;
 		vmcs->handler = (uintptr_t)handler;
 		vmcs->trap_handler = (uintptr_t)&&vm_return;
 
-		rvm64::context::save_host_context();
 		AddVectoredExceptionHandler(1, vm_exception_handler);
 
 		rvm64::memory::context_init();

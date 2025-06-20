@@ -22,7 +22,6 @@
 #define OFFSET_FLAGS   offsetof(intel_t, rflags)
 
 namespace rvm64::context {
-
     _naked _vmcall void save_host_context() {
         __asm {
             mov     rax, vmcs
