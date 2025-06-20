@@ -120,8 +120,6 @@ namespace rvm64::rvni {
 	}
 
 	_vmcall void vm_native_call() {
-		// TODO: we have a discrepency with the calling convention from _vmcall to _native when invoking a win32 call
-		// TODO: the compiler will likely set up arguments here incorrectly for the native ABI
 		auto it = ucrt_native_table.find((void*)vmcs->pc);
 		if (it == ucrt_native_table.end()) {
 			CSR_SET_TRAP(vmcs->pc, illegal_instruction, 0, vmcs->pc, 1);
