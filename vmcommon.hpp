@@ -12,9 +12,9 @@ typedef PVOID(NTAPI* RtlAllocateHeap_t)(HANDLE HeapHandle, ULONG Flags, SIZE_T S
 #define _vmcall //__attribute__((section(".text$B"))) __attribute__((calling_convention("custom")))
 #define _naked  //__declspec(naked)
 
-#define _rdata    	__attribute__((section(".rdata")))
-#define _data     	__attribute__((section(".data")))
-#define _extern   	extern "C"
+#define _rdata    __attribute__((section(".rdata")))
+#define _data     __attribute__((section(".data")))
+#define _extern   extern "C"
 
 #define NT_SUCCESS(status)      ((status) >= 0)
 #define NtCurrentProcess()      ((HANDLE) (LONG_PTR) -1)
