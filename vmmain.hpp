@@ -53,7 +53,7 @@ struct intel_t {
 
 typedef struct {
     uintptr_t pc;
-    uintptr_t handler;
+    uintptr_t dispatch_table;
     uintptr_t dkey;
 
     uintptr_t vscratch[32];
@@ -62,6 +62,7 @@ typedef struct {
 
     intel_t host_context;
     intel_t vm_context;
+	HANDLE veh_handle;
 
     vm_process_t data;
     vm_process_t process;
@@ -85,7 +86,6 @@ typedef struct {
 _data hexane *ctx;
 _data vmcs_t *vmcs;
 _data HANDLE vmcs_mutex;
-_data HANDLE veh_handle;
 
 _data uintptr_t stack_cookie = 0;
 _rdata const uintptr_t key = 0;
