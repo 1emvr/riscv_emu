@@ -27,34 +27,26 @@ typedef PVOID(NTAPI* RtlAllocateHeap_t)(HANDLE HeapHandle, ULONG Flags, SIZE_T S
 #define EXPONENT_MASK           0x7FF0000000000000ULL
 #define FRACTION_MASK           0x000FFFFFFFFFFFFFULL
 
-// TODO: what happens when an non-fatal exception is raised and halt is not set?
 #define CSR_SET_TRAP(epc, cause, stat, val, hlt)	\
-	vmcs->csr.m_epc = (uintptr_t)epc;		\
-	vmcs->csr.m_cause = cause;				\
-	vmcs->csr.m_status = stat;				\
-	vmcs->csr.m_tval = val;					\
-	vmcs->halt = hlt;						\
+	vmcs->csr.m_epc = (uintptr_t)epc;				\
+	vmcs->csr.m_cause = cause;						\
+	vmcs->csr.m_status = stat;						\
+	vmcs->csr.m_tval = val;							\
+	vmcs->halt = hlt;								\
 	__debugbreak()
 
 #ifdef DEBUG
-#define CSR_GET(ctx_ptr)						\
-	do {										\
-	uintptr_t csr1 = vmcs->csr.m_epc;			\
-	uintptr_t csr2 = vmcs->csr.m_cause; 		\
-	uintptr_t csr3 = vmcs->csr.m_status;		\
-	uintptr_t csr4 = vmcs->csr.m_tval;			\
-	uintptr_t ip = ctx_ptr->ContextRecord->Rip; \
-	__debugbreak();								\
-} while (0)
+#define CSR_GET(ctx_ptr)							\
+	do {											\
+		uintptr_t csr1 = vmcs->csr.m_epc;			\
+		uintptr_t csr2 = vmcs->csr.m_cause; 		\
+		uintptr_t csr3 = vmcs->csr.m_status;		\
+		uintptr_t csr4 = vmcs->csr.m_tval;			\
+		uintptr_t ip = ctx_ptr->ContextRecord->Rip; \
+		__debugbreak();								\
+	} while (0)
 #else
-#define CSR_GET(ctx_ptr)						\
-	do {										\
-	uintptr_t csr1 = vmcs->csr.m_epc;			\
-	uintptr_t csr2 = vmcs->csr.m_cause; 		\
-	uintptr_t csr3 = vmcs->csr.m_status;		\
-	uintptr_t csr4 = vmcs->csr.m_tval;			\
-	uintptr_t ip = ctx_ptr->ContextRecord->Rip; \
-} while (0)
+#define CSR_GET(ctx_ptr)
 #endif
 
 #define SAVE_VM_CONTEXT(expr)	\
