@@ -85,6 +85,7 @@ typedef struct {
 _data hexane *ctx;
 _data vmcs_t *vmcs;
 _data HANDLE vmcs_mutex;
+_data HANDLE veh_handle;
 
 _data uintptr_t stack_cookie = 0;
 _rdata const uintptr_t key = 0;

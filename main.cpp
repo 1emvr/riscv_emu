@@ -14,7 +14,7 @@ namespace rvm64::entry {
 		vmcs->dkey = key;
 		vmcs->handler = (uintptr_t)handler;
 
-		AddVectoredExceptionHandler(1, vm_exception_handler);
+		veh_handle = AddVectoredExceptionHandler(1, vm_exception_handler);
 
 		rvm64::memory::context_init();
 		rvm64::rvni::resolve_ucrt_imports(); 
@@ -23,8 +23,7 @@ namespace rvm64::entry {
 
 	_native void vm_exit() {
 		rvm64::memory::memory_end();
-		RemoveVectoredExceptionHandler((PEXCEPTION_POINTERS)vm_exception_handler);
-
+		RemoveVectoredExceptionHandler(veh_handle);
 		restore_host_context();
 	}
 
