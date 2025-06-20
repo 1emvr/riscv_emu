@@ -179,7 +179,7 @@ typedef struct {
     } d_un;
 } elf64_dyn;
 
-
+// NOTE: I do not understand the elf format.
 namespace rvm64::elf {
 	_native void patch_elf_imports() {
 		auto process = vmcs->process.address;
