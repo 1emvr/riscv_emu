@@ -37,20 +37,24 @@ typedef PVOID(NTAPI* RtlAllocateHeap_t)(HANDLE HeapHandle, ULONG Flags, SIZE_T S
 	__debugbreak()
 
 #ifdef DEBUG
-#define CSR_GET()						\
-	uintptr_t csr1 = vmcs->csr.m_epc;	\
-	uintptr_t csr2 = vmcs->csr.m_cause; \
-	uintptr_t csr3 = vmcs->csr.m_status;\
-	uintptr_t csr4 = vmcs->csr.m_tval;	\
-	uintptr_t ip = ctx_ptr->ContextRecord->Rip
-	__debugbreak()
+#define CSR_GET(ctx_ptr)						\
+	do {										\
+	uintptr_t csr1 = vmcs->csr.m_epc;			\
+	uintptr_t csr2 = vmcs->csr.m_cause; 		\
+	uintptr_t csr3 = vmcs->csr.m_status;		\
+	uintptr_t csr4 = vmcs->csr.m_tval;			\
+	uintptr_t ip = ctx_ptr->ContextRecord->Rip; \
+	__debugbreak();								\
+} while (0)
 #else
-#define CSR_GET(ctx_ptr)				\
-	uintptr_t csr1 = vmcs->csr.m_epc;	\
-	uintptr_t csr2 = vmcs->csr.m_cause; \
-	uintptr_t csr3 = vmcs->csr.m_status;\
-	uintptr_t csr4 = vmcs->csr.m_tval;	\
-	uintptr_t ip = ctx_ptr->ContextRecord->Rip
+#define CSR_GET(ctx_ptr)						\
+	do {										\
+	uintptr_t csr1 = vmcs->csr.m_epc;			\
+	uintptr_t csr2 = vmcs->csr.m_cause; 		\
+	uintptr_t csr3 = vmcs->csr.m_status;		\
+	uintptr_t csr4 = vmcs->csr.m_tval;			\
+	uintptr_t ip = ctx_ptr->ContextRecord->Rip; \
+} while (0)
 #endif
 
 #define SAVE_VM_CONTEXT(expr)	\
