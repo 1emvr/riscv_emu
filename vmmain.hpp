@@ -46,7 +46,6 @@ typedef struct {
 } vm_process_t;
 
 struct intel_t {
-    // General purpose registers
     uint64_t rax;
     uint64_t rbx;
     uint64_t rcx;
@@ -64,11 +63,7 @@ struct intel_t {
     uint64_t r13;
     uint64_t r14;
     uint64_t r15;
-
-    uint64_t rip;    // Instruction pointer
-    uint64_t rflags; // Flags register (RFLAGS)
-
-    // Optionally, you can add space for vector registers (XMM/YMM) here later
+    uint64_t rflags;
 };
 
 typedef struct {
