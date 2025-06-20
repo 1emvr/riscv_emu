@@ -8,11 +8,6 @@
 #include "vmrwx.hpp"
 #include "vmctx.hpp"
 
-#define SAVE_VM_CONTEXT(expr)				\
-	rvm64::context::save_vm_context();		\
-	expr;									\
-	rvm64::context::restore_vm_context()
-
 namespace rvm64::rvni {
 	struct ucrt_alias {
 		const char* original;

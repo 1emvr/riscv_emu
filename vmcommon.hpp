@@ -51,6 +51,11 @@ typedef PVOID(NTAPI* RtlAllocateHeap_t)(HANDLE HeapHandle, ULONG Flags, SIZE_T S
 	uintptr_t csr4 = vmcs->csr.m_tval;
 #endif
 
+#define SAVE_VM_CONTEXT(expr)				\
+	rvm64::context::save_vm_context();		\
+	expr;									\
+	rvm64::context::restore_vm_context()
+
 enum causenum {
 	supervisor_software_interrupt = 0xb11,
 	machine_software_interrupt = 0xb13,

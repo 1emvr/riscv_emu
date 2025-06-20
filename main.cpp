@@ -24,7 +24,7 @@ namespace rvm64::entry {
 
 	_native void vm_exit() {
 		rvm64::memory::memory_end();
-		RemoveVectoredExceptionHandler(vm_exception_handler);
+		RemoveVectoredExceptionHandler((PEXCEPTION_POINTERS)vm_exception_handler);
 
 		rvm64::context::restore_host_context();
 	}

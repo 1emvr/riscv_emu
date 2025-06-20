@@ -27,19 +27,19 @@ namespace rvm64::mock {
 		                                       OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
 		if (hfile == INVALID_HANDLE_VALUE) {
-			CSR_SET(nullptr, undefined, (uintptr_t)INVALID_HANDLE_VALUE, 0, 1);
+			CSR_SET_TRAP(nullptr, undefined, (uintptr_t)INVALID_HANDLE_VALUE, 0, 1);
 		}
 
 		status = ctx->win32.NtGetFileSize(hfile, (LPDWORD)&buffer->size);
 		if (status == INVALID_FILE_SIZE || buffer->size == 0) {
-			CSR_SET(nullptr, bad_image_load, INVALID_FILE_SIZE, 0, 1);
+			CSR_SET_TRAP(nullptr, bad_image_load, INVALID_FILE_SIZE, 0, 1);
 		}
 
 		buffer->address = (uint8_t*)malloc(buffer->size);
 
 		if (!ctx->win32.NtReadFile(hfile, (LPVOID) buffer->address, buffer->size, &bytes_read, NULL) ||
 		    bytes_read != buffer->size) {
-			CSR_SET(nullptr, bad_image_load, 0, 0, 1);
+			CSR_SET_TRAP(nullptr, bad_image_load, 0, 0, 1);
 		}
 
 		if (hfile) {
@@ -51,7 +51,7 @@ namespace rvm64::mock {
 	_native void read_program_from_packet() {
 		vm_buffer_t *data = read_file();
 		if (!data) {
-			CSR_SET(nullptr, bad_image_load, 0, 0, 1);
+			CSR_SET_TRAP(nullptr, bad_image_load, 0, 0, 1);
 		}
 
 		data->size += VM_PROCESS_PADDING;
