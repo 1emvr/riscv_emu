@@ -1,5 +1,5 @@
-#ifndef VMCTX_H
-#define VMCTX_H
+#ifndef VMCTX_HPP
+#define VMCTX_HPP
 
 #include <cstddef>
 #include "vmmain.hpp"
@@ -133,7 +133,6 @@ namespace rvm64::context {
             jmp     qword ptr [rsi + OFFSET_RIP]
         }
     }
+};
 
-}; // namespace rvm64::context
-
-#endif // VMCTX_H
+#endif // VMCTX_HPP
