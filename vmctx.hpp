@@ -46,6 +46,7 @@ namespace rvm64::context {
 
             pushfq
             pop     qword ptr [rdi + OFFSET_FLAGS]
+            ret
         }
     }
 
@@ -129,8 +130,7 @@ namespace rvm64::context {
 
             push    qword ptr [rsi + OFFSET_FLAGS]
             popfq
-
-            jmp     qword ptr [rsi + OFFSET_RIP]
+            ret
         }
     }
 };
