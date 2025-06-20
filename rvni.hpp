@@ -54,7 +54,7 @@ namespace rvm64::rvni {
 	_native void* windows_thunk_resolver(const char* sym_name) {
 		static HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
 		if (!ucrt) {
-			CSR_SET_TRAP(nullptr, bad_image_symbol, 0, 0, 1);
+			CSR_SET_TRAP(nullptr, image_bad_symbol, 0, 0, 1);
 		}
 
 		for (size_t i = 0; i < sizeof(alias_table) / sizeof(alias_table[0]); ++i) {
@@ -66,7 +66,7 @@ namespace rvm64::rvni {
 
 		void* proc = (void*)GetProcAddress(ucrt, sym_name);
 		if (!proc) {
-			CSR_SET_TRAP(nullptr, bad_image_symbol, 0, 0, 1);
+			CSR_SET_TRAP(nullptr, image_bad_symbol, 0, 0, 1);
 		}
 
 		return proc;
@@ -75,7 +75,7 @@ namespace rvm64::rvni {
 	_native void resolve_ucrt_imports() {
 		HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
 		if (!ucrt) {
-			CSR_SET_TRAP(nullptr, bad_image_symbol, 0, 0, 1);
+			CSR_SET_TRAP(nullptr, image_bad_symbol, 0, 0, 1);
 		}
 
 		function funcs[] = {
@@ -88,7 +88,7 @@ namespace rvm64::rvni {
 		for (auto& f : funcs) {
 			void* native = (void*)GetProcAddress(ucrt, f.name);
 			if (!native) {
-				CSR_SET_TRAP(nullptr, bad_image_symbol, 0, 0, 1);
+				CSR_SET_TRAP(nullptr, image_bad_symbol, 0, 0, 1);
 			}
 
 			native_wrapper wrap = { };
@@ -110,7 +110,7 @@ namespace rvm64::rvni {
 				case native_wrapper::PLT_STRCPY:  wrap.strcpy = (decltype(wrap.strcpy))native; break;
 				case native_wrapper::PLT_PRINTF:  wrap.printf = (decltype(wrap.printf))native; break;
 				default: {
-					CSR_SET_TRAP(nullptr, bad_image_symbol, 0, 0, 1);
+					CSR_SET_TRAP(nullptr, image_bad_symbol, 0, 0, 1);
 					return;
 				}
 			}
