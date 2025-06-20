@@ -13,7 +13,6 @@ namespace rvm64::entry {
 
 		vmcs->dkey = key;
 		vmcs->handler = (uintptr_t)handler;
-		vmcs->trap_handler = (uintptr_t)&&vm_return;
 
 		AddVectoredExceptionHandler(1, vm_exception_handler);
 
@@ -30,6 +29,7 @@ namespace rvm64::entry {
 	}
 
 	_vmcall void vm_entry() {
+		vmcs->trap_handler = (uintptr_t)__builtin_return_address(0);
 		while (!vmcs->halt) {
 			rvm64::decoder::vm_decode(*(int32_t*)vmcs->pc);
 			vmcs->pc += 4;
@@ -44,9 +44,8 @@ namespace rvm64 {
 
 		rvm64::entry::vm_init();
 		rvm64::entry::vm_entry();
-
-	vm_return:
 		rvm64::entry::vm_exit();
+
 		return (int64_t)vmcs->csr.m_cause;
 	}
 };
