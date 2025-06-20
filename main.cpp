@@ -13,8 +13,8 @@ namespace rvm64::entry {
 
 		vmcs->dkey = key;
 		vmcs->dispatch_table = (uintptr_t)dispatch_table;
-		vmcs->vregs[sp] = (uintptr_t)(vmcs->vstack + VSTACK_MAX_CAPACITY) & ~0xf; // aligned stack
 		vmcs->veh_handle = AddVectoredExceptionHandler(1, vm_exception_handler);
+		vmcs->vregs[sp] = (uintptr_t)(vmcs->vstack + VSTACK_MAX_CAPACITY);
 
 		rvm64::memory::context_init();
 		rvm64::rvni::resolve_ucrt_imports(); 
