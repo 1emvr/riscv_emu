@@ -9,7 +9,7 @@
 
 namespace rvm64::entry {
 	_native void vm_init() {
-		rvm64::context::save_host_context();
+		save_host_context();
 
 		vmcs->dkey = key;
 		vmcs->handler = (uintptr_t)handler;
@@ -25,7 +25,7 @@ namespace rvm64::entry {
 		rvm64::memory::memory_end();
 		RemoveVectoredExceptionHandler((PEXCEPTION_POINTERS)vm_exception_handler);
 
-		rvm64::context::restore_host_context();
+		restore_host_context();
 	}
 
 	_vmcall void vm_entry() {

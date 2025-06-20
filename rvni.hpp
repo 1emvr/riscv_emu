@@ -6,7 +6,6 @@
 #include "vmmain.hpp"
 #include "vmcommon.hpp"
 #include "vmrwx.hpp"
-#include "vmctx.hpp"
 
 namespace rvm64::rvni {
 	struct ucrt_alias {
