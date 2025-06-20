@@ -103,12 +103,6 @@ enum typenum {
 	rtype = 1, r4type, itype, stype, btype, utype, jtype,
 };
 
-_extern {
-void save_host_context();
-void restore_host_context();
-void save_vm_context();
-void restore_vm_context();
-};
 	/*
 
 	#define malloc(x) 		ctx->win32.RtlAllocateHeap(ctx->heap, 0, x);

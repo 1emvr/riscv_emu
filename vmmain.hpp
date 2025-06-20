@@ -24,6 +24,12 @@ typedef struct __hexane {
     } win32;
 } hexane;
 
+_extern {
+void save_host_context();
+void restore_host_context();
+void save_vm_context();
+void restore_vm_context();
+};
 
 typedef struct {
 	uintptr_t start;
