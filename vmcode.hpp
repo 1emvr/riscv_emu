@@ -11,49 +11,51 @@ namespace rvm64::decoder {
 		typenum type;
 	};
 
-	enum handler_index : uint8_t {
-		// ITYPE
-		_rv_addi, _rv_slti, _rv_sltiu, _rv_xori,
-		_rv_ori, _rv_andi, _rv_slli, _rv_srli,
-		_rv_srai, _rv_addiw, _rv_slliw, _rv_srliw,
-		_rv_sraiw, _rv_lb, _rv_lh, _rv_lw,
-		_rv_lbu, _rv_lhu, _rv_lwu, _rv_ld,
-		_rv_flq, _rv_fence, _rv_fence_i, _rv_jalr,
-		_rv_ecall, _rv_ebreak, _rv_csrrw, _rv_csrrs,
-		_rv_csrrc, _rv_csrrwi, _rv_csrrsi, _rv_csrrci,
-		_rv_fclass_d, _rv_lrw, _rv_lrd, _rv_fmv_d_x,
-		_rv_fcvt_s_d, _rv_fcvt_d_s, _rv_fcvt_w_d, _rv_fcvt_wu_d,
-		_rv_fcvt_d_w, _rv_fcvt_d_wu,
+// Handler function index enum
+enum handler_index : uint8_t {
+    // ITYPE
+    _rv_addi, _rv_slti, _rv_sltiu, _rv_xori,
+    _rv_ori, _rv_andi, _rv_slli, _rv_srli,
+    _rv_srai, _rv_addiw, _rv_slliw, _rv_srliw,
+    _rv_sraiw, _rv_lb, _rv_lh, _rv_lw,
+    _rv_lbu, _rv_lhu, _rv_lwu, _rv_ld,
+    _rv_flq, _rv_fence, _rv_fence_i, _rv_jalr,
+    _rv_ecall, _rv_ebreak, _rv_csrrw, _rv_csrrs,
+    _rv_csrrc, _rv_csrrwi, _rv_csrrsi, _rv_csrrci,
+    _rv_fclass_d, _rv_lrw, _rv_lrd, _rv_fmv_d_x,
+    _rv_fcvt_s_d, _rv_fcvt_d_s, _rv_fcvt_w_d, _rv_fcvt_wu_d,
+    _rv_fcvt_d_w, _rv_fcvt_d_wu,
 
-		// RTYPE
-		_rv_fadd_d, _rv_fsub_d, _rv_fmul_d, _rv_fdiv_d,
-		/*_rv_fsqrt_d,*/ _rv_fsgnj_d, _rv_fsgnjn_d, _rv_fsgnjx_d,
-		_rv_fmin_d, _rv_fmax_d, _rv_feq_d, _rv_flt_d,
-		_rv_fle_d, _rv_scw, _rv_amoswap_w, _rv_amoadd_w,
-		_rv_amoxor_w, _rv_amoand_w, _rv_amoor_w, _rv_amomin_w,
-		_rv_amomax_w, _rv_amominu_w, _rv_amomaxu_w,
-		_rv_scd, _rv_amoswap_d, _rv_amoadd_d,
-		_rv_amoxor_d, _rv_amoand_d, _rv_amoor_d, _rv_amomin_d,
-		_rv_amomax_d, _rv_amominu_d, _rv_amomaxu_d,
-		_rv_addw, _rv_subw, _rv_mulw, _rv_srlw,
-		_rv_sraw, _rv_divuw, _rv_sllw, _rv_divw,
-		_rv_remw, _rv_remuw, _rv_add, _rv_sub,
-		_rv_mul, _rv_sll, _rv_mulh, _rv_slt,
-		_rv_mulhsu, _rv_sltu, _rv_mulhu, _rv_xor,
-		_rv_div, _rv_srl, _rv_sra, _rv_divu,
-		_rv_or, _rv_rem, _rv_and, _rv_remu,
+    // RTYPE
+    _rv_fadd_d, _rv_fsub_d, _rv_fmul_d, _rv_fdiv_d,
+    _rv_fsgnj_d, _rv_fsgnjn_d, _rv_fsgnjx_d,
+    _rv_fmin_d, _rv_fmax_d, _rv_feq_d, _rv_flt_d,
+    _rv_fle_d, _rv_scw, _rv_amoswap_w, _rv_amoadd_w,
+    _rv_amoxor_w, _rv_amoand_w, _rv_amoor_w, _rv_amomin_w,
+    _rv_amomax_w, _rv_amominu_w, _rv_amomaxu_w,
+    _rv_scd, _rv_amoswap_d, _rv_amoadd_d,
+    _rv_amoxor_d, _rv_amoand_d, _rv_amoor_d, _rv_amomin_d,
+    _rv_amomax_d, _rv_amominu_d, _rv_amomaxu_d,
+    _rv_addw, _rv_subw, _rv_mulw, _rv_srlw,
+    _rv_sraw, _rv_divuw, _rv_sllw, _rv_divw,
+    _rv_remw, _rv_remuw, _rv_add, _rv_sub,
+    _rv_mul, _rv_sll, _rv_mulh, _rv_slt,
+    _rv_mulhsu, _rv_sltu, _rv_mulhu, _rv_xor,
+    _rv_div, _rv_srl, _rv_sra, _rv_divu,
+    _rv_or, _rv_rem, _rv_and, _rv_remu,
 
-		// STYPE
-		_rv_sb, _rv_sh, _rv_sw, _rv_sd,
-		_rv_fsw, _rv_fsd,
+    // STYPE
+    _rv_sb, _rv_sh, _rv_sw, _rv_sd,
+    _rv_fsw, _rv_fsd,
 
-		// BTYPE
-		_rv_beq, _rv_bne, _rv_blt, _rv_bge,
-		_rv_bltu, _rv_bgeu,
+    // BTYPE
+    _rv_beq, _rv_bne, _rv_blt, _rv_bge,
+    _rv_bltu, _rv_bgeu,
 
-		// UTYPE/JTYPE
-		_rv_lui, _rv_auipc, _rv_jal
-	};
+    // UTYPE/JTYPE
+    _rv_lui, _rv_auipc, _rv_jal
+};
+
 
 	_rdata const opcode encoding[] = {
 		{ 0b1010011, rtype  }, { 0b1000011, rtype  }, { 0b0110011, rtype  }, { 0b1000111, r4type }, { 0b1001011, r4type }, { 0b1001111, r4type },
@@ -178,7 +180,7 @@ namespace rvm64::decoder {
 									case 0b0000101: { unwrap_opcall(_rv_fsub_d); break; }
 									case 0b0001001: { unwrap_opcall(_rv_fmul_d); break; }
 									case 0b0001101: { unwrap_opcall(_rv_fdiv_d); break; }
-													//case 0b0101101: { unwrap_opcall(_rv_fsqrt_d); break; }
+										//case 0b0101101: { unwrap_opcall(_rv_fsqrt_d); break; }
 									case 0b1111001: { unwrap_opcall(_rv_fmv_d_x); break; }
 									case 0b0100000:
 													{
@@ -2190,81 +2192,78 @@ namespace rvm64::operations {
 	namespace r4type {};
 };
 
-_rdata const uintptr_t handler[256] = {
-	// ITYPE
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_addi), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_slti),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_sltiu), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_xori),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_ori), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_andi),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_slli), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_srli),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_srai), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_addiw),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_slliw), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_srliw),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_sraiw), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_lb),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_lh), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_lw),
+_rdata const uintptr_t handler[] = {
+#define ENCRYPT(op) rvm64::crypt::encrypt_ptr((uintptr_t)(op))
 
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_lbu), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_lhu),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_lwu), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_ld),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_flq), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_fence),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_fence_i), 	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_jalr),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_ecall), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_ebreak),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_csrrw), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_csrrs),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_csrrc), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_csrrwi),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_csrrsi), 	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_csrrci),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_fclass_d), 	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_lrw),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_lrd), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_fmv_d_x),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_fcvt_s_d), 	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_fcvt_d_s),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_fcvt_w_d), 	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_fcvt_wu_d),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_fcvt_d_w), 	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::itype::rv_fcvt_d_wu),
+    // ITYPE
+    ENCRYPT(rvm64::operations::itype::rv_addi), ENCRYPT(rvm64::operations::itype::rv_slti),
+    ENCRYPT(rvm64::operations::itype::rv_sltiu), ENCRYPT(rvm64::operations::itype::rv_xori),
+    ENCRYPT(rvm64::operations::itype::rv_ori), ENCRYPT(rvm64::operations::itype::rv_andi),
+    ENCRYPT(rvm64::operations::itype::rv_slli), ENCRYPT(rvm64::operations::itype::rv_srli),
+    ENCRYPT(rvm64::operations::itype::rv_srai), ENCRYPT(rvm64::operations::itype::rv_addiw),
+    ENCRYPT(rvm64::operations::itype::rv_slliw), ENCRYPT(rvm64::operations::itype::rv_srliw),
+    ENCRYPT(rvm64::operations::itype::rv_sraiw), ENCRYPT(rvm64::operations::itype::rv_lb),
+    ENCRYPT(rvm64::operations::itype::rv_lh), ENCRYPT(rvm64::operations::itype::rv_lw),
+    ENCRYPT(rvm64::operations::itype::rv_lbu), ENCRYPT(rvm64::operations::itype::rv_lhu),
+    ENCRYPT(rvm64::operations::itype::rv_lwu), ENCRYPT(rvm64::operations::itype::rv_ld),
+    ENCRYPT(rvm64::operations::itype::rv_flq), ENCRYPT(rvm64::operations::itype::rv_fence),
+    ENCRYPT(rvm64::operations::itype::rv_fence_i), ENCRYPT(rvm64::operations::itype::rv_jalr),
+    ENCRYPT(rvm64::operations::itype::rv_ecall), ENCRYPT(rvm64::operations::itype::rv_ebreak),
+    ENCRYPT(rvm64::operations::itype::rv_csrrw), ENCRYPT(rvm64::operations::itype::rv_csrrs),
+    ENCRYPT(rvm64::operations::itype::rv_csrrc), ENCRYPT(rvm64::operations::itype::rv_csrrwi),
+    ENCRYPT(rvm64::operations::itype::rv_csrrsi), ENCRYPT(rvm64::operations::itype::rv_csrrci),
+    ENCRYPT(rvm64::operations::itype::rv_fclass_d), ENCRYPT(rvm64::operations::itype::rv_lrw),
+    ENCRYPT(rvm64::operations::itype::rv_lrd), ENCRYPT(rvm64::operations::itype::rv_fmv_d_x),
+    ENCRYPT(rvm64::operations::itype::rv_fcvt_s_d), ENCRYPT(rvm64::operations::itype::rv_fcvt_d_s),
+    ENCRYPT(rvm64::operations::itype::rv_fcvt_w_d), ENCRYPT(rvm64::operations::itype::rv_fcvt_wu_d),
+    ENCRYPT(rvm64::operations::itype::rv_fcvt_d_w), ENCRYPT(rvm64::operations::itype::rv_fcvt_d_wu),
 
-	// RTYPE
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fadd_d), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fsub_d),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fmul_d), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fdiv_d),
-	/*rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fsqrt_d),*/ 	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fsgnj_d),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fsgnjn_d), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fsgnjx_d),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fmin_d), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fmax_d),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_feq_d), 			rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_flt_d),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_fle_d), 			rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_scw),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amoswap_w), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amoadd_w),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amoxor_w), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amoand_w),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amoor_w), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amomin_w),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amomax_w), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amominu_w),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amomaxu_w),
+    // RTYPE
+    ENCRYPT(rvm64::operations::rtype::rv_fadd_d), ENCRYPT(rvm64::operations::rtype::rv_fsub_d),
+    ENCRYPT(rvm64::operations::rtype::rv_fmul_d), ENCRYPT(rvm64::operations::rtype::rv_fdiv_d),
+    ENCRYPT(rvm64::operations::rtype::rv_fsgnj_d), ENCRYPT(rvm64::operations::rtype::rv_fsgnjn_d),
+    ENCRYPT(rvm64::operations::rtype::rv_fsgnjx_d), ENCRYPT(rvm64::operations::rtype::rv_fmin_d),
+    ENCRYPT(rvm64::operations::rtype::rv_fmax_d), ENCRYPT(rvm64::operations::rtype::rv_feq_d),
+    ENCRYPT(rvm64::operations::rtype::rv_flt_d), ENCRYPT(rvm64::operations::rtype::rv_fle_d),
+    ENCRYPT(rvm64::operations::rtype::rv_scw), ENCRYPT(rvm64::operations::rtype::rv_amoswap_w),
+    ENCRYPT(rvm64::operations::rtype::rv_amoadd_w), ENCRYPT(rvm64::operations::rtype::rv_amoxor_w),
+    ENCRYPT(rvm64::operations::rtype::rv_amoand_w), ENCRYPT(rvm64::operations::rtype::rv_amoor_w),
+    ENCRYPT(rvm64::operations::rtype::rv_amomin_w), ENCRYPT(rvm64::operations::rtype::rv_amomax_w),
+    ENCRYPT(rvm64::operations::rtype::rv_amominu_w), ENCRYPT(rvm64::operations::rtype::rv_amomaxu_w),
+    ENCRYPT(rvm64::operations::rtype::rv_scd), ENCRYPT(rvm64::operations::rtype::rv_amoswap_d),
+    ENCRYPT(rvm64::operations::rtype::rv_amoadd_d), ENCRYPT(rvm64::operations::rtype::rv_amoxor_d),
+    ENCRYPT(rvm64::operations::rtype::rv_amoand_d), ENCRYPT(rvm64::operations::rtype::rv_amoor_d),
+    ENCRYPT(rvm64::operations::rtype::rv_amomin_d), ENCRYPT(rvm64::operations::rtype::rv_amomax_d),
+    ENCRYPT(rvm64::operations::rtype::rv_amominu_d), ENCRYPT(rvm64::operations::rtype::rv_amomaxu_d),
+    ENCRYPT(rvm64::operations::rtype::rv_addw), ENCRYPT(rvm64::operations::rtype::rv_subw),
+    ENCRYPT(rvm64::operations::rtype::rv_mulw), ENCRYPT(rvm64::operations::rtype::rv_srlw),
+    ENCRYPT(rvm64::operations::rtype::rv_sraw), ENCRYPT(rvm64::operations::rtype::rv_divuw),
+    ENCRYPT(rvm64::operations::rtype::rv_sllw), ENCRYPT(rvm64::operations::rtype::rv_divw),
+    ENCRYPT(rvm64::operations::rtype::rv_remw), ENCRYPT(rvm64::operations::rtype::rv_remuw),
+    ENCRYPT(rvm64::operations::rtype::rv_add), ENCRYPT(rvm64::operations::rtype::rv_sub),
+    ENCRYPT(rvm64::operations::rtype::rv_mul), ENCRYPT(rvm64::operations::rtype::rv_sll),
+    ENCRYPT(rvm64::operations::rtype::rv_mulh), ENCRYPT(rvm64::operations::rtype::rv_slt),
+    ENCRYPT(rvm64::operations::rtype::rv_mulhsu), ENCRYPT(rvm64::operations::rtype::rv_sltu),
+    ENCRYPT(rvm64::operations::rtype::rv_mulhu), ENCRYPT(rvm64::operations::rtype::rv_xor),
+    ENCRYPT(rvm64::operations::rtype::rv_div), ENCRYPT(rvm64::operations::rtype::rv_srl),
+    ENCRYPT(rvm64::operations::rtype::rv_sra), ENCRYPT(rvm64::operations::rtype::rv_divu),
+    ENCRYPT(rvm64::operations::rtype::rv_or), ENCRYPT(rvm64::operations::rtype::rv_rem),
+    ENCRYPT(rvm64::operations::rtype::rv_and), ENCRYPT(rvm64::operations::rtype::rv_remu),
 
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_scd),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amoswap_d), 	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amoadd_d),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amoxor_d), 	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amoand_d),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amoor_d), 	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amomin_d),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amomax_d), 	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amominu_d),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_amomaxu_d),
+    // STYPE
+    ENCRYPT(rvm64::operations::stype::rv_sb), ENCRYPT(rvm64::operations::stype::rv_sh),
+    ENCRYPT(rvm64::operations::stype::rv_sw), ENCRYPT(rvm64::operations::stype::rv_sd),
+    ENCRYPT(rvm64::operations::stype::rv_fsw), ENCRYPT(rvm64::operations::stype::rv_fsd),
 
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_addw), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_subw),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_mulw), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_srlw),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_sraw), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_divuw),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_sllw), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_divw),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_remw), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_remuw),
+    // BTYPE
+    ENCRYPT(rvm64::operations::btype::rv_beq), ENCRYPT(rvm64::operations::btype::rv_bne),
+    ENCRYPT(rvm64::operations::btype::rv_blt), ENCRYPT(rvm64::operations::btype::rv_bge),
+    ENCRYPT(rvm64::operations::btype::rv_bltu), ENCRYPT(rvm64::operations::btype::rv_bgeu),
 
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_add), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_sub),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_mul), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_sll),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_mulh), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_slt),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_mulhsu), 	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_sltu),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_mulhu), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_xor),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_div), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_srl),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_sra), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_divu),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_or), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_rem),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_and), 		rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::rtype::rv_remu),
+    // UTYPE/JTYPE
+    ENCRYPT(rvm64::operations::utype::rv_lui), ENCRYPT(rvm64::operations::utype::rv_auipc),
+    ENCRYPT(rvm64::operations::jtype::rv_jal)
 
-	// TODO: Finish floating point instructions (probably S and I types) - f, fm, fnm, fcvt - have a few already done.
-	// STYPE
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::stype::rv_sb), 	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::stype::rv_sh),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::stype::rv_sw), 	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::stype::rv_sd),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::stype::rv_fsw), 	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::stype::rv_fsd),
-
-	// BTYPE
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::btype::rv_beq), 	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::btype::rv_bne),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::btype::rv_blt), 	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::btype::rv_bge),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::btype::rv_bltu), 	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::btype::rv_bgeu),
-
-	// UTYPE/JTYPE
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::utype::rv_lui), 	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::utype::rv_auipc),
-	rvm64::crypt::encrypt_ptr((uintptr_t) rvm64::operations::jtype::rv_jal)
+#undef ENCRYPT
 };
 #endif // VMCODE_H
