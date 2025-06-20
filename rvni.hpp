@@ -34,19 +34,19 @@ namespace rvm64::rvni {
 		} type;
 
 		union {
-			int	(__cdecl *open)(const char*, int, int);
-			int	(__cdecl *read)(int, void*, unsigned int);
-			int	(__cdecl *write)(int, const void*, unsigned int);
-			int	(__cdecl *close)(int);
-			long (__cdecl *lseek)(int, long, int);
-			int	(__cdecl *stat64)(const char*, void*);
-			void* (__cdecl *malloc)(size_t);
-			void (__cdecl *free)(void*);
-			void* (__cdecl *memcpy)(void*, const void*, size_t);
-			void* (__cdecl *memset)(void*, int, size_t);
-			size_t (__cdecl *strlen)(const char*);
-			char* (__cdecl *strcpy)(char*, const char*);
-			int	(__cdecl *printf)(const char *format, ...);
+			int	(__cdecl* open)(const char*, int, int);
+			int	(__cdecl* read)(int, void*, unsigned int);
+			int	(__cdecl* write)(int, const void*, unsigned int);
+			int	(__cdecl* close)(int);
+			long (__cdecl* lseek)(int, long, int);
+			int	(__cdecl* stat64)(const char*, void*);
+			void* (__cdecl* malloc)(size_t);
+			void (__cdecl* free)(void*);
+			void* (__cdecl* memcpy)(void*, const void*, size_t);
+			void* (__cdecl* memset)(void*, int, size_t);
+			size_t (__cdecl* strlen)(const char*);
+			char* (__cdecl* strcpy)(char*, const char*);
+			int	(__cdecl* printf)(const char *format, ...);
 		};
 	};
 

@@ -13,6 +13,7 @@ namespace rvm64::entry {
 		vmcs->handler = (uintptr_t)handler;
 		vmcs->trap_handler = (uintptr_t)&&vm_return;
 
+		rvm64::context::save_host_context();
 		AddVectoredExceptionHandler(1, vm_exception_handler);
 
 		rvm64::memory::context_init();
@@ -23,6 +24,7 @@ namespace rvm64::entry {
 	_native void vm_exit() {
 		rvm64::memory::memory_end();
 		RemoveVectoredExceptionHandler(vm_exception_handler);
+		rvm64::context::restore_host_context();
 	}
 
 	_vmcall void vm_entry() {

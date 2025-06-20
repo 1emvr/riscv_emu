@@ -10,6 +10,7 @@ typedef PVOID(NTAPI* RtlAllocateHeap_t)(HANDLE HeapHandle, ULONG Flags, SIZE_T S
 
 #define _native //__attribute__((section(".text$B")))
 #define _vmcall //__attribute__((section(".text$B"))) __attribute__((calling_convention("custom")))
+#define _naked  //__declspec(naked)
 
 #define _rdata    	__attribute__((section(".rdata")))
 #define _data     	__attribute__((section(".data")))

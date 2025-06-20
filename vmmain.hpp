@@ -45,6 +45,31 @@ typedef struct {
 	vm_range_t plt;
 } vm_process_t;
 
+struct intel_t {
+    // General purpose registers
+    uint64_t rax;
+    uint64_t rbx;
+    uint64_t rcx;
+    uint64_t rdx;
+    uint64_t rsi;
+    uint64_t rdi;
+    uint64_t rbp;
+    uint64_t rsp;
+
+    uint64_t r8;
+    uint64_t r9;
+    uint64_t r10;
+    uint64_t r11;
+    uint64_t r12;
+    uint64_t r13;
+    uint64_t r14;
+    uint64_t r15;
+
+    uint64_t rip;    // Instruction pointer
+    uint64_t rflags; // Flags register (RFLAGS)
+
+    // Optionally, you can add space for vector registers (XMM/YMM) here later
+};
 
 typedef struct {
     uintptr_t pc;
@@ -55,8 +80,8 @@ typedef struct {
     uintptr_t vregs[32];
     uintptr_t vstack[VSTACK_MAX_CAPACITY];
 
-    CONTEXT host_context;
-    CONTEXT vm_context;
+    intel_t host_context;
+    intel_t vm_context;
 
     vm_process_t data;
     vm_process_t process;
