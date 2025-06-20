@@ -42,18 +42,20 @@ typedef PVOID(NTAPI* RtlAllocateHeap_t)(HANDLE HeapHandle, ULONG Flags, SIZE_T S
 	uintptr_t csr2 = vmcs->csr.m_cause; \
 	uintptr_t csr3 = vmcs->csr.m_status;\
 	uintptr_t csr4 = vmcs->csr.m_tval;	\
+	uintptr_t ip = ctx_ptr->ContextRecord->Rip
 	__debugbreak()
 #else
-#define CSR_GET()						\
+#define CSR_GET(ctx_ptr)				\
 	uintptr_t csr1 = vmcs->csr.m_epc;	\
 	uintptr_t csr2 = vmcs->csr.m_cause; \
 	uintptr_t csr3 = vmcs->csr.m_status;\
-	uintptr_t csr4 = vmcs->csr.m_tval;
+	uintptr_t csr4 = vmcs->csr.m_tval;	\
+	uintptr_t ip = ctx_ptr->ContextRecord->Rip
 #endif
 
-#define SAVE_VM_CONTEXT(expr)				\
-	save_vm_context();		\
-	expr;									\
+#define SAVE_VM_CONTEXT(expr)	\
+	save_vm_context();			\
+	expr;						\
 	restore_vm_context()
 
 enum causenum {
