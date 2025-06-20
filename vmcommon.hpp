@@ -26,12 +26,14 @@ typedef PVOID(NTAPI* RtlAllocateHeap_t)(HANDLE HeapHandle, ULONG Flags, SIZE_T S
 #define EXPONENT_MASK           0x7FF0000000000000ULL
 #define FRACTION_MASK           0x000FFFFFFFFFFFFFULL
 
-#define CSR_SET(epc, cause, stat, val, hlt)	\
+// TODO: what happens when an non-fatal exception is raised and halt is not set?
+#define CSR_SET_TRAP(epc, cause, stat, val, hlt)	\
 	vmcs->csr.m_epc = (uintptr_t)epc;		\
 	vmcs->csr.m_cause = cause;				\
 	vmcs->csr.m_status = stat;				\
 	vmcs->csr.m_tval = val;					\
-	vmcs->halt = hlt
+	vmcs->halt = hlt;						\
+	__debugbreak()
 
 #ifdef DEBUG
 #define CSR_GET()						\
@@ -71,7 +73,7 @@ enum causenum {
 	load_page_fault = 0xb013,
 	store_amo_page_fault = 0xb015,
 	environment_call_native = 0xb024,
-	bad_symbol = 0xb025,
+	bad_image_symbol = 0xb025,
 	bad_image_load = 0xb026,
 	bad_image_type = 0xb027,
 	designated_for_custom_use_5 = 0xb028,

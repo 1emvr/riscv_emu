@@ -20,19 +20,15 @@ namespace rvm64::entry {
 		rvm64::mock::read_program_from_packet();
 	}
 
-	_native void vm_end() {
+	_native void vm_exit() {
 		rvm64::memory::memory_end();
 		RemoveVectoredExceptionHandler(vm_exception_handler);
 	}
 
 	_vmcall void vm_entry() {
 		while (!vmcs->halt) {
-			vmcs->step = true;
 			rvm64::decoder::vm_decode(*(int32_t*)vmcs->pc);
-
-			if (vmcs->step) {
-				vmcs->pc += 4; 
-			}
+			vmcs->pc += 4;
 		}
 	}
 };
@@ -46,7 +42,7 @@ namespace rvm64 {
 		rvm64::entry::vm_entry();
 
 	vm_return:
-		rvm64::entry::vm_end();
+		rvm64::entry::vm_exit();
 		return (int64_t)vmcs->csr.m_cause;
 	}
 };

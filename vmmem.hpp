@@ -56,7 +56,7 @@ namespace rvm64::memory {
 	    if (!NT_SUCCESS(status = ctx->win32.NtAllocateVirtualMemory(NtCurrentProcess(), (LPVOID*) &vmcs->process.address, 0,
 		    &vmcs->process.size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE))) {
 
-		    CSR_SET(nullptr, load_access_fault, status, 0, 1);
+		    CSR_SET_TRAP(nullptr, load_access_fault, status, 0, 1);
 		    return false;
 	    }
 		return true;
@@ -65,38 +65,9 @@ namespace rvm64::memory {
 	_native void memory_end() {
     	NTSTATUS status = 0;
 		if (!NT_SUCCESS(status = ctx->win32.NtFreeVirtualMemory(NtCurrentProcess(), (LPVOID*)&vmcs->process.address, &vmcs->process.size, MEM_RELEASE))) {
-			CSR_SET(nullptr, load_access_fault, status, 0, 1);
+			CSR_SET_TRAP(nullptr, load_access_fault, status, 0, 1);
 		}
 	}
 };
 
-namespace rvm64::context {
-    _native void save_host_context() {
-    	NTSTATUS status = 0;
-        if (!NT_SUCCESS(status = ctx->win32.NtGetContextThread(NtCurrentThread(), &vmcs->host_context))) {
-        	CSR_SET(nullptr, load_access_fault, status, 0, 1);
-        }
-    }
-
-    _native void restore_host_context() {
-    	NTSTATUS status = 0;
-        if (!NT_SUCCESS(status = ctx->win32.NtSetContextThread(NtCurrentThread(), &vmcs->host_context))) {
-        	CSR_SET(nullptr, load_access_fault, status, 0, 1);
-        }
-    }
-
-    _native void save_vm_context() {
-    	NTSTATUS status = 0;
-        if (!NT_SUCCESS(status = ctx->win32.NtGetContextThread(NtCurrentThread(), &vmcs->vm_context))) {
-        	CSR_SET(nullptr, load_access_fault, status, 0, 1);
-        }
-    }
-
-    _native void restore_vm_context() {
-    	NTSTATUS status = 0;
-        if (!NT_SUCCESS(status = ctx->win32.NtSetContextThread(NtCurrentThread(), &vmcs->vm_context))) {
-        	CSR_SET(nullptr, load_access_fault, status, 0, 1);
-        }
-    }
-};
 #endif // VMMEM_H

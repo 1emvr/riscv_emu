@@ -6,11 +6,26 @@
 #include "vmmain.hpp"
 #include "vmcommon.hpp"
 #include "vmrwx.hpp"
+#include "vmctx.hpp"
+
+#define SAVE_VM_CONTEXT(expr)				\
+	rvm64::context::save_vm_context();		\
+	expr;									\
+	rvm64::context::restore_vm_context()
 
 namespace rvm64::rvni {
+	struct ucrt_alias {
+		const char* original;
+		const char* alias;
+	};
+
+	_data ucrt_alias alias_table[] = {
+		{ "open",  "_open"  }, { "read",  "_read"  }, { "write", "_write" },
+		{ "close", "_close" }, { "exit",  "_exit"  },
+	};
+
 	struct native_wrapper {
 		void *address;  
-
 		enum typecaster {
 			PLT_OPEN, 	PLT_READ, 	PLT_WRITE, 	PLT_CLOSE,
 			PLT_LSEEK, 	PLT_STAT64, PLT_MALLOC, PLT_FREE,
@@ -35,14 +50,9 @@ namespace rvm64::rvni {
 		};
 	};
 
-	struct ucrt_alias {
-		const char* original;
-		const char* alias;
-	};
-
-	_data ucrt_alias alias_table[] = {
-		{ "open",  "_open"  }, { "read",  "_read"  }, { "write", "_write" },
-		{ "close", "_close" }, { "exit",  "_exit"  },
+	struct function {
+		const char* name;
+		native_wrapper::typecaster type;
 	};
 
 	_data std::unordered_map<void*, native_wrapper> ucrt_native_table;
@@ -50,8 +60,7 @@ namespace rvm64::rvni {
 	_native void* windows_thunk_resolver(const char* sym_name) {
 		static HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
 		if (!ucrt) {
-			CSR_SET(nullptr, bad_symbol, 0, 0, 1);
-			return nullptr;
+			CSR_SET_TRAP(nullptr, bad_image_symbol, 0, 0, 1);
 		}
 
 		for (size_t i = 0; i < sizeof(alias_table) / sizeof(alias_table[0]); ++i) {
@@ -63,8 +72,7 @@ namespace rvm64::rvni {
 
 		void* proc = (void*)GetProcAddress(ucrt, sym_name);
 		if (!proc) {
-			CSR_SET(nullptr, bad_symbol, 0, 0, 1);
-			return nullptr;
+			CSR_SET_TRAP(nullptr, bad_image_symbol, 0, 0, 1);
 		}
 
 		return proc;
@@ -72,16 +80,11 @@ namespace rvm64::rvni {
 
 	_native void resolve_ucrt_imports() {
 		HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
-
 		if (!ucrt) {
-			CSR_SET(nullptr, bad_symbol, 0, 0, 1);
-			return;
+			CSR_SET_TRAP(nullptr, bad_image_symbol, 0, 0, 1);
 		}
 
-		struct {
-			const char* name;
-			native_wrapper::typecaster type;
-		} funcs[] = {
+		function funcs[] = {
 			{"_open", native_wrapper::PLT_OPEN}, {"_read", native_wrapper::PLT_READ}, {"_write", native_wrapper::PLT_WRITE}, {"_close", native_wrapper::PLT_CLOSE},
 			{"_lseek", native_wrapper::PLT_LSEEK}, {"_stat64", native_wrapper::PLT_STAT64}, {"malloc", native_wrapper::PLT_MALLOC}, {"free", native_wrapper::PLT_FREE},
 			{"memcpy", native_wrapper::PLT_MEMCPY}, {"memset", native_wrapper::PLT_MEMSET}, {"strlen", native_wrapper::PLT_STRLEN}, {"strcpy", native_wrapper::PLT_STRCPY},
@@ -91,8 +94,7 @@ namespace rvm64::rvni {
 		for (auto& f : funcs) {
 			void* native = (void*)GetProcAddress(ucrt, f.name);
 			if (!native) {
-				CSR_SET(nullptr, bad_symbol, 0, 0, 1);
-				return;
+				CSR_SET_TRAP(nullptr, bad_image_symbol, 0, 0, 1);
 			}
 
 			native_wrapper wrap = { };
@@ -114,7 +116,7 @@ namespace rvm64::rvni {
 				case native_wrapper::PLT_STRCPY:  wrap.strcpy = (decltype(wrap.strcpy))native; break;
 				case native_wrapper::PLT_PRINTF:  wrap.printf = (decltype(wrap.printf))native; break;
 				default: {
-					CSR_SET(nullptr, undefined, 0, 0, 1);
+					CSR_SET_TRAP(nullptr, bad_image_symbol, 0, 0, 1);
 					return;
 				}
 			}
@@ -125,14 +127,11 @@ namespace rvm64::rvni {
 
 	_native void vm_native_call() {
 			auto it = ucrt_native_table.find((void*)vmcs->pc);
-
 			if (it == ucrt_native_table.end()) {
-				CSR_SET(vmcs->pc, illegal_instruction, 0, vmcs->pc, 1);
-				return;
+				CSR_SET_TRAP(vmcs->pc, illegal_instruction, 0, vmcs->pc, 1);
 			}
 
 			native_wrapper& plt = it->second;
-
 			switch (plt.type) {
 				case native_wrapper::PLT_OPEN: 
 					{
@@ -142,7 +141,7 @@ namespace rvm64::rvni {
 						reg_read(int, flags, regenum::a1);
 						reg_read(int, mode, regenum::a2);
 
-						int result = plt.open(pathname, flags, mode);
+						SAVE_VM_CONTEXT(int result = plt.open(pathname, flags, mode));
 						reg_write(int, regenum::a0, result);
 						break;
 					}
@@ -154,7 +153,7 @@ namespace rvm64::rvni {
 						reg_read(void*, buf, regenum::a1);
 						reg_read(unsigned int, count, regenum::a2);
 
-						int result = plt.read(fd, buf, count);
+						SAVE_VM_CONTEXT(int result = plt.read(fd, buf, count));
 						reg_write(int, regenum::a0, result);
 						break;
 					}
@@ -166,7 +165,7 @@ namespace rvm64::rvni {
 						reg_read(void*, buf, regenum::a1);
 						reg_read(unsigned int, count, regenum::a2);
 
-						int result = plt.write(fd, buf, count);
+						SAVE_VM_CONTEXT(int result = plt.write(fd, buf, count));
 						reg_write(int, regenum::a0, result);
 						break;
 					}
@@ -175,7 +174,7 @@ namespace rvm64::rvni {
 						int fd = 0;
 						reg_read(int, fd, regenum::a0);
 
-						int result = plt.close(fd);
+						SAVE_VM_CONTEXT(int result = plt.close(fd));
 						reg_write(int, regenum::a0, result);
 						break;
 					}
@@ -187,7 +186,7 @@ namespace rvm64::rvni {
 						reg_read(long, offset, regenum::a1);
 						reg_read(int, whence, regenum::a2);
 
-						long result = plt.lseek(fd, offset, whence);
+						SAVE_VM_CONTEXT(long result = plt.lseek(fd, offset, whence));
 						reg_write(long, regenum::a0, result);
 						break;
 					}
@@ -198,7 +197,7 @@ namespace rvm64::rvni {
 						reg_read(const char*, pathname, regenum::a0);
 						reg_read(void*, statbuf, regenum::a1);
 
-						int result = plt.stat64(pathname, statbuf);
+						SAVE_VM_CONTEXT(int result = plt.stat64(pathname, statbuf));
 						reg_write(int, regenum::a0, result);
 						break;
 					}
@@ -207,7 +206,7 @@ namespace rvm64::rvni {
 						size_t size = 0; 
 						reg_read(size_t, size, regenum::a0);
 
-						void* result = plt.malloc(size);
+						SAVE_VM_CONTEXT(void* result = plt.malloc(size));
 						reg_write(uintptr_t, regenum::a0, result);
 						break;
 					}
@@ -215,7 +214,8 @@ namespace rvm64::rvni {
 					{
 						void *ptr;
 						reg_read(void*, ptr, regenum::a0);
-						plt.free(ptr);
+
+						SAVE_VM_CONTEXT(plt.free(ptr));
 						break;
 					}
 				case native_wrapper::PLT_MEMCPY: 
@@ -226,7 +226,7 @@ namespace rvm64::rvni {
 						reg_read(void*, src, regenum::a1);
 						reg_read(size_t, n, regenum::a2);
 
-						void* result = plt.memcpy(dest, src, n);
+						SAVE_VM_CONTEXT(void* result = plt.memcpy(dest, src, n));
 						reg_write(uintptr_t, regenum::a0, result);
 						break;
 					}
@@ -238,7 +238,7 @@ namespace rvm64::rvni {
 						reg_read(int, value, regenum::a1);
 						reg_read(size_t, n, regenum::a2);
 
-						void* result = plt.memset(dest, value, n);
+						SAVE_VM_CONTEXT(void* result = plt.memset(dest, value, n));
 						reg_write(uint64_t, regenum::a0, result);
 						break;
 					}
@@ -247,7 +247,7 @@ namespace rvm64::rvni {
 						char *s; 
 						reg_read(char*, s, regenum::a0);
 
-						size_t result = plt.strlen(s);
+						SAVE_VM_CONTEXT(size_t result = plt.strlen(s));
 						reg_write(size_t, regenum::a0, result);
 						break;
 					}
@@ -258,7 +258,7 @@ namespace rvm64::rvni {
 						reg_read(char*, dest, regenum::a0);
 						reg_read(char*, src, regenum::a1);
 
-						char* result = plt.strcpy(dest, src);
+						SAVE_VM_CONTEXT(char* result = plt.strcpy(dest, src));
 						reg_write(uintptr_t, regenum::a0, result);
 						break;
 					}
@@ -272,22 +272,24 @@ namespace rvm64::rvni {
 						for (int i = 1; i <= 7; ++i) {
 							reg_read(uint64_t, args[i - 1], regenum::a0 + i);
 						}
-						int result = plt.printf(fmt, args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
 
+						SAVE_VM_CONTEXT(
+							int result = plt.printf(fmt,
+								args[0], args[1], args[2], args[3],
+								args[4], args[5], args[6])
+						);
 						reg_write(int, regenum::a0, result);
 						break;
 					}
 				default: 
 					{
-						CSR_SET(vmcs->pc, illegal_instruction, 0, plt.type, 1);
+						CSR_SET_TRAP(vmcs->pc, illegal_instruction, 0, plt.type, 1);
 					}
 			}
 
 		uintptr_t ret = 0;
 		reg_read(uintptr_t, ret, regenum::ra);
-
-		vmcs->step = true;
-		vmcs->pc = ret; 
+		vmcs->pc = ret;
 	}
 }
 #endif // RVNI_H

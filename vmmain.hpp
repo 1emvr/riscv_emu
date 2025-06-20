@@ -72,9 +72,7 @@ typedef struct {
 		uintptr_t m_tval;
 	} csr;
 
-    uint32_t halt;
-    uint32_t step;
-	uint32_t reason;
+    int halt;
 } vmcs_t;
 
 

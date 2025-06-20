@@ -186,7 +186,7 @@ namespace rvm64::elf {
 		auto ehdr = (elf64_ehdr*)process;
 
 		if (ehdr->e_type != ET_EXEC && ehdr->e_type != ET_DYN) {
-			CSR_SET(nullptr, bad_image_type, 0, 0, 1);
+			CSR_SET_TRAP(nullptr, bad_image_type, 0, 0, 1);
 		}
 
 		auto phdrs = (elf64_phdr*) ((uint8_t*)(process) + ehdr->e_phoff);
@@ -201,7 +201,7 @@ namespace rvm64::elf {
 			}
 		}
 		if (!dyn_vaddr || !dyn_size) {
-			CSR_SET(nullptr, bad_image_load, 0, 0, 1);
+			CSR_SET_TRAP(nullptr, bad_image_load, 0, 0, 1);
 		}
 
 		auto* dyn_entries = (elf64_dyn*) ((uint8_t*)process + dyn_vaddr); 
@@ -216,18 +216,18 @@ namespace rvm64::elf {
 				case DT_PLTRELSZ: rela_plt_size = dyn->d_un.d_val; break;
 				case DT_PLTREL: {
 					if (dyn->d_un.d_val != DT_RELA) {
-						CSR_SET(nullptr, bad_image_load, 0, 0, 1);
+						CSR_SET_TRAP(nullptr, bad_image_load, 0, 0, 1);
 					}
 					break;
 				}
 				default: {
-					CSR_SET(nullptr, bad_symbol, 0, dyn->d_tag, 0);
+					CSR_SET_TRAP(nullptr, bad_image_symbol, 0, dyn->d_tag, 1);
 				}
 			}
 		}
 
 		if (!symtab_vaddr || !strtab_vaddr || !rela_plt_vaddr || !rela_plt_size) {
-			CSR_SET(nullptr, bad_image_load, 0, 0, 1);
+			CSR_SET_TRAP(nullptr, bad_image_load, 0, 0, 1);
 		}
 
 		auto rela_entries 	= (elf64_rela*) ((uint8_t*)process + rela_plt_vaddr);
@@ -247,8 +247,7 @@ namespace rvm64::elf {
 			}
 			void *win_func = rvm64::rvni::windows_thunk_resolver(sym_name);
 			if (!win_func) {
-				CSR_SET(nullptr, bad_symbol, 0, (uintptr_t)sym_name, 0);
-				continue;
+				CSR_SET_TRAP(nullptr, bad_image_symbol, 0, (uintptr_t)sym_name, 1);
 			}
 
 			*reloc_addr = (uint64_t)(win_func);
@@ -278,10 +277,10 @@ namespace rvm64::elf {
 		    ehdr->e_ident[1] != 'E' ||
 		    ehdr->e_ident[2] != 'L' ||
 		    ehdr->e_ident[3] != 'F') {
-			CSR_SET(nullptr, bad_image_type, 0, 0, 1);
+			CSR_SET_TRAP(nullptr, bad_image_type, 0, 0, 1);
 		}
 		if (ehdr->e_ident[EI_CLAS] != ELFCLASS64 || ehdr->e_machine != EM_RISC) {
-			CSR_SET(nullptr, bad_image_type, 0, 0, 1);
+			CSR_SET_TRAP(nullptr, bad_image_type, 0, 0, 1);
 		}
 
 		elf64_phdr* phdrs = (elf64_phdr*) ((uint8_t*)image_data + ehdr->e_phoff);
@@ -295,7 +294,7 @@ namespace rvm64::elf {
 			}
 		}
 		if (base == UINT64_MAX || limit <= base) {
-			CSR_SET(nullptr, bad_image_load, 0, 0, 1);
+			CSR_SET_TRAP(nullptr, bad_image_load, 0, 0, 1);
 		}
 
 		for (int i = 0; i < ehdr->e_phnum; ++i) {

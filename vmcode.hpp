@@ -102,8 +102,7 @@ namespace rvm64::decoder {
 			}
 		}
 		if (!decoded) {
-			CSR_SET(vmcs->pc, illegal_instruction, 0, opcode, 1);
-			return;
+			CSR_SET_TRAP(vmcs->pc, illegal_instruction, 0, opcode, 1);
 		}
 
 		switch(decoded) {
@@ -744,8 +743,7 @@ namespace rvm64::operations {
 
 			reg_read(int32_t, v1, _rs1);
 			if ((shamt >> 5) != 0) {
-				CSR_SET(vmcs->pc, illegal_instruction, 0, (uint64_t)vmcs->vscratch, 1);
-				return;
+				CSR_SET_TRAP(vmcs->pc, illegal_instruction, 0, (uint64_t)vmcs->vscratch, 1);
 			}
 
 			reg_write(int32_t, _rd, v1 << (shamt & 0x1F));
@@ -760,8 +758,7 @@ namespace rvm64::operations {
 
 			reg_read(int32_t, v1, _rs1);
 			if ((shamt >> 5) != 0) {
-				CSR_SET(vmcs->pc, illegal_instruction, 0, (uint64_t)vmcs->vscratch, 1);
-				return;
+				CSR_SET_TRAP(vmcs->pc, illegal_instruction, 0, (uint64_t)vmcs->vscratch, 1);
 			}
 
 			reg_write(int32_t, _rd, v1 >> (shamt & 0x1F));
@@ -777,10 +774,9 @@ namespace rvm64::operations {
 			reg_read(int32_t, v1, _rs1);
 
 			if ((shamt >> 5) != 0) {
-				CSR_SET(vmcs->pc, illegal_instruction, 0, (uint64_t)vmcs->vscratch, 1);
-				return;
+				CSR_SET_TRAP(vmcs->pc, illegal_instruction, 0, (uint64_t)vmcs->vscratch, 1);
 			}
-
+			// TODO: this may be wrong to mask
 			reg_write(int32_t, _rd, v1 >> (shamt & 0x1F));
 		}
 
@@ -795,7 +791,7 @@ namespace rvm64::operations {
 			address += (intptr_t)_imm;
 
 			mem_read(int8_t, v1, address);
-			reg_write(int8_t, _rd, v1); // writing data to memory does not care about types
+			reg_write(int8_t, _rd, v1);
 		}
 
 		_vmcall void rv_lh() {
@@ -883,15 +879,15 @@ namespace rvm64::operations {
 		}
 
 		_vmcall void rv_flq() {
-			CSR_SET(vmcs->pc, illegal_instruction, 0, 0, 1);
+			CSR_SET_TRAP(vmcs->pc, illegal_instruction, 0, 0, 1);
 		}
 
 		_vmcall void rv_fence() {
-			CSR_SET(vmcs->pc, illegal_instruction, 0, 0, 1);
+			CSR_SET_TRAP(vmcs->pc, illegal_instruction, 0, 0, 1);
 		}
 
 		_vmcall void rv_fence_i() {
-			CSR_SET(vmcs->pc, illegal_instruction, 0, 0, 1);
+			CSR_SET_TRAP(vmcs->pc, illegal_instruction, 0, 0, 1);
 		}
 
 		_vmcall void rv_jalr() {
@@ -905,13 +901,11 @@ namespace rvm64::operations {
 			address += (intptr_t)_imm;
 			address &= ~((intptr_t)1);
 
-			reg_write(uintptr_t, _rd, vmcs->pc + 4);
-
+			reg_write(uintptr_t, _rd, vmcs->pc);
 			vmcs->pc = address;
-			vmcs->step = false;
 
 			if (vmcs->pc >= vmcs->process.plt.start && vmcs->pc < vmcs->process.plt.end) {
-				CSR_SET(vmcs->pc, environment_call_native, 0, 0, 0);
+				CSR_SET_TRAP(vmcs->pc, environment_call_native, 0, 0, 0);
 			}
 		}
 
@@ -926,7 +920,7 @@ namespace rvm64::operations {
 			   RaiseException(EnvironmentCall)
 
 			   */
-			CSR_SET(vmcs->pc, illegal_instruction, 0, 0, 1);
+			CSR_SET_TRAP(vmcs->pc, illegal_instruction, 0, 0, 1);
 		}
 
 		_vmcall void rv_ebreak() {
@@ -938,8 +932,7 @@ namespace rvm64::operations {
 			   Implementation
 			   RaiseException(Breakpoint)
 			   */
-			CSR_SET(vmcs->pc, breakpoint, 0, vmcs->pc, 0);
-			__debugbreak();
+			CSR_SET_TRAP(vmcs->pc, breakpoint, 0, vmcs->pc, 0);
 		}
 
 		// NOTE: csr operations aren't needed rn.
@@ -954,7 +947,7 @@ namespace rvm64::operations {
 			   Implementation
 			   t = CSRs[csr]; CSRs[csr] = x[_rs1]; x[_rd] = t
 			   */
-			CSR_SET(vmcs->pc, illegal_instruction, 0, 0, 1);
+			CSR_SET_TRAP(vmcs->pc, illegal_instruction, 0, 0, 1);
 		}
 
 		_vmcall void rv_csrrs() {
@@ -968,7 +961,7 @@ namespace rvm64::operations {
 			   Implementation
 			   t = CSRs[csr]; CSRs[csr] = t | x[_rs1]; x[_rd] = t
 			   */
-			CSR_SET(vmcs->pc, illegal_instruction, 0, 0, 1);
+			CSR_SET_TRAP(vmcs->pc, illegal_instruction, 0, 0, 1);
 		}
 
 		_vmcall void rv_csrrc() {
@@ -982,7 +975,7 @@ namespace rvm64::operations {
 			   Implementation
 			   t = CSRs[csr]; CSRs[csr] = t &~x[_rs1]; x[_rd] = t
 			   */
-			CSR_SET(vmcs->pc, illegal_instruction, 0, 0, 1);
+			CSR_SET_TRAP(vmcs->pc, illegal_instruction, 0, 0, 1);
 		}
 
 		_vmcall void rv_csrrwi() {
@@ -993,7 +986,7 @@ namespace rvm64::operations {
 			   Implementation
 			   x[_rd] = CSRs[csr]; CSRs[csr] = zimm
 			   */
-			CSR_SET(vmcs->pc, illegal_instruction, 0, 0, 1);
+			CSR_SET_TRAP(vmcs->pc, illegal_instruction, 0, 0, 1);
 		}
 
 		_vmcall void rv_csrrsi() {
@@ -1004,7 +997,7 @@ namespace rvm64::operations {
 			   Implementation
 			   t = CSRs[csr]; CSRs[csr] = t | zimm; x[_rd] = t
 			   */
-			CSR_SET(vmcs->pc, illegal_instruction, 0, 0, 1);
+			CSR_SET_TRAP(vmcs->pc, illegal_instruction, 0, 0, 1);
 		}
 
 		_vmcall void rv_csrrci() {
@@ -1015,7 +1008,7 @@ namespace rvm64::operations {
 			   Implementation
 			   t = CSRs[csr]; CSRs[csr] = t &~zimm; x[_rd] = t
 			   */
-			CSR_SET(vmcs->pc, illegal_instruction, 0, 0, 1);
+			CSR_SET_TRAP(vmcs->pc, illegal_instruction, 0, 0, 1);
 		}
 	}
 

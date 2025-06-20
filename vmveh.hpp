@@ -10,13 +10,15 @@ LONG CALLBACK vm_exception_handler(PEXCEPTION_POINTERS exception_info) {
 		return EXCEPTION_CONTINUE_SEARCH;
 	}
 
-	CSR_GET(); // NOTE: breaks on -DDEBUG
+	CSR_GET();
+	// TODO: handle debugbreak's outside of the vm context
 	if (vmcs->halt || code != EXCEPTION_BREAKPOINT) {
-		exception_info->ContextRecord->Rip = (DWORD64) vmcs->trap_handler;
+		exception_info->ContextRecord->Rip = (DWORD64)vmcs->trap_handler;
 		return EXCEPTION_CONTINUE_EXECUTION;
 	}
 	if (vmcs->csr.m_cause == environment_call_native) {
 		rvm64::rvni::vm_native_call();
+		vmcs->halt = 0;
 	}
 
 	return EXCEPTION_CONTINUE_EXECUTION;
