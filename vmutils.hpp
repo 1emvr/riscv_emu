@@ -63,6 +63,10 @@ namespace simple_map {
 			}
 		}
 
+		entry<K, V> *begin(simple_map::unordered_map<K, V> *map) {
+			return map->entries;
+		}
+
 		entry<K, V>* end(simple_map::unordered_map<K, V> *map) {
 			return map->entries + map->capacity;
 		}
