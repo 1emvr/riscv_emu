@@ -26,9 +26,9 @@ namespace rvm64::rvni {
 			CSR_SET_TRAP(nullptr, image_bad_symbol, 0, 0, 1);
 		}
 
-		for (size_t i = 0; i < sizeof(alias_table) / sizeof(alias_table[0]); ++i) {
-			if (strcmp(sym_name, alias_table[i].original) == 0) {
-				sym_name = alias_table[i].alias;
+		for (auto &i : alias_table) {
+			if (strcmp(sym_name, i.original) == 0) {
+				sym_name = i.alias;
 				break;
 			}
 		}

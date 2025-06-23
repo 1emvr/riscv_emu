@@ -5,7 +5,7 @@
 
 #include "vmcommon.hpp"
 
-typedef struct __hexane {
+typedef struct _hexane {
     void *heap;
     struct {
         NtGetContextThread_t NtGetContextThread;
