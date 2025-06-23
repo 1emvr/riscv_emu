@@ -10,7 +10,6 @@ LONG CALLBACK vm_exception_handler(PEXCEPTION_POINTERS exception_info) {
 	}
 
 	CSR_GET(exception_info);
-
 	if (vmcs->halt || code != EXCEPTION_BREAKPOINT) {
 		exception_info->ContextRecord->Rip = (DWORD64)vmcs->trap_handler;
 		return EXCEPTION_CONTINUE_EXECUTION;

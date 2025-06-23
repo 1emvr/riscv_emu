@@ -46,7 +46,7 @@ typedef PVOID(NTAPI* RtlAllocateHeap_t)(HANDLE HeapHandle, ULONG Flags, SIZE_T S
 		__debugbreak();								\
 	} while (0)
 #else
-#define CSR_GET(ctx_ptr)
+#define CSR_GET(ctx_ptr) {}
 #endif
 
 #define SAVE_VM_CONTEXT(expr)	\
