@@ -25,10 +25,10 @@ typedef struct __hexane {
 } hexane;
 
 _extern {
-void save_host_context();
-void restore_host_context();
-void save_vm_context();
-void restore_vm_context();
+	void save_host_context();
+	void restore_host_context();
+	void save_vm_context();
+	void restore_vm_context();
 };
 
 typedef struct {
@@ -51,6 +51,7 @@ typedef struct {
 	vm_range_t plt;
 } vm_process_t;
 
+
 struct intel_t {
     uint64_t rax, rbx, rcx, rdx, rsi, rdi, rbp;
     uint64_t r8, r9, r10, r11, r12, r13, r14, r15;
@@ -62,9 +63,8 @@ struct ucrt_alias {
 	const char *alias;
 };
 
-struct native_wrapper {
+struct ucrt_wrapper {
 	void *address;
-
 	enum typecaster {
 		PLT_OPEN, PLT_READ, PLT_WRITE, PLT_CLOSE,
 		PLT_LSEEK, PLT_STAT64, PLT_MALLOC, PLT_FREE,

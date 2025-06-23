@@ -8,6 +8,8 @@
 #include "vmrwx.hpp"
 
 namespace rvm64::rvni {
+	_data std::unordered_map<void*, ucrt_wrapper> ucrt_native_table;
+
 	_data ucrt_alias alias_table[] = {
 		{ "open",  "_open"  }, { "read",  "_read"  }, { "write", "_write" },
 		{ "close", "_close" }, { "exit",  "_exit"  },
@@ -15,10 +17,8 @@ namespace rvm64::rvni {
 
 	struct function {
 		const char* name;
-		native_wrapper::typecaster type;
+		ucrt_wrapper::typecaster type;
 	};
-
-	_data std::unordered_map<void*, native_wrapper> ucrt_native_table;
 
 	_native void* windows_thunk_resolver(const char* sym_name) {
 		static HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
@@ -48,10 +48,10 @@ namespace rvm64::rvni {
 		}
 
 		function funcs[] = {
-			{"_open", native_wrapper::PLT_OPEN}, {"_read", native_wrapper::PLT_READ}, {"_write", native_wrapper::PLT_WRITE}, {"_close", native_wrapper::PLT_CLOSE},
-			{"_lseek", native_wrapper::PLT_LSEEK}, {"_stat64", native_wrapper::PLT_STAT64}, {"malloc", native_wrapper::PLT_MALLOC}, {"free", native_wrapper::PLT_FREE},
-			{"memcpy", native_wrapper::PLT_MEMCPY}, {"memset", native_wrapper::PLT_MEMSET}, {"strlen", native_wrapper::PLT_STRLEN}, {"strcpy", native_wrapper::PLT_STRCPY},
-			{"printf", native_wrapper::PLT_PRINTF},
+			{"_open", ucrt_wrapper::PLT_OPEN}, {"_read", ucrt_wrapper::PLT_READ}, {"_write", ucrt_wrapper::PLT_WRITE}, {"_close", ucrt_wrapper::PLT_CLOSE},
+			{"_lseek", ucrt_wrapper::PLT_LSEEK}, {"_stat64", ucrt_wrapper::PLT_STAT64}, {"malloc", ucrt_wrapper::PLT_MALLOC}, {"free", ucrt_wrapper::PLT_FREE},
+			{"memcpy", ucrt_wrapper::PLT_MEMCPY}, {"memset", ucrt_wrapper::PLT_MEMSET}, {"strlen", ucrt_wrapper::PLT_STRLEN}, {"strcpy", ucrt_wrapper::PLT_STRCPY},
+			{"printf", ucrt_wrapper::PLT_PRINTF},
 		};
 
 		for (auto& f : funcs) {
@@ -60,24 +60,24 @@ namespace rvm64::rvni {
 				CSR_SET_TRAP(nullptr, image_bad_symbol, 0, 0, 1);
 			}
 
-			native_wrapper wrap = { };
+			ucrt_wrapper wrap = { };
 			wrap.address = native;
 			wrap.type = f.type;
 
 			switch (wrap.type) {
-				case native_wrapper::PLT_OPEN:    wrap.open = (decltype(wrap.open))native; break;
-				case native_wrapper::PLT_READ:    wrap.read = (decltype(wrap.read))native; break;
-				case native_wrapper::PLT_WRITE:   wrap.write = (decltype(wrap.write))native; break;
-				case native_wrapper::PLT_CLOSE:   wrap.close = (decltype(wrap.close))native; break;
-				case native_wrapper::PLT_LSEEK:   wrap.lseek = (decltype(wrap.lseek))native; break;
-				case native_wrapper::PLT_STAT64:  wrap.stat64 = (decltype(wrap.stat64))native; break;
-				case native_wrapper::PLT_MALLOC:  wrap.malloc = (decltype(wrap.malloc))native; break;
-				case native_wrapper::PLT_FREE:    wrap.free = (decltype(wrap.free))native; break;
-				case native_wrapper::PLT_MEMCPY:  wrap.memcpy = (decltype(wrap.memcpy))native; break;
-				case native_wrapper::PLT_MEMSET:  wrap.memset = (decltype(wrap.memset))native; break;
-				case native_wrapper::PLT_STRLEN:  wrap.strlen = (decltype(wrap.strlen))native; break;
-				case native_wrapper::PLT_STRCPY:  wrap.strcpy = (decltype(wrap.strcpy))native; break;
-				case native_wrapper::PLT_PRINTF:  wrap.printf = (decltype(wrap.printf))native; break;
+				case ucrt_wrapper::PLT_OPEN:    wrap.open = (decltype(wrap.open))native; break;
+				case ucrt_wrapper::PLT_READ:    wrap.read = (decltype(wrap.read))native; break;
+				case ucrt_wrapper::PLT_WRITE:   wrap.write = (decltype(wrap.write))native; break;
+				case ucrt_wrapper::PLT_CLOSE:   wrap.close = (decltype(wrap.close))native; break;
+				case ucrt_wrapper::PLT_LSEEK:   wrap.lseek = (decltype(wrap.lseek))native; break;
+				case ucrt_wrapper::PLT_STAT64:  wrap.stat64 = (decltype(wrap.stat64))native; break;
+				case ucrt_wrapper::PLT_MALLOC:  wrap.malloc = (decltype(wrap.malloc))native; break;
+				case ucrt_wrapper::PLT_FREE:    wrap.free = (decltype(wrap.free))native; break;
+				case ucrt_wrapper::PLT_MEMCPY:  wrap.memcpy = (decltype(wrap.memcpy))native; break;
+				case ucrt_wrapper::PLT_MEMSET:  wrap.memset = (decltype(wrap.memset))native; break;
+				case ucrt_wrapper::PLT_STRLEN:  wrap.strlen = (decltype(wrap.strlen))native; break;
+				case ucrt_wrapper::PLT_STRCPY:  wrap.strcpy = (decltype(wrap.strcpy))native; break;
+				case ucrt_wrapper::PLT_PRINTF:  wrap.printf = (decltype(wrap.printf))native; break;
 				default: {
 					CSR_SET_TRAP(nullptr, image_bad_symbol, 0, 0, 1);
 					return;
@@ -94,9 +94,9 @@ namespace rvm64::rvni {
 			CSR_SET_TRAP(vmcs->pc, illegal_instruction, 0, vmcs->pc, 1);
 		}
 
-		native_wrapper &plt = it->second;
+		ucrt_wrapper &plt = it->second;
 		switch (plt.type) {
-			case native_wrapper::PLT_OPEN: {
+			case ucrt_wrapper::PLT_OPEN: {
 				char *pathname;
 				int flags = 0, mode = 0;
 
@@ -108,7 +108,7 @@ namespace rvm64::rvni {
 				reg_write(int, regenum::a0, result);
 				break;
 			}
-			case native_wrapper::PLT_READ: {
+			case ucrt_wrapper::PLT_READ: {
 				int fd = 0;
 				void *buf;
 				unsigned int count = 0;
@@ -121,7 +121,7 @@ namespace rvm64::rvni {
 				reg_write(int, regenum::a0, result);
 				break;
 			}
-			case native_wrapper::PLT_WRITE: {
+			case ucrt_wrapper::PLT_WRITE: {
 				int fd = 0;
 				void *buf;
 				unsigned int count = 0;
@@ -134,7 +134,7 @@ namespace rvm64::rvni {
 				reg_write(int, regenum::a0, result);
 				break;
 			}
-			case native_wrapper::PLT_CLOSE: {
+			case ucrt_wrapper::PLT_CLOSE: {
 				int fd = 0;
 				reg_read(int, fd, regenum::a0);
 
@@ -142,7 +142,7 @@ namespace rvm64::rvni {
 				reg_write(int, regenum::a0, result);
 				break;
 			}
-			case native_wrapper::PLT_LSEEK: {
+			case ucrt_wrapper::PLT_LSEEK: {
 				int fd = 0;
 				long offset = 0;
 				int whence = 0;
@@ -155,7 +155,7 @@ namespace rvm64::rvni {
 				reg_write(long, regenum::a0, result);
 				break;
 			}
-			case native_wrapper::PLT_STAT64: {
+			case ucrt_wrapper::PLT_STAT64: {
 				const char *pathname;
 				void *statbuf;
 
@@ -166,7 +166,7 @@ namespace rvm64::rvni {
 				reg_write(int, regenum::a0, result);
 				break;
 			}
-			case native_wrapper::PLT_MALLOC: {
+			case ucrt_wrapper::PLT_MALLOC: {
 				size_t size = 0;
 				reg_read(size_t, size, regenum::a0);
 
@@ -174,14 +174,14 @@ namespace rvm64::rvni {
 				reg_write(uintptr_t, regenum::a0, result);
 				break;
 			}
-			case native_wrapper::PLT_FREE: {
+			case ucrt_wrapper::PLT_FREE: {
 				void *ptr;
 				reg_read(void*, ptr, regenum::a0);
 
 				SAVE_VM_CONTEXT(plt.free(ptr));
 				break;
 			}
-			case native_wrapper::PLT_MEMCPY: {
+			case ucrt_wrapper::PLT_MEMCPY: {
 				void *dest, *src;
 				size_t n = 0;
 
@@ -193,7 +193,7 @@ namespace rvm64::rvni {
 				reg_write(uintptr_t, regenum::a0, result);
 				break;
 			}
-			case native_wrapper::PLT_MEMSET: {
+			case ucrt_wrapper::PLT_MEMSET: {
 				void *dest;
 				int value = 0;
 				size_t n = 0;
@@ -206,7 +206,7 @@ namespace rvm64::rvni {
 				reg_write(uint64_t, regenum::a0, result);
 				break;
 			}
-			case native_wrapper::PLT_STRLEN: {
+			case ucrt_wrapper::PLT_STRLEN: {
 				char *s;
 				reg_read(char*, s, regenum::a0);
 
@@ -214,7 +214,7 @@ namespace rvm64::rvni {
 				reg_write(size_t, regenum::a0, result);
 				break;
 			}
-			case native_wrapper::PLT_STRCPY: {
+			case ucrt_wrapper::PLT_STRCPY: {
 				char *dest, *src;
 
 				reg_read(char*, dest, regenum::a0);
@@ -224,7 +224,7 @@ namespace rvm64::rvni {
 				reg_write(uintptr_t, regenum::a0, result);
 				break;
 			}
-			case native_wrapper::PLT_PRINTF: {
+			case ucrt_wrapper::PLT_PRINTF: {
 				// NOTE: this implementation is limited to 7 arguments max
 				char *fmt;
 				uint64_t args[7] = {};
