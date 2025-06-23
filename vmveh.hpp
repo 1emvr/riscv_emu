@@ -5,10 +5,10 @@
 
 LONG CALLBACK vm_exception_handler(PEXCEPTION_POINTERS exception_info) {
 	DWORD code = exception_info->ExceptionRecord->ExceptionCode;
-
 	if (code == STATUS_SINGLE_STEP) {
 		return EXCEPTION_CONTINUE_SEARCH;
 	}
+
 	CSR_GET(exception_info);
 
 	if (vmcs->halt || code != EXCEPTION_BREAKPOINT) {
