@@ -10,53 +10,62 @@ namespace simple_map {
 	};
 
 	template<typename K, typename V>
-	struct unordered_map {
-		entry<K, V>* entries;
-		size_t capacity;
+	class unordered_map {
+		entry<K, V> *entries;
+		size_t capacity{};
 
-		simple_map::unordered_map<K, V> *init() {
-			simple_map::unordered_map<K, V> *map =
-					(simple_map::unordered_map<K, V> *) malloc(sizeof(simple_map::unordered_map<K, V>));
+		unordered_map(): entries(nullptr) {
+			this = (unordered_map*) malloc(sizeof(unordered_map));
 
-			map->entries = nullptr;
-			map->capacity = 0;
-			return map;
+			this->entries = nullptr;
+			this->capacity = 0;
 		}
 
-		void push(simple_map::unordered_map<K, V> *map, K key, V value) {
-			auto temp = (entry<K, V> *) realloc(map->entries, sizeof(entry<K, V>) * (map->capacity + 1));
+		~unordered_map() {
+			free(this->entries);
+			free(this);
+		}
+
+		void push(K key, V value) {
+			auto temp = (entry<K, V> *) realloc(this->entries, sizeof(entry<K, V>) * (this->capacity + 1));
 
 			if (!temp) {
 				return;
 			}
-			map->entries = temp;
-			map->entries[map->capacity].key = key;
-			map->entries[map->capacity].value = value;
-			map->capacity += 1;
+			this->entries = temp;
+			this->entries[this->capacity].key = key;
+			this->entries[this->capacity].value = value;
+			this->capacity += 1;
 		}
 
-		V find(simple_map::unordered_map<K, V> *map, K key) {
-			for (size_t i = 0; i < map->capacity; i++) {
-				if (map->entries[i].key == key) {
-					return map->entries[i].value;
+		V find(K key) {
+			if (!this->entries || !this->capacity) {
+				return 0;
+			}
+			for (size_t i = 0; i < this->capacity; i++) {
+				if (this->entries[i].key == key) {
+					return this->entries[i].value;
 				}
 			}
-			return map->entries + map->capacity;
+			return this->entries + this->capacity;
 		}
 
-		void pop(simple_map::unordered_map<K, V> *map, K key) {
-			for (size_t i = 0; i < map->capacity; i++) {
-				if (map->entries[i].key == key) {
-					for (size_t j = i; j < map->capacity - 1; j++) {
-						map->entries[j] = map->entries[j + 1];
+		void pop(K key) {
+			if (!this->entries) {
+				return;
+			}
+			for (size_t i = 0; i < this->capacity; i++) {
+				if (this->entries[i].key == key) {
+					for (size_t j = i; j < this->capacity - 1; j++) {
+						this->entries[j] = this->entries[j + 1];
 					}
-					map->capacity -= 1;
+					this->capacity -= 1;
 
-					if (map->capacity > 0) {
-						map->entries = (entry<K, V> *) realloc(map->entries, sizeof(entry<K, V>) * map->capacity);
+					if (this->capacity > 0) {
+						this->entries = (entry<K, V> *) realloc(this->entries, sizeof(entry<K, V>) * this->capacity);
 					} else {
-						free(map->entries);
-						map->entries = nullptr;
+						free(this->entries);
+						this->entries = nullptr;
 					}
 					return;
 				}
@@ -67,16 +76,16 @@ namespace simple_map {
 			return map->entries;
 		}
 
-		entry<K, V>* end(simple_map::unordered_map<K, V> *map) {
+		entry<K, V> *end(simple_map::unordered_map<K, V> *map) {
 			return map->entries + map->capacity;
 		}
 
-		void destroy(simple_map::unordered_map<K, V> *map) {
-			if (map) {
-				free(map->entries);
-				free(map);
-			}
-		}
 	};
+};
+
+int map_main() {
+	simple_map::unordered_map<uint64_t, uint64_t> map;
+	map.push(0, 0);
 }
+
 #endif //VMUTILS_H
