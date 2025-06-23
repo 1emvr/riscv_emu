@@ -8,7 +8,7 @@
 #include "mock.hpp"
 
 namespace rvm64::entry {
-	_native void vm_init() {
+	_vmcall void vm_init() {
 		save_host_context();
 
 		vmcs->dkey = key;
@@ -21,7 +21,7 @@ namespace rvm64::entry {
 		rvm64::mock::read_program_from_packet();
 	}
 
-	_native void vm_exit() {
+	_vmcall void vm_exit() {
 		rvm64::memory::memory_end();
 		RemoveVectoredExceptionHandler(vmcs->veh_handle);
 		restore_host_context();
