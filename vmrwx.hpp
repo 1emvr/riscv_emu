@@ -54,13 +54,13 @@
 		return;																\
 	}
 #else
-#define mem_read_check(T, addr)
-#define mem_write_check(T, addr)
-#define reg_read_check(reg_idx)
-#define reg_write_check(reg_idx)
-#define scr_read_check(scr_idx)
-#define scr_write_check(scr_idx)
-#define	opcall_check(hdl_idx)
+#define mem_read_check(T, addr)		{}
+#define mem_write_check(T, addr)	{}
+#define reg_read_check(reg_idx)		{}
+#define reg_write_check(reg_idx)	{}
+#define scr_read_check(scr_idx)		{}
+#define scr_write_check(scr_idx)	{}
+#define	opcall_check(hdl_idx)		{}
 #endif
 
 #define unwrap_opcall(hdl_idx) 									\
