@@ -57,6 +57,38 @@ struct intel_t {
     uint64_t rflags;
 };
 
+struct ucrt_alias {
+	const char *original;
+	const char *alias;
+};
+
+struct native_wrapper {
+	void *address;
+
+	enum typecaster {
+		PLT_OPEN, PLT_READ, PLT_WRITE, PLT_CLOSE,
+		PLT_LSEEK, PLT_STAT64, PLT_MALLOC, PLT_FREE,
+		PLT_MEMCPY, PLT_MEMSET, PLT_STRLEN, PLT_STRCPY,
+		PLT_PRINTF, PLT_UNKNOWN
+	} type;
+
+	union {
+		int (__cdecl*open)(const char *, int, int);
+		int (__cdecl*read)(int, void *, unsigned int);
+		int (__cdecl*write)(int, const void *, unsigned int);
+		int (__cdecl*close)(int);
+		long (__cdecl*lseek)(int, long, int);
+		int (__cdecl*stat64)(const char *, void *);
+		void * (__cdecl*malloc)(size_t);
+		void (__cdecl*free)(void *);
+		void * (__cdecl*memcpy)(void *, const void *, size_t);
+		void * (__cdecl*memset)(void *, int, size_t);
+		size_t (__cdecl*strlen)(const char *);
+		char * (__cdecl*strcpy)(char *, const char *);
+		int (__cdecl*printf)(const char *format, ...);
+	};
+};
+
 typedef struct {
     uintptr_t pc;
     uintptr_t dispatch_table;
