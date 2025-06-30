@@ -16,6 +16,13 @@ namespace simple_map {
 		entry<K, V> *entries = {};
 		size_t capacity{};
 
+		unordered_map() = default;
+		~unordered_map() {
+			if (entries) {
+				HeapFree(GetProcessHeap(), 0, entries);
+			}
+		}
+
 		void push(K key, V value) {
 			if (!this->entries) {
 				this->entries = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(entry<K, V>));
