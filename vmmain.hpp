@@ -5,25 +5,6 @@
 
 #include "vmcommon.hpp"
 
-typedef struct _hexane {
-    void *heap;
-    struct {
-        NtGetContextThread_t NtGetContextThread;
-        NtSetContextThread_t NtSetContextThread;
-        NtAllocateVirtualMemory_t NtAllocateVirtualMemory;
-        NtFreeVirtualMemory_t NtFreeVirtualMemory;
-        RtlAllocateHeap_t RtlAllocateHeap;
-
-        decltype(WaitForSingleObject)* NtWaitForSingleObject;
-        decltype(CreateMutexA)* NtCreateMutex;
-        decltype(ReleaseMutex)* NtReleaseMutex;
-        decltype(CreateFileA)* NtCreateFile;
-        decltype(GetFileSize)* NtGetFileSize;
-        decltype(ReadFile)* NtReadFile;
-        decltype(OpenFile)* NtOpenFile;
-    } win32;
-} hexane;
-
 _extern {
 	void save_host_context();
 	void restore_host_context();
@@ -121,7 +102,6 @@ typedef struct {
 } vmcs_t;
 
 
-_data hexane *ctx;
 _data vmcs_t *vmcs;
 _data HANDLE vmcs_mutex;
 
