@@ -54,6 +54,7 @@ namespace rvm64::mock {
 		return data;
 	}
 
+	//NOTE: consider returning the packet data from here to keep memory/elf init separated.
 	_native void read_program_from_packet() {
 		vm_buffer_t *data = read_file();
 		if (!data) {
