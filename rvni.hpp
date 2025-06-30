@@ -8,7 +8,8 @@
 #include "vmrwx.hpp"
 
 namespace rvm64::rvni {
-	_data std::unordered_map<void*, ucrt_wrapper> ucrt_native_table; // NOTE: this requires C++ stdlib to be statically linked. consider replacing.
+	// NOTE: this requires C++ stdlib to be statically linked. consider replacing with simple_map::unordered_map.
+	_data std::unordered_map<void*, ucrt_wrapper> ucrt_native_table;
 
 	struct function {
 		const char* name;
