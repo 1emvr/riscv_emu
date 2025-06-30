@@ -12,7 +12,7 @@ namespace rvm64::rvni {
 
 	struct function {
 		const char* name;
-		ucrt_wrapper::typecaster type;
+		ucrt_wrapper::typenum type;
 	};
 
 	_rdata ucrt_alias alias_table[] = {

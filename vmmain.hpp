@@ -47,7 +47,7 @@ struct ucrt_alias {
 
 struct ucrt_wrapper {
 	void *address;
-	enum typecaster {
+	enum typenum {
 		PLT_OPEN, PLT_READ, PLT_WRITE, PLT_CLOSE,
 		PLT_LSEEK, PLT_STAT64, PLT_MALLOC, PLT_FREE,
 		PLT_MEMCPY, PLT_MEMSET, PLT_STRLEN, PLT_STRCPY,
