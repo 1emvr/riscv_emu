@@ -1,11 +1,10 @@
 #include <stddef.h>
-#include <stdint.h>
 
 extern "C" void* malloc(size_t size);
 extern "C" void* memcpy(void* dst, void* src, size_t num);
 extern "C" int printf (const char * format, ...);
 
-int main() {
+extern "C" int main() {
 	int result = 0xFFFF;
 	void *buffer = malloc(sizeof(int));
 

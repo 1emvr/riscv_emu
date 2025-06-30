@@ -19,25 +19,25 @@ namespace rvm64::mock {
 	}
 
 	_native vm_buffer_t* read_file() {
-		NTSTATUS status = 0;
+		DWORD status = 0;
 		DWORD bytes_read = 0;
 
-		auto buffer = (vm_buffer_t*) malloc(sizeof(vm_buffer_t));
-		HANDLE hfile = ctx->win32.NtCreateFile("./test.elf", GENERIC_READ, FILE_SHARE_READ, nullptr,
+		auto buffer = (vm_buffer_t*) HeapAlloc(GetProcessHeap(), 0, sizeof(vm_buffer_t));
+		HANDLE hfile = CreateFileA("./test.elf", GENERIC_READ, FILE_SHARE_READ, nullptr,
 		                                       OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
 		if (hfile == INVALID_HANDLE_VALUE) {
 			CSR_SET_TRAP(nullptr, undefined, (uintptr_t)INVALID_HANDLE_VALUE, 0, 1);
 		}
 
-		status = ctx->win32.NtGetFileSize(hfile, (LPDWORD)&buffer->size);
+		status = GetFileSize(hfile, (LPDWORD)&buffer->size);
 		if (status == INVALID_FILE_SIZE || buffer->size == 0) {
 			CSR_SET_TRAP(nullptr, image_bad_load, INVALID_FILE_SIZE, 0, 1);
 		}
 
-		buffer->address = (uint8_t*)malloc(buffer->size);
+		buffer->address = (uint8_t*)HeapAlloc(GetProcessHeap(), 0, buffer->size);
 
-		if (!ctx->win32.NtReadFile(hfile, (LPVOID) buffer->address, buffer->size, &bytes_read, NULL) ||
+		if (!ReadFile(hfile, buffer->address, buffer->size, &bytes_read, nullptr) ||
 		    bytes_read != buffer->size) {
 			CSR_SET_TRAP(nullptr, image_bad_load, 0, 0, 1);
 		}

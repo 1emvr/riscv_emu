@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <cstdint>
 
+#include "stdlib.hpp"
 #include "vmmain.hpp"
 #include "rvni.hpp"
 
@@ -304,10 +305,10 @@ namespace rvm64::elf {
 			void *dest = (uint8_t*)vmcs->process.address + (phdrs[i].p_vaddr - base);
 			void *src = (uint8_t*)image_data + phdrs[i].p_offset;
 
-			memcpy(dest, src, phdrs[i].p_filesz);
+			x_memcpy(dest, src, phdrs[i].p_filesz);
 
 			if (phdrs[i].p_memsz > phdrs[i].p_filesz) {
-				memset((uint8_t*)dest + phdrs[i].p_filesz, 0, phdrs[i].p_memsz - phdrs[i].p_filesz);
+				x_memset((uint8_t*)dest + phdrs[i].p_filesz, 0, phdrs[i].p_memsz - phdrs[i].p_filesz);
 			}
 		}
 
