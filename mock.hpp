@@ -1,7 +1,7 @@
 #ifndef MOCK_H
 #define MOCK_H
 #include <windows.h>
-#include <cstring>
+#include <string.h>
 
 #include "vmmain.hpp"
 #include "vmcommon.hpp"
