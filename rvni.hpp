@@ -41,14 +41,6 @@ namespace rvm64::rvni {
 		return proc;
 	}
 
-	__cdecl int native_printf(const char *fmt, ...) {
-		va_list args;
-		va_start(args, fmt);
-		int result = vprintf(fmt, args);
-		va_end(args);
-		return result;
-	}
-
 	_native void resolve_ucrt_imports() {
 		HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
 		if (!ucrt) {

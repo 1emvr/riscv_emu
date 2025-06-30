@@ -12,5 +12,6 @@ extern "C" int main() {
 	memcpy(buffer, &result, sizeof(int));
 	memset(buffer, 0, sizeof(int));
 	free(buffer);
+
 	return 0;
 }
