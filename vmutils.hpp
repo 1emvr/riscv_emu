@@ -1,5 +1,6 @@
 #ifndef VMUTILS_H
 #define VMUTILS_H
+#include <windows.h>
 #include "vmmain.hpp"
 
 namespace simple_map {
@@ -15,15 +16,15 @@ namespace simple_map {
 		size_t capacity{};
 
 		unordered_map(): entries(nullptr) {
-			this = (unordered_map*) malloc(sizeof(unordered_map));
+			this = (unordered_map*) HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(unordered_map));
 
 			this->entries = nullptr;
 			this->capacity = 0;
 		}
 
 		~unordered_map() {
-			free(this->entries);
-			free(this);
+			HeapFree(this->entries);
+			HeapFree(this);
 		}
 
 		void push(K key, V value) {
@@ -62,9 +63,10 @@ namespace simple_map {
 					this->capacity -= 1;
 
 					if (this->capacity > 0) {
-						this->entries = (entry<K, V> *) realloc(this->entries, sizeof(entry<K, V>) * this->capacity);
+						this->entries = (entry<K, V> *) HeapreAlloc(
+							GetProcessHeap(), HEAP_ZERO_MEMORY, this->entries, sizeof(entry<K, V>) * this->capacity);
 					} else {
-						free(this->entries);
+						HeapFree(GetProcessHeap(), 0, this->entries);
 						this->entries = nullptr;
 					}
 					return;
