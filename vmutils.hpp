@@ -24,12 +24,6 @@ namespace simple_map {
 		}
 
 		void push(K key, V value) {
-			if (!this->entries) {
-				this->entries = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(entry<K, V>));
-				if (!this->entries) {
-					return;
-				}
-			}
 			auto temp = (entry<K, V> *) HeapReAlloc(
 				GetProcessHeap(), HEAP_ZERO_MEMORY, this->entries, sizeof(entry<K, V>) * (this->capacity + 1));
 
@@ -42,16 +36,16 @@ namespace simple_map {
 			this->capacity += 1; // ...past the end
 		}
 
-		V find(K key) {
+		entry<K, V>* find(K key) {
 			if (!this->entries || !this->capacity) {
-				return 0;
+				return end();
 			}
 			for (size_t i = 0; i < this->capacity; i++) {
 				if (this->entries[i].key == key) {
-					return this->entries[i].value;
+					return this->entries[i];
 				}
 			}
-			return this->entries + this->capacity;
+			return end();
 		}
 
 		void pop(K key) {
@@ -77,12 +71,12 @@ namespace simple_map {
 			}
 		}
 
-		entry<K, V> *begin(simple_map::unordered_map<K, V> *map) {
-			return map->entries;
+		entry<K, V> *begin() {
+			return this->entries;
 		}
 
-		entry<K, V> *end(simple_map::unordered_map<K, V> *map) {
-			return map->entries + map->capacity;
+		entry<K, V> *end() {
+			return this->entries + this->capacity;
 		}
 
 	};
