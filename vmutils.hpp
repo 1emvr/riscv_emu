@@ -23,8 +23,8 @@ namespace simple_map {
 		}
 
 		~unordered_map() {
-			HeapFree(this->entries);
-			HeapFree(this);
+			HeapFree(GetProcessHeap(), 0, this->entries);
+			HeapFree(GetProcessHeap(), 0, this);
 		}
 
 		void push(K key, V value) {
