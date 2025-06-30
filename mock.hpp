@@ -66,6 +66,7 @@ namespace rvm64::mock {
 		rvm64::elf::load_elf_image(data->address, data->size);
 
 		// NOTE: if we want to cache the file for later use, then do not destroy_file
+		// if (packet->cache == false) { ... }
 		destroy_file(data);
 	}
 };
