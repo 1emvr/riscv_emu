@@ -79,7 +79,6 @@ namespace rvm64::rvni {
 				case ucrt_wrapper::PLT_STRCPY:  wrap.strcpy = (decltype(wrap.strcpy))native; break;
 				default: {
 					CSR_SET_TRAP(nullptr, image_bad_symbol, 0, 0, 1);
-					return;
 				}
 			}
 
