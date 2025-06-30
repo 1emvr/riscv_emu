@@ -16,9 +16,8 @@ namespace rvm64::entry {
 		vmcs->veh_handle = AddVectoredExceptionHandler(1, vm_exception_handler);
 		vmcs->vregs[sp] = (uintptr_t)(vmcs->vstack + VSTACK_MAX_CAPACITY);
 
-		//rvm64::memory::context_init();
-		rvm64::rvni::resolve_ucrt_imports(); 
-		rvm64::mock::read_program_from_packet();
+		rvm64::rvni::resolve_ucrt_imports();
+		rvm64::mock::read_program_from_packet(); // NOTE: this will initialize the vm memory.
 	}
 
 	_vmcall void vm_exit() {
