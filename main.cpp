@@ -17,7 +17,7 @@ namespace rvm64::entry {
 		vmcs->vregs[sp] = (uintptr_t)(vmcs->vstack + VSTACK_MAX_CAPACITY);
 
 		rvm64::rvni::resolve_ucrt_imports();
-		rvm64::mock::read_program_from_packet(); // NOTE: this will initialize the vm memory.
+		rvm64::mock::read_program_from_packet(); // NOTE: this will initialize the vm memory. consider separating everything.
 	}
 
 	_vmcall void vm_exit() {
