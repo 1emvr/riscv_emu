@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "stdlib.hpp"
+#include "vmlib.hpp"
 #include "vmmain.hpp"
 #include "rvni.hpp"
 

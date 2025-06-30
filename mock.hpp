@@ -14,7 +14,7 @@ namespace rvm64::mock {
 			if (data->address) {
 				free((void*)data->address);
 			}
-			free((void*)data);
+			free(data);
 		}
 	}
 
@@ -22,24 +22,27 @@ namespace rvm64::mock {
 		DWORD status = 0;
 		DWORD bytes_read = 0;
 
-		auto buffer = (vm_buffer_t*) HeapAlloc(GetProcessHeap(), 0, sizeof(vm_buffer_t));
+		auto buffer = (vm_buffer_t*) HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(vm_buffer_t));
 		HANDLE hfile = CreateFileA("./test.elf", GENERIC_READ, FILE_SHARE_READ, nullptr,
 		                                       OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
 		if (hfile == INVALID_HANDLE_VALUE) {
-			CSR_SET_TRAP(nullptr, undefined, (uintptr_t)INVALID_HANDLE_VALUE, 0, 1);
+			buffer->stat = GetLastError();
+			return buffer;
 		}
 
 		status = GetFileSize(hfile, (LPDWORD)&buffer->size);
 		if (status == INVALID_FILE_SIZE || buffer->size == 0) {
-			CSR_SET_TRAP(nullptr, image_bad_load, INVALID_FILE_SIZE, 0, 1);
+			buffer->stat = GetLastError();
+			return buffer;
 		}
 
-		buffer->address = (uint8_t*)HeapAlloc(GetProcessHeap(), 0, buffer->size);
+		buffer->address = (uint8_t*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, buffer->size);
 
 		if (!ReadFile(hfile, buffer->address, buffer->size, &bytes_read, nullptr) ||
 		    bytes_read != buffer->size) {
-			CSR_SET_TRAP(nullptr, image_bad_load, 0, 0, 1);
+			buffer->stat = GetLastError();
+			return buffer;
 		}
 
 		if (hfile) {
@@ -51,7 +54,10 @@ namespace rvm64::mock {
 	_native void read_program_from_packet() {
 		vm_buffer_t *data = read_file();
 		if (!data) {
-			CSR_SET_TRAP(nullptr, image_bad_load, 0, 0, 1);
+			CSR_SET_TRAP(nullptr, image_bad_load, ERROR_BUFFER_OVERFLOW, 0, 1);
+		}
+		if (data->stat) {
+			CSR_SET_TRAP(nullptr, image_bad_load, data->stat, 0, 1);
 		}
 
 		data->size += VM_PROCESS_PADDING;

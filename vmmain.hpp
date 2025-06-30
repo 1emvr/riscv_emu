@@ -40,6 +40,7 @@ typedef struct {
 typedef struct {
 	uint8_t *address;
 	size_t size;
+	uintptr_t stat;
 } vm_buffer_t;
 
 
