@@ -12,10 +12,17 @@ namespace simple_map {
 
 	template<typename K, typename V>
 	class unordered_map {
+	public:
 		entry<K, V> *entries = {};
 		size_t capacity{};
 
 		void push(K key, V value) {
+			if (!this->entries) {
+				this->entries = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(entry<K, V>));
+				if (!this->entries) {
+					return;
+				}
+			}
 			auto temp = (entry<K, V> *) HeapReAlloc(
 				GetProcessHeap(), HEAP_ZERO_MEMORY, this->entries, sizeof(entry<K, V>) * (this->capacity + 1));
 
@@ -52,7 +59,7 @@ namespace simple_map {
 					this->capacity -= 1;
 
 					if (this->capacity > 0) {
-						this->entries = (entry<K, V> *) HeapreAlloc(
+						this->entries = (entry<K, V> *) HeapReAlloc(
 							GetProcessHeap(), HEAP_ZERO_MEMORY, this->entries, sizeof(entry<K, V>) * this->capacity);
 					} else {
 						HeapFree(GetProcessHeap(), 0, this->entries);
@@ -76,7 +83,13 @@ namespace simple_map {
 
 int map_main() {
 	simple_map::unordered_map<uint64_t, uint64_t> map;
-	map.push(0, 0);
+	map.push(1234, 5678);
+	auto val = map.find(1234);
+	if (val == 5678) {
+		map.pop(1234);
+		return true;
+	}
+	return false;
 }
 
 #endif //VMUTILS_H
