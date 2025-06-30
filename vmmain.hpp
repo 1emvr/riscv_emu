@@ -69,7 +69,7 @@ struct ucrt_wrapper {
 		PLT_OPEN, PLT_READ, PLT_WRITE, PLT_CLOSE,
 		PLT_LSEEK, PLT_STAT64, PLT_MALLOC, PLT_FREE,
 		PLT_MEMCPY, PLT_MEMSET, PLT_STRLEN, PLT_STRCPY,
-		PLT_PRINTF, PLT_UNKNOWN
+		PLT_UNKNOWN
 	} type;
 
 	union {
@@ -85,7 +85,6 @@ struct ucrt_wrapper {
 		void * (__cdecl*memset)(void *, int, size_t);
 		size_t (__cdecl*strlen)(const char *);
 		char * (__cdecl*strcpy)(char *, const char *);
-		int (__cdecl*printf)(const char *format, ...);
 	};
 };
 

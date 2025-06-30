@@ -41,6 +41,14 @@ namespace rvm64::rvni {
 		return proc;
 	}
 
+	__cdecl int native_printf(const char *fmt, ...) {
+		va_list args;
+		va_start(args, fmt);
+		int result = vprintf(fmt, args);
+		va_end(args);
+		return result;
+	}
+
 	_native void resolve_ucrt_imports() {
 		HMODULE ucrt = LoadLibraryA("ucrtbase.dll");
 		if (!ucrt) {
@@ -51,7 +59,6 @@ namespace rvm64::rvni {
 			{"_open", ucrt_wrapper::PLT_OPEN}, {"_read", ucrt_wrapper::PLT_READ}, {"_write", ucrt_wrapper::PLT_WRITE}, {"_close", ucrt_wrapper::PLT_CLOSE},
 			{"_lseek", ucrt_wrapper::PLT_LSEEK}, {"_stat64", ucrt_wrapper::PLT_STAT64}, {"malloc", ucrt_wrapper::PLT_MALLOC}, {"free", ucrt_wrapper::PLT_FREE},
 			{"memcpy", ucrt_wrapper::PLT_MEMCPY}, {"memset", ucrt_wrapper::PLT_MEMSET}, {"strlen", ucrt_wrapper::PLT_STRLEN}, {"strcpy", ucrt_wrapper::PLT_STRCPY},
-			{"printf", ucrt_wrapper::PLT_PRINTF},
 		};
 
 		for (auto& f : funcs) {
@@ -77,7 +84,6 @@ namespace rvm64::rvni {
 				case ucrt_wrapper::PLT_MEMSET:  wrap.memset = (decltype(wrap.memset))native; break;
 				case ucrt_wrapper::PLT_STRLEN:  wrap.strlen = (decltype(wrap.strlen))native; break;
 				case ucrt_wrapper::PLT_STRCPY:  wrap.strcpy = (decltype(wrap.strcpy))native; break;
-				case ucrt_wrapper::PLT_PRINTF:  wrap.printf = (decltype(wrap.printf))native; break;
 				default: {
 					CSR_SET_TRAP(nullptr, image_bad_symbol, 0, 0, 1);
 					return;
@@ -222,24 +228,6 @@ namespace rvm64::rvni {
 
 				SAVE_VM_CONTEXT(char* result = plt.strcpy(dest, src));
 				reg_write(uintptr_t, regenum::a0, result);
-				break;
-			}
-			case ucrt_wrapper::PLT_PRINTF: {
-				// NOTE: this implementation is limited to 7 arguments max
-				char *fmt;
-				uint64_t args[7] = {};
-
-				reg_read(char*, fmt, regenum::a0);
-				for (int i = 1; i <= 7; ++i) {
-					reg_read(uint64_t, args[i - 1], regenum::a0 + i);
-				}
-
-				SAVE_VM_CONTEXT(
-					int result = plt.printf(fmt,
-						args[0], args[1], args[2], args[3],
-						args[4], args[5], args[6])
-				);
-				reg_write(int, regenum::a0, result);
 				break;
 			}
 			default: {

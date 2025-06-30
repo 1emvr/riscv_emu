@@ -7,8 +7,7 @@
 .global save_host_context
 save_host_context:
     mov     rax, [rip + vmcs]
-    mov     rax, [rax]
-    lea     rdi, [rax + OFFSET_host_context]
+    lea     rdi, [rax + OFFSET_HOST_CONTEXT]
 
     mov     [rdi + OFFSET_RAX], rax
     mov     [rdi + OFFSET_RBX], rbx
@@ -35,8 +34,7 @@ save_host_context:
 .global restore_host_context
 restore_host_context:
     mov     rax, [rip + vmcs]
-    mov     rax, [rax]
-    lea     rsi, [rax + OFFSET_host_context]
+    lea     rsi, [rax + OFFSET_HOST_CONTEXT]
 
     mov     rax, [rsi + OFFSET_RAX]
     mov     rbx, [rsi + OFFSET_RBX]
@@ -63,8 +61,7 @@ restore_host_context:
 .global save_vm_context
 save_vm_context:
     mov     rax, [rip + vmcs]
-    mov     rax, [rax]
-    lea     rdi, [rax + OFFSET_vm_context]
+    lea     rdi, [rax + OFFSET_VM_CONTEXT]
 
     mov     [rdi + OFFSET_RAX], rax
     mov     [rdi + OFFSET_RBX], rbx
@@ -91,8 +88,7 @@ save_vm_context:
 .global restore_vm_context
 restore_vm_context:
     mov     rax, [rip + vmcs]
-    mov     rax, [rax]
-    lea     rsi, [rax + OFFSET_vm_context]
+    lea     rsi, [rax + OFFSET_VM_CONTEXT]
 
     mov     rax, [rsi + OFFSET_RAX]
     mov     rbx, [rsi + OFFSET_RBX]

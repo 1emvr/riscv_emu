@@ -16,5 +16,5 @@
 #define OFFSET_R15     0x70
 #define OFFSET_FLAGS   0x78
 
-#define OFFSET_host_context  0x00
-#define OFFSET_vm_context    0x80
+#define OFFSET_HOST_CONTEXT     16920
+#define OFFSET_VM_CONTEXT       17048
