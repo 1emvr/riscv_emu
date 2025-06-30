@@ -22,19 +22,19 @@ namespace rvm64::mock {
 		DWORD status = 0;
 		DWORD bytes_read = 0;
 
-		auto data = (vm_buffer_t*) HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(vm_buffer_t));
+		auto data = (vm_buffer_t*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(vm_buffer_t));
 		if (!data) {
 			return nullptr;
 		}
-		HANDLE hfile = CreateFileA("./test.elf", GENERIC_READ, FILE_SHARE_READ, nullptr,
-		                                       OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+		HANDLE handle = CreateFileA("./test.elf", GENERIC_READ, FILE_SHARE_READ, nullptr,
+									OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
-		if (hfile == INVALID_HANDLE_VALUE) {
+		if (handle == INVALID_HANDLE_VALUE) {
 			data->stat = GetLastError();
 			return data;
 		}
 
-		status = GetFileSize(hfile, (LPDWORD)&data->size);
+		status = GetFileSize(handle, (LPDWORD)&data->size);
 		if (status == INVALID_FILE_SIZE || data->size == 0) {
 			data->stat = GetLastError();
 			return data;
@@ -42,15 +42,15 @@ namespace rvm64::mock {
 
 		data->address = (uint8_t*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, data->size);
 
-		if (!ReadFile(hfile, data->address, data->size, &bytes_read, nullptr) ||
+		if (!ReadFile(handle, data->address, data->size, &bytes_read, nullptr) ||
 		    bytes_read != data->size) {
 			data->stat = GetLastError();
 			return data;
 		}
-
-		if (hfile) {
-			CloseHandle(hfile);
+		if (handle) {
+			CloseHandle(handle);
 		}
+
 		return data;
 	}
 

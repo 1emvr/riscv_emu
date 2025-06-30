@@ -75,13 +75,13 @@
 #define mem_read(T, retval, addr)  								\
 	do {														\
 		mem_read_check(T, addr);								\
-		retval = *(T *)(addr); 									\
+		retval = *(T *)((uintptr_t)addr); 						\
 	} while(0)
 
 #define mem_write(T, addr, value)  								\
 	do {														\
 		mem_write_check(T, addr);								\
-		*(T *)(addr) = value;  	\
+		*(T *)((uintptr_t)addr) = value;  						\
 	} while(0)
 
 #define reg_read(T, dst, reg_idx) 								\

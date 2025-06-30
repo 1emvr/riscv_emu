@@ -487,12 +487,12 @@ namespace rvm64::operations {
 
 			reg_read(uintptr_t, address, _rs1);
 
-			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+			WaitForSingleObject(vmcs_mutex, INFINITE);
 
 			mem_read(int32_t, value, address);
 			reg_write(int32_t, _rd, value);
 
-			ctx->win32.NtReleaseMutex(vmcs_mutex);
+			ReleaseMutex(vmcs_mutex);
 		}
 
 		_vmcall void rv_lrd() {
@@ -503,12 +503,12 @@ namespace rvm64::operations {
 
 			reg_read(uintptr_t, address, _rs1);
 
-			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+			WaitForSingleObject(vmcs_mutex, INFINITE);
 
 			mem_read(int64_t, value, address);
 			reg_write(int64_t, _rd, value);
 
-			ctx->win32.NtReleaseMutex(vmcs_mutex);
+			ReleaseMutex(vmcs_mutex);
 		}
 
 		_vmcall void rv_fmv_d_x() {
@@ -1641,13 +1641,13 @@ namespace rvm64::operations {
 			reg_read(uintptr_t, address, _rs1);
 			reg_read(int64_t, v2, _rs2);
 
-			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+			WaitForSingleObject(vmcs_mutex, INFINITE);
 
 			mem_read(int64_t, v1, address);
 			mem_write(int64_t, address, v2);
 			reg_write(int64_t, _rd, v1);
 
-			ctx->win32.NtReleaseMutex(vmcs_mutex);
+			ReleaseMutex(vmcs_mutex);
 		}
 
 		_vmcall void rv_amoadd_d() {
@@ -1660,13 +1660,13 @@ namespace rvm64::operations {
 			reg_read(uintptr_t, address, _rs1);
 			reg_read(int64_t, v2, _rs2);
 
-			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+			WaitForSingleObject(vmcs_mutex, INFINITE);
 
 			mem_read(int64_t, v1, address);
 			mem_write(int64_t, address, (v1 + v2));
 			reg_write(int64_t, _rd, v1);
 
-			ctx->win32.NtReleaseMutex(vmcs_mutex);
+			ReleaseMutex(vmcs_mutex);
 		}
 
 		_vmcall void rv_amoxor_d() {
@@ -1679,13 +1679,13 @@ namespace rvm64::operations {
 			reg_read(uintptr_t, address, _rs1);
 			reg_read(int64_t, v2, _rs2);
 
-			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+			WaitForSingleObject(vmcs_mutex, INFINITE);
 
 			mem_read(int64_t, v1, address);
 			mem_write(int64_t, address, (v1 ^ v2));
 			reg_write(int64_t, _rd, v1);
 
-			ctx->win32.NtReleaseMutex(vmcs_mutex);
+			ReleaseMutex(vmcs_mutex);
 		}
 
 		_vmcall void rv_amoand_d() {
@@ -1698,13 +1698,13 @@ namespace rvm64::operations {
 			reg_read(uintptr_t, address, _rs1);
 			reg_read(int64_t, v2, _rs2);
 
-			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+			WaitForSingleObject(vmcs_mutex, INFINITE);
 
 			mem_read(int64_t, v1, address);
 			mem_write(int64_t, address, (v1 & v2));
 			reg_write(int64_t, _rd, v1);
 
-			ctx->win32.NtReleaseMutex(vmcs_mutex);
+			ReleaseMutex(vmcs_mutex);
 		}
 
 		_vmcall void rv_amoor_d() {
@@ -1717,13 +1717,13 @@ namespace rvm64::operations {
 			reg_read(uintptr_t, address, _rs1);
 			reg_read(int64_t, v2, _rs2);
 
-			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+			WaitForSingleObject(vmcs_mutex, INFINITE);
 
 			mem_read(int64_t, v1, address);
 			mem_write(int64_t, address, (v1 | v2));
 			reg_write(int64_t, _rd, v1);
 
-			ctx->win32.NtReleaseMutex(vmcs_mutex);
+			ReleaseMutex(vmcs_mutex);
 		}
 
 		_vmcall void rv_amomin_d() {
@@ -1736,13 +1736,13 @@ namespace rvm64::operations {
 			reg_read(uintptr_t, address, _rs1);
 			reg_read(uint64_t, v2, _rs2);
 
-			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+			WaitForSingleObject(vmcs_mutex, INFINITE);
 
 			mem_read(int64_t, v1, address);
 			mem_write(int64_t, address, (v1 < v2 ? v1 : v2));
 			reg_write(uint64_t, _rd, v1);
 
-			ctx->win32.NtReleaseMutex(vmcs_mutex);
+			ReleaseMutex(vmcs_mutex);
 		}
 
 		_vmcall void rv_amomax_d() {
@@ -1755,13 +1755,13 @@ namespace rvm64::operations {
 			reg_read(uintptr_t, address, _rs1);
 			reg_read(int64_t, v2, _rs2);
 
-			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+			WaitForSingleObject(vmcs_mutex, INFINITE);
 
 			mem_read(int64_t, v1, address);
 			mem_write(int64_t, address, (v1 < v2 ? v2 : v1));
 			reg_write(int64_t, _rd, v1);
 
-			ctx->win32.NtReleaseMutex(vmcs_mutex);
+			ReleaseMutex(vmcs_mutex);
 		}
 
 		_vmcall void rv_amominu_d() {
@@ -1774,13 +1774,13 @@ namespace rvm64::operations {
 			reg_read(uintptr_t, _rs1, address);
 			reg_read(uint64_t, _rs2, v2);
 
-			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+			WaitForSingleObject(vmcs_mutex, INFINITE);
 
 			mem_read(uint64_t, v1, address);
 			mem_write(uint64_t, address, (v1 < v2 ? v1 : v2));
 			reg_write(uint64_t, _rd, v1);
 
-			ctx->win32.NtReleaseMutex(vmcs_mutex);
+			ReleaseMutex(vmcs_mutex);
 		}
 
 		_vmcall void rv_amomaxu_d() {
@@ -1793,13 +1793,13 @@ namespace rvm64::operations {
 			reg_read(uintptr_t, address, _rs1);
 			reg_read(uint64_t, v2, _rs2);
 
-			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+			WaitForSingleObject(vmcs_mutex, INFINITE);
 
 			mem_read(uint64_t, v1, address);
 			mem_write(uint64_t, address, (v1 < v2 ? v2 : v1));
 			reg_write(uint64_t, _rd, v1);
 
-			ctx->win32.NtReleaseMutex(vmcs_mutex);
+			ReleaseMutex(vmcs_mutex);
 		}
 
 		_vmcall void rv_amoswap_w() {
@@ -1812,13 +1812,13 @@ namespace rvm64::operations {
 			reg_read(uintptr_t, address, _rs1);
 			reg_read(int32_t, v2, _rs2);
 
-			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+			WaitForSingleObject(vmcs_mutex, INFINITE);
 
 			mem_read(int32_t, v1, address);
 			mem_write(int32_t, address, v2);
 			reg_write(int32_t, _rd, v1);
 
-			ctx->win32.NtReleaseMutex(vmcs_mutex);
+			ReleaseMutex(vmcs_mutex);
 		}
 
 		_vmcall void rv_amoadd_w() {
@@ -1831,13 +1831,13 @@ namespace rvm64::operations {
 			reg_read(uintptr_t, address, _rs1);
 			reg_read(int32_t, v2, _rs2);
 
-			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+			WaitForSingleObject(vmcs_mutex, INFINITE);
 
 			mem_read(int32_t, v1, address);
 			mem_write(int32_t, address, (v1 + v2));
 			reg_write(int32_t, _rd, v1);
 
-			ctx->win32.NtReleaseMutex(vmcs_mutex);
+			ReleaseMutex(vmcs_mutex);
 		}
 
 		_vmcall void rv_amoxor_w() {
@@ -1850,13 +1850,13 @@ namespace rvm64::operations {
 			reg_read(uintptr_t, address, _rs1);
 			reg_read(int32_t, v2, _rs2);
 
-			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+			WaitForSingleObject(vmcs_mutex, INFINITE);
 
 			mem_read(int32_t, v1, address);
 			mem_write(int32_t, address, (v1 ^ v2));
 			reg_write(int32_t, _rd, v1);
 
-			ctx->win32.NtReleaseMutex(vmcs_mutex);
+			ReleaseMutex(vmcs_mutex);
 		}
 
 		_vmcall void rv_amoand_w() {
@@ -1869,13 +1869,13 @@ namespace rvm64::operations {
 			reg_read(uintptr_t, address, _rs1);
 			reg_read(int32_t, v2, _rs2);
 
-			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+			WaitForSingleObject(vmcs_mutex, INFINITE);
 
 			mem_read(int32_t, v1, address);
 			mem_write(int32_t, address, (v1 & v2));
 			reg_write(int32_t, _rd, v1);
 
-			ctx->win32.NtReleaseMutex(vmcs_mutex);
+			ReleaseMutex(vmcs_mutex);
 		}
 
 		_vmcall void rv_amoor_w() {
@@ -1888,13 +1888,13 @@ namespace rvm64::operations {
 			reg_read(uintptr_t, address, _rs1);
 			reg_read(int32_t, v2, _rs2);
 
-			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+			WaitForSingleObject(vmcs_mutex, INFINITE);
 
 			mem_read(int32_t, v1, address);
 			mem_write(int32_t, address, (v1 | v2));
 			reg_write(int32_t, _rd, v1);
 
-			ctx->win32.NtReleaseMutex(vmcs_mutex);
+			ReleaseMutex(vmcs_mutex);
 		}
 
 		_vmcall void rv_amomin_w() {
@@ -1907,13 +1907,13 @@ namespace rvm64::operations {
 			reg_read(uintptr_t, address, _rs1);
 			reg_read(int32_t, v2, _rs2);
 
-			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+			WaitForSingleObject(vmcs_mutex, INFINITE);
 
 			mem_read(int32_t, v1, address);
 			mem_write(int32_t, address, (v1 < v2 ? v1 : v2));
 			reg_write(int32_t, _rd, v1);
 
-			ctx->win32.NtReleaseMutex(vmcs_mutex);
+			ReleaseMutex(vmcs_mutex);
 		}
 
 		_vmcall void rv_amomax_w() {
@@ -1926,13 +1926,13 @@ namespace rvm64::operations {
 			reg_read(uintptr_t, address, _rs1);
 			reg_read(int32_t, v2, _rs2);
 
-			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+			WaitForSingleObject(vmcs_mutex, INFINITE);
 
 			mem_read(int32_t, v1, address);
 			mem_write(int32_t, address, (v1 < v2 ? v2 : v1));
 			reg_write(int32_t, _rd, v1);
 
-			ctx->win32.NtReleaseMutex(vmcs_mutex);
+			ReleaseMutex(vmcs_mutex);
 		}
 
 		_vmcall void rv_amominu_w() {
@@ -1945,13 +1945,13 @@ namespace rvm64::operations {
 			reg_read(uintptr_t, address, _rs1);
 			reg_read(uint32_t, v2, _rs2);
 
-			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+			WaitForSingleObject(vmcs_mutex, INFINITE);
 
 			mem_read(uint32_t, v1, address);
 			mem_write(uint32_t, address, (v1 < v2 ? v1 : v2));
 			reg_write(uint32_t, _rd, v1);
 
-			ctx->win32.NtReleaseMutex(vmcs_mutex);
+			ReleaseMutex(vmcs_mutex);
 		}
 
 		_vmcall void rv_amomaxu_w() {
@@ -1964,13 +1964,13 @@ namespace rvm64::operations {
 			reg_read(uintptr_t, address, _rs1);
 			reg_read(uint32_t, v2, _rs2);
 
-			ctx->win32.NtWaitForSingleObject(vmcs_mutex, INFINITE);
+			WaitForSingleObject(vmcs_mutex, INFINITE);
 
 			mem_read(uint32_t, v1, address);
 			mem_write(uint32_t, address, (v1 < v2 ? v2 : v1));
 			reg_write(uint32_t, _rd, v1);
 
-			ctx->win32.NtReleaseMutex(vmcs_mutex);
+			ReleaseMutex(vmcs_mutex);
 		}
 	}
 
