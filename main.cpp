@@ -41,7 +41,6 @@ namespace rvm64 {
 		vmcs_t vm_instance = { };
 		vmcs = &vm_instance;
 
-		__debugbreak();
 		rvm64::entry::vm_init();
 		rvm64::entry::vm_entry();
 		rvm64::entry::vm_exit();

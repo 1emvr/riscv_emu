@@ -23,6 +23,7 @@ typedef PVOID(NTAPI* RtlAllocateHeap_t)(HANDLE HeapHandle, ULONG Flags, SIZE_T S
 #define VM_NATIVE_STACK_ALLOC   0x210
 #define VM_PROCESS_PADDING      (1024 * 256)
 #define VSTACK_MAX_CAPACITY     (1024 * 2)
+#define RVM_TRAP_EXCEPTION		0xE0424242  // any 0xExxxxxxx value is safe
 
 #define EXPONENT_MASK           0x7FF0000000000000ULL
 #define FRACTION_MASK           0x000FFFFFFFFFFFFFULL
@@ -33,7 +34,7 @@ typedef PVOID(NTAPI* RtlAllocateHeap_t)(HANDLE HeapHandle, ULONG Flags, SIZE_T S
 	vmcs->csr.m_status = stat;						\
 	vmcs->csr.m_tval = val;							\
 	vmcs->halt = hlt;								\
-	__debugbreak()
+	RaiseException(RVM_TRAP_EXCEPTION, 0, 0, nullptr)
 
 #ifdef DEBUG
 #define CSR_GET(ctx_ptr)							\
