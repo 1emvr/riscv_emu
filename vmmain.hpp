@@ -70,6 +70,11 @@ struct ucrt_wrapper {
 	};
 };
 
+struct ucrt_function {
+	const char *name;
+	ucrt_wrapper::typenum type;
+};
+
 typedef struct {
     uintptr_t pc;
     uintptr_t dispatch_table;

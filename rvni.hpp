@@ -11,17 +11,12 @@ namespace rvm64::rvni {
 	// NOTE: this requires C++ stdlib to be statically linked. consider replacing with simple_map::unordered_map.
 	_data std::unordered_map<void*, ucrt_wrapper> ucrt_native_table;
 
-	struct function {
-		const char* name;
-		ucrt_wrapper::typenum type;
-	};
-
 	_rdata ucrt_alias alias_table[] = {
 		{ "open",  "_open"  }, { "read",  "_read"  }, { "write", "_write" },
 		{ "close", "_close" }, { "exit",  "_exit"  },
 	};
 
-	_rdata function unresolved[] = {
+	_rdata ucrt_function unresolved[] = {
 		{"_open", ucrt_wrapper::PLT_OPEN}, {"_read", ucrt_wrapper::PLT_READ}, {"_write", ucrt_wrapper::PLT_WRITE}, {"_close", ucrt_wrapper::PLT_CLOSE},
 		{"_lseek", ucrt_wrapper::PLT_LSEEK}, {"_stat64", ucrt_wrapper::PLT_STAT64}, {"malloc", ucrt_wrapper::PLT_MALLOC}, {"free", ucrt_wrapper::PLT_FREE},
 		{"memcpy", ucrt_wrapper::PLT_MEMCPY}, {"memset", ucrt_wrapper::PLT_MEMSET}, {"strlen", ucrt_wrapper::PLT_STRLEN}, {"strcpy", ucrt_wrapper::PLT_STRCPY},
