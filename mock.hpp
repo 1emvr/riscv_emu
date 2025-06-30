@@ -12,9 +12,9 @@ namespace rvm64::mock {
 	_native void destroy_file(vm_buffer_t *data) {
 		if (data) {
 			if (data->address) {
-				free((void*)data->address);
+				HeapFree(GetProcessHeap(), 0, data->address);
 			}
-			free(data);
+			HeapFree(GetProcessHeap(), 0, data);
 		}
 	}
 
@@ -22,39 +22,42 @@ namespace rvm64::mock {
 		DWORD status = 0;
 		DWORD bytes_read = 0;
 
-		auto buffer = (vm_buffer_t*) HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(vm_buffer_t));
+		auto data = (vm_buffer_t*) HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(vm_buffer_t));
+		if (!data) {
+			return nullptr;
+		}
 		HANDLE hfile = CreateFileA("./test.elf", GENERIC_READ, FILE_SHARE_READ, nullptr,
 		                                       OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
 		if (hfile == INVALID_HANDLE_VALUE) {
-			buffer->stat = GetLastError();
-			return buffer;
+			data->stat = GetLastError();
+			return data;
 		}
 
-		status = GetFileSize(hfile, (LPDWORD)&buffer->size);
-		if (status == INVALID_FILE_SIZE || buffer->size == 0) {
-			buffer->stat = GetLastError();
-			return buffer;
+		status = GetFileSize(hfile, (LPDWORD)&data->size);
+		if (status == INVALID_FILE_SIZE || data->size == 0) {
+			data->stat = GetLastError();
+			return data;
 		}
 
-		buffer->address = (uint8_t*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, buffer->size);
+		data->address = (uint8_t*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, data->size);
 
-		if (!ReadFile(hfile, buffer->address, buffer->size, &bytes_read, nullptr) ||
-		    bytes_read != buffer->size) {
-			buffer->stat = GetLastError();
-			return buffer;
+		if (!ReadFile(hfile, data->address, data->size, &bytes_read, nullptr) ||
+		    bytes_read != data->size) {
+			data->stat = GetLastError();
+			return data;
 		}
 
 		if (hfile) {
 			CloseHandle(hfile);
 		}
-		return buffer;
+		return data;
 	}
 
 	_native void read_program_from_packet() {
 		vm_buffer_t *data = read_file();
 		if (!data) {
-			CSR_SET_TRAP(nullptr, image_bad_load, ERROR_BUFFER_OVERFLOW, 0, 1);
+			CSR_SET_TRAP(nullptr, image_bad_load, STATUS_NO_MEMORY, 0, 1);
 		}
 		if (data->stat) {
 			CSR_SET_TRAP(nullptr, image_bad_load, data->stat, 0, 1);
