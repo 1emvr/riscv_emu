@@ -10,18 +10,17 @@
 namespace rvm64::rvni {
 	_data std::unordered_map<void*, ucrt_wrapper> ucrt_native_table; // NOTE: this requires C++ stdlib to be statically linked. consider replacing.
 
-
 	struct function {
 		const char* name;
 		ucrt_wrapper::typecaster type;
 	};
 
-	_data ucrt_alias alias_table[] = {
+	_rdata ucrt_alias alias_table[] = {
 		{ "open",  "_open"  }, { "read",  "_read"  }, { "write", "_write" },
 		{ "close", "_close" }, { "exit",  "_exit"  },
 	};
 
-	_data function funcs[] = {
+	_rdata function unresolved[] = {
 		{"_open", ucrt_wrapper::PLT_OPEN}, {"_read", ucrt_wrapper::PLT_READ}, {"_write", ucrt_wrapper::PLT_WRITE}, {"_close", ucrt_wrapper::PLT_CLOSE},
 		{"_lseek", ucrt_wrapper::PLT_LSEEK}, {"_stat64", ucrt_wrapper::PLT_STAT64}, {"malloc", ucrt_wrapper::PLT_MALLOC}, {"free", ucrt_wrapper::PLT_FREE},
 		{"memcpy", ucrt_wrapper::PLT_MEMCPY}, {"memset", ucrt_wrapper::PLT_MEMSET}, {"strlen", ucrt_wrapper::PLT_STRLEN}, {"strcpy", ucrt_wrapper::PLT_STRCPY},
@@ -54,7 +53,7 @@ namespace rvm64::rvni {
 			CSR_SET_TRAP(nullptr, image_bad_symbol, 0, 0, 1);
 		}
 
-		for (auto& f : funcs) {
+		for (auto& f : unresolved) {
 			void* native = (void*)GetProcAddress(ucrt, f.name);
 			if (!native) {
 				CSR_SET_TRAP(nullptr, image_bad_symbol, 0, 0, 1);
