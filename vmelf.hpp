@@ -1,8 +1,8 @@
 #ifndef VMELF_H
 #define VMELF_H
 #include <windows.h>
-#include <cstdio>
-#include <cstdint>
+#include <stdio.h>
+#include <stdint.h>
 
 #include "stdlib.hpp"
 #include "vmmain.hpp"

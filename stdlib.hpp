@@ -1,6 +1,6 @@
 #ifndef STDLIB_HPP
 #define STDLIB_HPP
-#include <cstdint>
+#include <stdint.h>
 #include <windows.h>
 
 void x_memcpy(void *dst, const void *const src, const size_t n) {

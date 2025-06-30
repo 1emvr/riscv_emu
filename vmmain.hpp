@@ -1,7 +1,7 @@
 #ifndef VMCS_H
 #define VMCS_H
 #include <windows.h>
-#include <cstdint>
+#include <stdint.h>
 
 #include "vmcommon.hpp"
 

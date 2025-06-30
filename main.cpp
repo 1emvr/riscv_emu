@@ -50,7 +50,7 @@ namespace rvm64 {
 	}
 };
 
-_native int main() {
+int main() {
     rvm64::vm_main();
 }
 
