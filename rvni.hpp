@@ -8,7 +8,7 @@
 #include "vmrwx.hpp"
 
 namespace rvm64::rvni {
-	_data std::unordered_map<void*, ucrt_wrapper> ucrt_native_table;
+	_data std::unordered_map<void*, ucrt_wrapper> ucrt_native_table; // NOTE: this requires C++ stdlib to be statically linked. consider replacing.
 
 	_data ucrt_alias alias_table[] = {
 		{ "open",  "_open"  }, { "read",  "_read"  }, { "write", "_write" },
