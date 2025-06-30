@@ -12,23 +12,12 @@ namespace simple_map {
 
 	template<typename K, typename V>
 	class unordered_map {
-		entry<K, V> *entries;
+		entry<K, V> *entries = {};
 		size_t capacity{};
 
-		unordered_map(): entries(nullptr) {
-			this = (unordered_map*) HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(unordered_map));
-
-			this->entries = nullptr;
-			this->capacity = 0;
-		}
-
-		~unordered_map() {
-			HeapFree(GetProcessHeap(), 0, this->entries);
-			HeapFree(GetProcessHeap(), 0, this);
-		}
-
 		void push(K key, V value) {
-			auto temp = (entry<K, V> *) realloc(this->entries, sizeof(entry<K, V>) * (this->capacity + 1));
+			auto temp = (entry<K, V> *) HeapReAlloc(
+				GetProcessHeap(), HEAP_ZERO_MEMORY, this->entries, sizeof(entry<K, V>) * (this->capacity + 1));
 
 			if (!temp) {
 				return;
@@ -36,7 +25,7 @@ namespace simple_map {
 			this->entries = temp;
 			this->entries[this->capacity].key = key;
 			this->entries[this->capacity].value = value;
-			this->capacity += 1;
+			this->capacity += 1; // ...past the end
 		}
 
 		V find(K key) {
