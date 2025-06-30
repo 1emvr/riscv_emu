@@ -16,7 +16,7 @@ LONG CALLBACK vm_exception_handler(PEXCEPTION_POINTERS exception_info) {
 		return EXCEPTION_CONTINUE_EXECUTION;
 	}
 	if (winctx->ContextFlags & CONTEXT_CONTROL) {
-		winctx->EFlags &= ~0x100;
+		winctx->EFlags &= ~0x100; // remove trap flag
 	}
 	if (vmcs->csr.m_cause == environment_call_native) {
 		rvm64::rvni::vm_native_call();
