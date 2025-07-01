@@ -36,7 +36,8 @@ namespace rvm64::memory {
     	NTSTATUS status = 0;
 		vmcs->process.size = process_size;
 
-	    if (!NT_SUCCESS(vmcs->process.address = (uintptr_t)VirtualAlloc(nullptr, vmcs->process.size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE))) {
+	    vmcs->process.address = (uintptr_t)VirtualAlloc(nullptr, vmcs->process.size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+		if ((void*)vmcs->process.address == nullptr) {
 
 		    CSR_SET_TRAP(nullptr, load_access_fault, status, 0, 1);
 		    return false;
