@@ -52,7 +52,7 @@ namespace rvm64::rvni {
 		for (auto& f : unresolved) {
 			void* native = (void*)GetProcAddress(ucrt, f.name);
 			if (!native) {
-				CSR_SET_TRAP(nullptr, image_bad_symbol, 0, 0, 1);
+				CSR_SET_TRAP(nullptr, image_bad_symbol, 0, (uintptr_t)f.name, 1);
 			}
 
 			ucrt_wrapper wrap = { };

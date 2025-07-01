@@ -3,7 +3,7 @@
 
 // NOTE: do not mangle "main"
 extern "C" int main() {
-	int result = 0xFFFF;
+	constexpr int result = 0xFFFF;
 	void *buffer = malloc(sizeof(int));
 
 	memcpy(buffer, &result, sizeof(int));
