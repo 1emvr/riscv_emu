@@ -35,9 +35,9 @@ namespace rvm64::rvni {
 			}
 		}
 
-		void* proc = (void*)GetProcAddress(ucrt, sym_name);
+		void *proc = (void*)GetProcAddress(ucrt, sym_name);
 		if (!proc) {
-			CSR_SET_TRAP(nullptr, image_bad_symbol, 0, 0, 1);
+			CSR_SET_TRAP(nullptr, image_bad_symbol, 0, (uintptr_t)sym_name, 1);
 		}
 
 		return proc;
