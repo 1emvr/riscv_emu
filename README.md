@@ -14,6 +14,11 @@ run the depencency script to install the necessary packages, build and install m
 ```sh
 # ./install_dependencies.sh
 ```
+compile the vm context obj and the main vm:
+```sh
+$ x86_64-w64-mingw32-g++ vmctx.S -I. -c -o vmctx.o
+$ x86_64-w64-mingw32-g++ -static-libgcc -static-libstdc++ main.cpp vmctx.o -I. -o rvm64.exe
+```
 ## Usage:
 
 ## TODO:
