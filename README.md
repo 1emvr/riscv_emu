@@ -8,7 +8,7 @@ It's recommended to use linux/wsl environment for building rvm64. Currently not 
 - clang++/ lld
 - mingw-w64
 - musl (libs/headers used for risc-v binaries) - https://github.com/kraj/musl
-- riscv-gnu-toolchain (optional) - https://github.com/riscv-collab/riscv-gnu-toolchain
+- riscv-gnu-toolchain (optional, eg - objdump, readelf) - https://github.com/riscv-collab/riscv-gnu-toolchain
 
 ## Installation:
 Run the depencency script to install the necessary packages, build and install musl:
