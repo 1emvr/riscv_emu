@@ -20,7 +20,9 @@ x86_64-w64-mingw32-g++ vmctx.S -I. -c -o vmctx.o
 x86_64-w64-mingw32-g++ -static-libgcc -static-libstdc++ main.cpp vmctx.o -I. -o rvm64.exe
 ```
 the musl includes/libs can be used to create a standalone risc-v binaries.
-allow the compiler to ignore unresolved symbols. rvm64 will take care of patching the .plt:
+allow the compiler to ignore unresolved symbols. rvm64 will take care of patching the .plt.
+
+a simple test binary is included with the project:
 ```
 clang++ test.cpp -ffreestanding -nostdlib --target=riscv64 -march=rv64g -I. -isystem /usr/local/musl/include -Wl,--unresolved-symbols=ignore-all -Wl,-e,main -Wl,-static -o test.elf
 ```
