@@ -24,7 +24,27 @@ Allow the compiler to ignore unresolved symbols. rvm64 will patch the plt. A sim
 ```
 clang++ test.cpp -ffreestanding -nostdlib --target=riscv64 -march=rv64g -I. -isystem /usr/local/musl/include -Wl,--unresolved-symbols=ignore-all -Wl,-e,main -Wl,-static -o test.elf
 ```
-## Usage:
+Currently, the vm is hard-coded to read the file `test.elf`. A feature to specify files will come later.
+
+### NOTE:
+The main function within the risc-v elf file should be compiled using C linkage until I find a better way:
+```cpp
+#include <string.h>
+#include <stdlib.h>
+
+// NOTE: do not mangle "main"
+extern "C" int main() {
+	constexpr int result = 0xFFFF;
+	void *buffer = malloc(sizeof(int));
+
+	memcpy(buffer, &result, sizeof(int));
+	memset(buffer, 0, sizeof(int));
+	free(buffer);
+
+	return 0;
+}
+```
 
 ## TODO:
--build scripts
+- build scripts for other platforms
+- adding user binary input
