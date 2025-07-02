@@ -20,7 +20,7 @@ x86_64-w64-mingw32-g++ vmctx.S -I. -c -o vmctx.o
 x86_64-w64-mingw32-g++ -static-libgcc -static-libstdc++ main.cpp vmctx.o -I. -o rvm64.exe
 ```
 the musl includes/libs can be used to create a standalone risc-v binaries.
-allow the compiler to ignore unresolved symbols. rvm64 will take care of patching the .plt.
+allow the compiler to ignore unresolved symbols. rvm64 will patch the .plt.
 
 a simple test binary is included with the project:
 ```
