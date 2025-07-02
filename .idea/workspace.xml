@@ -28,9 +28,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5f9dedbd-9e0b-4b46-be5f-d9b597bcf107" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/install_dependencies.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/install_msys.ps1" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/install_dependencies.sh" beforeDir="false" afterPath="$PROJECT_DIR$/install_dependencies.sh" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -99,7 +97,7 @@
       <workItem from="1751436949762" duration="159000" />
       <workItem from="1751437135204" duration="69000" />
       <workItem from="1751437219540" duration="624000" />
-      <workItem from="1751463009798" duration="51000" />
+      <workItem from="1751463009798" duration="669000" />
     </task>
     <servers />
   </component>
