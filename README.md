@@ -27,7 +27,7 @@ clang++ test.cpp -ffreestanding -nostdlib --target=riscv64 -march=rv64g -I. -isy
 Currently, the vm is hard-coded to read the file `test.elf`. A feature to specify files will come later.
 
 ### NOTE:
-The main function within the risc-v ELF should be compiled using C linkage until I find a better way:
+When compiling C++ code, the main function within the risc-v ELF should be compiled using C linkage until I find a better way:
 ```cpp
 #include <string.h>
 #include <stdlib.h>
