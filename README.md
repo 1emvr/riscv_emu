@@ -9,6 +9,11 @@ It's recommended to use linux/wsl environment for building rvm64. Currently not 
 - mingw-w64
 - musl (libs/headers used for risc-v binaries) - https://github.com/kraj/musl
 
+## Installation:
+run the depencency script to install the necessary packages:
+```sh
+# ./install_dependencies.sh
+```
 ## Usage:
 
 ## TODO:
