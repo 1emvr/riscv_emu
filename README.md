@@ -25,7 +25,7 @@ A simple test binary is included with the project:
 ```sh
 $ clang++ test.cpp -ffreestanding -nostdlib --target=riscv64 -march=rv64g -I. -isystem /usr/local/musl/include -Wl,-shared -Wl,-e,main -o test.elf
 ```
-Currently, the vm is hard-coded to read the file `test.elf`. A feature to specify files will come later.
+Currently, the vm is hard-coded to read the file `test.elf`. A feature to specify files will come later. I'm doing this on my free time.
 
 ### NOTE:
 When compiling C++ code, the main function within the risc-v ELF should be compiled using C linkage until I find a better way:
