@@ -15,7 +15,8 @@ namespace rvm64::mock {
 		}
 		if (data->address) {
 			HeapFree(GetProcessHeap(), 0, data->address);
-			data->address = 0;
+			data->address = nullptr;
+			data->size = 0;
 		}
 
 		HeapFree(GetProcessHeap(), 0, data);
