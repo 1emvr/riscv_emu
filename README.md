@@ -42,3 +42,4 @@ extern "C" int main() {
 ## TODO:
 - build scripts for other platforms
 - adding user binary input
+- actually testing the damn thing...
