@@ -35,7 +35,7 @@ When writing C++ code, the main function within the risc-v ELF should be compile
 
 // NOTE: do not mangle "main"
 extern "C" int main() {
-	...
+  ...
 }
 ```
 
