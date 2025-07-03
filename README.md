@@ -33,7 +33,7 @@ When writing C++ code, the main function within the risc-v ELF should be compile
 #include <string.h>
 #include <stdlib.h>
 
-// NOTE: do not mangle "main"
+// NOTE: do not mangle "main" or set entrypoint manually
 extern "C" int main() {
   ...
 }
