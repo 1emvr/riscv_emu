@@ -12,7 +12,7 @@ It's recommended to use linux/wsl environment for building rvm64. Currently not 
 
 ## Installation:
 Run the depencency script to install the necessary packages, build and install musl:
-```sh
+```
 # ./install_dependencies.sh
 ```
 Compile the vm context obj and the main vm:
