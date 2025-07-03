@@ -21,8 +21,9 @@ namespace rvm64::entry {
 	}
 
 	_vmcall void vm_exit() {
-		rvm64::memory::memory_end();
 		RemoveVectoredExceptionHandler(vmcs->veh_handle);
+		rvm64::memory::memory_end();
+
 		restore_host_context();
 	}
 

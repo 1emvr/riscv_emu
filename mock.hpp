@@ -10,12 +10,15 @@
 
 namespace rvm64::mock {
 	_native void destroy_file(vm_buffer_t *data) {
-		if (data) {
-			if (data->address) {
-				HeapFree(GetProcessHeap(), 0, data->address);
-			}
-			HeapFree(GetProcessHeap(), 0, data);
+		if (!data) {
+			return;
 		}
+		if (data->address) {
+			HeapFree(GetProcessHeap(), 0, data->address);
+			data->address = 0;
+		}
+
+		HeapFree(GetProcessHeap(), 0, data);
 	}
 
 	_native vm_buffer_t* read_file() {
@@ -71,7 +74,7 @@ namespace rvm64::mock {
 		rvm64::elf::load_elf_image(data->address, data->size);
 
 		// NOTE: if we want to cache the file for later use, then do not destroy_file
-		// if (packet->cache == false) { destroy_file(data); }
+		// if (packet->cache == false) { destroy_file(data); } type shit
 		destroy_file(data);
 	}
 };
