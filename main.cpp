@@ -8,6 +8,26 @@
 #include "mock.hpp"
 
 namespace rvm64::entry {
+	_native void read_program_from_packet() {
+		vm_buffer_t *data = rvm64::mock::read_file();
+
+		if (data == nullptr) {
+			CSR_SET_TRAP(nullptr, image_bad_load, STATUS_NO_MEMORY, 0, 1);
+		}
+		if (data->stat || data->address == nullptr) {
+			CSR_SET_TRAP(nullptr, image_bad_load, data->stat, 0, 1);
+		}
+
+		data->size += VM_PROCESS_PADDING;
+
+		rvm64::memory::memory_init(data->size);
+		rvm64::elf::load_elf_image(data->address, data->size);
+		rvm64::mock::destroy_file(data);
+
+		// NOTE: if we want to cache the file for later use, then do not destroy_file
+		// if (packet->cache == false) { destroy_file(data); } type shit
+	}
+
 	_vmcall void vm_init() {
 		save_host_context();
 
@@ -17,13 +37,12 @@ namespace rvm64::entry {
 		vmcs->vregs[sp] = (uintptr_t)(vmcs->vstack + VSTACK_MAX_CAPACITY);
 
 		rvm64::rvni::resolve_ucrt_imports();
-		rvm64::mock::read_program_from_packet(); // NOTE: this will initialize the vm memory. consider separating everything.
+		rvm64::entry::read_program_from_packet();
 	}
 
 	_vmcall void vm_exit() {
-		RemoveVectoredExceptionHandler(vmcs->veh_handle);
 		rvm64::memory::memory_end();
-
+		RemoveVectoredExceptionHandler(vmcs->veh_handle);
 		restore_host_context();
 	}
 
