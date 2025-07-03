@@ -8,7 +8,14 @@
 #include "mock.hpp"
 
 namespace rvm64::entry {
-	_native void read_program_from_packet() {
+	_vmcall void vm_init() {
+		save_host_context();
+
+		vmcs->dkey = key;
+		vmcs->dispatch_table = (uintptr_t)dispatch_table;
+		vmcs->veh_handle = AddVectoredExceptionHandler(1, vm_exception_handler);
+		vmcs->vregs[sp] = (uintptr_t)(vmcs->vstack + VSTACK_MAX_CAPACITY);
+
 		vm_buffer_t *data = rvm64::mock::read_file();
 
 		if (data == nullptr) {
@@ -20,24 +27,10 @@ namespace rvm64::entry {
 
 		data->size += VM_PROCESS_PADDING;
 
+		rvm64::rvni::resolve_ucrt_imports();
 		rvm64::memory::memory_init(data->size);
 		rvm64::elf::load_elf_image(data->address, data->size);
 		rvm64::mock::destroy_file(data);
-
-		// NOTE: if we want to cache the file for later use, then do not destroy_file
-		// if (packet->cache == false) { destroy_file(data); } type shit
-	}
-
-	_vmcall void vm_init() {
-		save_host_context();
-
-		vmcs->dkey = key;
-		vmcs->dispatch_table = (uintptr_t)dispatch_table;
-		vmcs->veh_handle = AddVectoredExceptionHandler(1, vm_exception_handler);
-		vmcs->vregs[sp] = (uintptr_t)(vmcs->vstack + VSTACK_MAX_CAPACITY);
-
-		rvm64::rvni::resolve_ucrt_imports();
-		rvm64::entry::read_program_from_packet();
 	}
 
 	_vmcall void vm_exit() {
