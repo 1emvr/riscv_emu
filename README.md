@@ -23,7 +23,7 @@ $ x86_64-w64-mingw32-g++ -static-libgcc -static-libstdc++ main.cpp vmctx.o -I. -
 The musl includes/libs can be used to create a standalone risc-v binaries.
 A simple test binary is included with the project:
 ```sh
-$ clang++ test.cpp -ffreestanding -nostdlib --target=riscv64 -march=rv64g -I. -isystem /usr/local/musl/include -Wl,-shared -Wl,-e,main -Wl,-static -o test.elf
+$ clang++ test.cpp -ffreestanding -nostdlib --target=riscv64 -march=rv64g -I. -isystem /usr/local/musl/include -Wl,-shared -Wl,-e,main -o test.elf
 ```
 Currently, the vm is hard-coded to read the file `test.elf`. A feature to specify files will come later.
 
