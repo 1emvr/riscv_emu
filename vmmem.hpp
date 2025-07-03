@@ -34,9 +34,10 @@ namespace rvm64::memory {
 
 	_native void memory_init(size_t process_size) {
     	NTSTATUS status = 0;
-		vmcs->process.size = process_size;
 
+		vmcs->process.size = process_size;
 	    vmcs->process.address = (uintptr_t)VirtualAlloc(nullptr, vmcs->process.size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+
 		if ((void*)vmcs->process.address == nullptr) {
 		    CSR_SET_TRAP(nullptr, load_access_fault, status, 0, 1);
 	    }
@@ -44,7 +45,11 @@ namespace rvm64::memory {
 
 	_native void memory_end() {
     	NTSTATUS status = 0;
-		if (!NT_SUCCESS(VirtualFree((LPVOID)vmcs->process.address, vmcs->process.size, MEM_RELEASE))) {
+
+		if ((void*)vmcs->process.address == nullptr) {
+			return;
+		}
+		if (!VirtualFree((LPVOID)vmcs->process.address, vmcs->process.size, MEM_RELEASE)) {
 			CSR_SET_TRAP(nullptr, load_access_fault, status, 0, 1);
 		}
 	}
