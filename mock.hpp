@@ -57,10 +57,11 @@ namespace rvm64::mock {
 	//NOTE: consider returning the packet data from here to keep memory/elf init separated.
 	_native void read_program_from_packet() {
 		vm_buffer_t *data = read_file();
+
 		if (data == nullptr) {
 			CSR_SET_TRAP(nullptr, image_bad_load, STATUS_NO_MEMORY, 0, 1);
 		}
-		if (data->stat) {
+		if (data->stat || data->address == nullptr) {
 			CSR_SET_TRAP(nullptr, image_bad_load, data->stat, 0, 1);
 		}
 
