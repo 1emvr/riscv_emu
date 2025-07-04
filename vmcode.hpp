@@ -18,7 +18,7 @@ _rdata const opcode encoding[] = {
 
 inline int32_t sign_extend(int32_t val, int bits) {
 	int shift = 32 - bits;
-	return (val << shift) >> shift;
+	return (int32_t)(val << shift) >> shift;
 }
 
 inline uint8_t shamt_i(uint32_t opcode) {
@@ -26,24 +26,32 @@ inline uint8_t shamt_i(uint32_t opcode) {
 }
 
 // NOTE: annoying as fuck to read. just let GPT do the math and say fuck it.
-inline int32_t imm_u(uint32_t opcode) { return (int32_t) opcode & 0xFFFFF000; }
-inline int32_t imm_i(uint32_t opcode) { return (int32_t) sign_extend((opcode >> 20), 12); }
-inline int32_t imm_s(uint32_t opcode) { return sign_extend(((opcode >> 25) << 5) | ((opcode >> 7) & 0x1F), 12); }
+inline int32_t imm_u(uint32_t opcode) {
+	return (int32_t) opcode & 0xFFFFF000;
+}
+inline int32_t imm_i(uint32_t opcode) {
+	int32_t raw_imm = opcode >> 20;
+	return sign_extend(raw_imm, 12);
+}
+inline int32_t imm_s(uint32_t opcode) {
+	int32_t raw_imm =  ((opcode >> 25) << 5) | ((opcode >> 7) & 0x1F);
+	return sign_extend(raw_imm & 0xFFF, 12);
+}
 
 inline int32_t imm_b(uint32_t opcode) {
-	int32_t val = (((opcode >> 31) & 1) << 12)
+	int32_t raw_imm = (((opcode >> 31) & 1) << 12)
 	              | (((opcode >> 25) & 0x3F) << 5)
 	              | (((opcode >> 8) & 0xF) << 1)
 	              | (((opcode >> 7) & 1) << 11);
-	return sign_extend(val, 13);
+	return sign_extend(raw_imm, 13);
 }
 
 inline int32_t imm_j(uint32_t opcode) {
-	int32_t val = (((opcode >> 31) & 1) << 20)
+	int32_t raw_imm = (((opcode >> 31) & 1) << 20)
 	              | (((opcode >> 21) & 0x3FF) << 1)
 	              | (((opcode >> 20) & 1) << 11)
 	              | (((opcode >> 12) & 0xFF) << 12);
-	return sign_extend(val, 21);
+	return sign_extend(raw_imm, 21);
 }
 
 
@@ -2122,7 +2130,7 @@ namespace rvm64::operations {
 
 			scr_read(uint8_t, _rs1, rs1);
 			scr_read(uint8_t, _rs2, rs2);
-			scr_read(uint8_t, _imm, imm);
+			scr_read(int32_t, _imm, imm);
 
 			reg_read(uintptr_t, address, _rs1);
 			reg_read(uint16_t, v1, _rs2);
@@ -2136,8 +2144,9 @@ namespace rvm64::operations {
 
 			scr_read(uint8_t, _rs1, rs1);
 			scr_read(uint8_t, _rs2, rs2);
-			scr_read(uint8_t, _imm, imm);
+			scr_read(int32_t, _imm, imm);
 
+			__debugbreak();
 			reg_read(uintptr_t, address, _rs1);
 			reg_read(uint32_t, v1, _rs2);
 
@@ -2150,7 +2159,7 @@ namespace rvm64::operations {
 
 			scr_read(uint8_t, _rs1, rs1);
 			scr_read(uint8_t, _rs2, rs2);
-			scr_read(uint8_t, _imm, imm);
+			scr_read(int32_t, _imm, imm);
 
 			reg_read(uintptr_t, address, _rs1);
 			reg_read(uint64_t, v1, _rs2);
