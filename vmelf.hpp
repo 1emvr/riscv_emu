@@ -10,6 +10,7 @@
 
 // Dynamic section tags
 #define DT_NULL         0       // End of dynamic section
+#define DT_PLTGOT		3		// the global offset table
 #define DT_SYMTAB       6       // Pointer to symbol table
 #define DT_STRTAB       5       // Pointer to string table
 #define DT_SYMENT       11      // Size of one symbol table entry
@@ -222,7 +223,7 @@ namespace rvm64::elf {
 					break;
 				}
 				default: {
-					CSR_SET_TRAP(nullptr, image_bad_symbol, 0, dyn->d_tag, 1);
+					break;
 				}
 			}
 		}
