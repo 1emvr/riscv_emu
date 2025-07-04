@@ -38,8 +38,8 @@ namespace rvm64::mock {
 			return data;
 		}
 
-		status = GetFileSize(handle, (LPDWORD)&data->size);
-		if (status == INVALID_FILE_SIZE || data->size == 0) {
+		data->size = GetFileSize(handle, nullptr);
+		if (data->size == INVALID_FILE_SIZE || data->size == 0) {
 			data->stat = GetLastError();
 			return data;
 		}
