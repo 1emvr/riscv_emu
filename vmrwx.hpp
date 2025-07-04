@@ -74,14 +74,16 @@
 
 #define mem_read(T, retval, addr)  								\
 	do {														\
-		mem_read_check(T, addr);								\
-		retval = *(T *)((uint8_t*)vmcs->process.address + (uintptr_t)(addr)); 						\
+		__debugbreak();											\
+		mem_read_check(T, ((uint8_t*)vmcs->process.address + (uintptr_t)addr));		\
+		retval = *(T *)((uint8_t*)vmcs->process.address + (uintptr_t)addr); 		\
 	} while(0)
 
 #define mem_write(T, addr, value)  								\
 	do {														\
-		mem_write_check(T, addr);								\
-		*(T *)((uint8_t*)vmcs->process.address + (uintptr_t)(addr)) = value;  						\
+		__debugbreak();											\
+		mem_write_check(T, ((uint8_t*)vmcs->process.address + (uintptr_t)addr));	\
+		*(T *)((uint8_t*)vmcs->process.address + (uintptr_t)addr) = value;  		\
 	} while(0)
 
 #define reg_read(T, dst, reg_idx) 								\

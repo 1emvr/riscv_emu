@@ -2146,7 +2146,6 @@ namespace rvm64::operations {
 			scr_read(uint8_t, _rs2, rs2);
 			scr_read(int32_t, _imm, imm);
 
-			__debugbreak();
 			reg_read(uintptr_t, address, _rs1);
 			reg_read(uint32_t, v1, _rs2);
 

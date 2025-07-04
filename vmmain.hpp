@@ -26,7 +26,7 @@ typedef struct {
 
 
 typedef struct {
-	uintptr_t address;
+	uint8_t *address;
 	uintptr_t base_vaddr;
 	uintptr_t entry;
 	size_t size;

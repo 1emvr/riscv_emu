@@ -315,7 +315,7 @@ namespace rvm64::elf {
 
 		vmcs->process.size = image_size;
 		vmcs->process.base_vaddr = base;
-		vmcs->process.entry = vmcs->process.address + (ehdr->e_entry - base);
+		vmcs->process.entry = (uintptr_t)vmcs->process.address + (ehdr->e_entry - base);
 
 		vmcs->pc = vmcs->process.entry;
 		patch_elf_imports();
