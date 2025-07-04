@@ -5,8 +5,6 @@
 
 #include "vmmain.hpp"
 #include "vmcommon.hpp"
-#include "vmmem.hpp"
-#include "vmelf.hpp"
 
 namespace rvm64::mock {
 	_native void destroy_file(vm_buffer_t *data) {
@@ -23,7 +21,6 @@ namespace rvm64::mock {
 	}
 
 	_native vm_buffer_t* read_file() {
-		DWORD status = 0;
 		DWORD bytes_read = 0;
 
 		auto data = (vm_buffer_t*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(vm_buffer_t));
